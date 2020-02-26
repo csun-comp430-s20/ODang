@@ -49,16 +49,48 @@ public class TokenTest {
         checkTokenizes("(", new LeftParenToken());
     }
     @Test
+    public void checkCorrectTokenizedLParenWhitespaceBefore() throws TokenizerException {
+        checkTokenizes(" (", new LeftParenToken());
+    }
+    @Test
+    public void checkCorrectTokenizedLParenWhitespaceAfter() throws TokenizerException {
+        checkTokenizes("( ", new LeftParenToken());
+    }
+    @Test
     public void checkCorrectTokenizedRParen() throws TokenizerException {
         checkTokenizes(")", new RightParenToken());
+    }
+    @Test
+    public void checkCorrectTokenizedRParenWhitespaceBefore() throws TokenizerException {
+        checkTokenizes(" )", new RightParenToken());
+    }
+    @Test
+    public void checkCorrectTokenizedRParenWhitespaceAfter() throws TokenizerException {
+        checkTokenizes(") ", new RightParenToken());
     }
     @Test
     public void checkCorrectTokenizedLCurly() throws TokenizerException {
         checkTokenizes("{", new LeftCurlyToken());
     }
     @Test
+    public void checkCorrectTokenizedLCurlyWhitespaceBefore() throws TokenizerException {
+        checkTokenizes(" {", new LeftCurlyToken());
+    }
+    @Test
+    public void checkCorrectTokenizedLCurlyWhitespaceAfter() throws TokenizerException {
+        checkTokenizes("{ ", new LeftCurlyToken());
+    }
+    @Test
     public void checkCorrectTokenizedRCurly() throws TokenizerException {
         checkTokenizes("}", new RightCurlyToken());
+    }
+    @Test
+    public void checkCorrectTokenizedRCurlyWhitespaceBefore() throws TokenizerException {
+        checkTokenizes(" }", new RightCurlyToken());
+    }
+    @Test
+    public void checkCorrectTokenizedRCurlyWhitespaceAfter() throws TokenizerException {
+        checkTokenizes("} ", new RightCurlyToken());
     }
     @Test
     public void checkCorrectTokenizedIf() throws TokenizerException {
