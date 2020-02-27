@@ -39,8 +39,20 @@ public class TokenTest {
         checkTokenizes("-12", new IntegerToken(-12));
     }
     @Test
+    public void checkCorrectTokenizedTwoNegativeIntegers() throws TokenizerException {
+        checkTokenizes("-12 -34", new IntegerToken(-12), new IntegerToken(-34));
+    }
+    @Test
     public void checkCorrectTokenizedString() throws TokenizerException {
         checkTokenizes("\"string\"", new StringToken("string"));
+    }
+    @Test
+    public void checkTokenizeStringWithReservedWord() throws TokenizerException {
+        checkTokenizes("\"for while &&\"", new StringToken("for while &&"));
+    }
+    @Test
+    public void checkTokenizeStringWithIntegers() throws TokenizerException {
+        checkTokenizes("\"10 is an integer\"", new StringToken("10 is an integer"));
     }
     @Test
     public void checkCorrectTokenizedTwoStrings() throws TokenizerException {
