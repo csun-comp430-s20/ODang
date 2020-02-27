@@ -270,4 +270,11 @@ public class TokenTest {
         Assertions.assertThrows(TokenizerException.class,
                 testTokenizer::tokenize);
     }
+    @Test
+    public void checkThrowsExceptionInvalidInput() {
+        final String testString = "& |";
+        final Tokenizer testTokenizer = new Tokenizer(testString);
+        Assertions.assertThrows(TokenizerException.class,
+                testTokenizer::tokenize);
+    }
 }
