@@ -70,6 +70,12 @@ public class Tokenizer {
                         inputPos++;
                         return new OperatorToken("==");
                     }
+                //special case for possible negative numbers
+                case "-":
+                    if (validPosition() && Character.isDigit(input[inputPos])) {
+                        inputPos--;
+                        return tryTokenizeInt();
+                }
                 default:
                     return new OperatorToken(symbols);
             }

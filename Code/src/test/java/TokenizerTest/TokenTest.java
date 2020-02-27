@@ -35,6 +35,10 @@ public class TokenTest {
         checkTokenizes("12 34", new IntegerToken(12), new IntegerToken(34));
     }
     @Test
+    public void checkCorrectTokenizedNegativeInteger() throws TokenizerException {
+        checkTokenizes("-12", new IntegerToken(-12));
+    }
+    @Test
     public void checkCorrectTokenizedString() throws TokenizerException {
         checkTokenizes("\"string\"", new StringToken("string"));
     }
