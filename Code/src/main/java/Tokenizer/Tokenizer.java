@@ -246,8 +246,7 @@ public class Tokenizer {
 
     //main for testing purposes
     public static void main(String[] args) {
-        String testString = "for (int x = 0; i < 10; i + 1) {" +
-                "return petertotherkul;";
+        String testString = " ";
         Tokenizer testTokenizer = new Tokenizer(testString.toCharArray());
         try {
             List<Token> result = testTokenizer.tokenize();
