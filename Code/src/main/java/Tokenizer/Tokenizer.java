@@ -104,7 +104,6 @@ public class Tokenizer {
             return null;
     }
     /**
-     * @TODO finish adding reserved words
      * @return Token or null
      */
     private Token tryTokenizeReservedWordOrIdentifier() {
@@ -160,29 +159,6 @@ public class Tokenizer {
     }
 
     /**
-     * Tries to tokenize a char sequence as an identifier
-     * @return IdentifierToken or null
-     */
-    @Deprecated
-    private IdentifierToken tryTokenizeVariable() {
-        String letters = "";
-
-        if (validPosition() && Character.isLetter(input[inputPos])) {
-            letters += input[inputPos];
-            inputPos++;
-
-            while (validPosition() && Character.isLetterOrDigit(input[inputPos])) {
-                letters += input[inputPos];
-                inputPos++;
-            }
-            return new IdentifierToken(letters);
-        } else {
-            return null;
-        }
-
-    }
-
-    /**
      * Tries to tokenize a char sequence as an integer
      * @return IntegerToken or null
      */
@@ -190,7 +166,7 @@ public class Tokenizer {
         String digits = "";
 
         //special case for negative numbers
-        if (validPosition() && input[inputPos] == '-') {// Test whether or not this includes the subtraction operator
+        if (validPosition() && input[inputPos] == '-') {
             digits += input[inputPos];
             inputPos++;
         }
@@ -270,7 +246,8 @@ public class Tokenizer {
 
     //main for testing purposes
     public static void main(String[] args) {
-        String testString = " ";
+        String testString = "for (int x = 0; i < 10; i + 1) {" +
+                "return petertotherkul;";
         Tokenizer testTokenizer = new Tokenizer(testString.toCharArray());
         try {
             List<Token> result = testTokenizer.tokenize();
