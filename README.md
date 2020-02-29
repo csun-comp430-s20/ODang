@@ -12,4 +12,3 @@ Computation Abstraction Non-Trivial Feature: Object-oriented classes
 Non-Trivial Feature #2: Subtyping  
 Non-Trivial Feature #3: Operator Overloading  
 Work Planned for Custom Component: Subtyping will be left for the end since we need object-oriented classes implemented first
-  
