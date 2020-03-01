@@ -75,12 +75,12 @@ public class Tokenizer {
                         inputPos++;
                         return new OperatorToken("==");
                     }
-                //special case for possible negative numbers
+                    //special case for possible negative numbers
                 case "-":
                     if (validPosition() && Character.isDigit(input[inputPos])) {
                         inputPos--;
                         return tryTokenizeInt();
-                }
+                    }
                 default:
                     return new OperatorToken(symbols);
             }
@@ -195,23 +195,23 @@ public class Tokenizer {
      */
     private Token createToken() throws TokenizerException {
         Token token = tryTokenizeNonLetterOrDigitSymbol();
-        while(true) {
-            if (token == null) {
-                token = tryTokenizeReservedWordOrIdentifier();
-            }
-            if (token == null) {
-                token = tryTokenizeString();
-            }
-            if (token == null) {
-                token = tryTokenizeInt();
-            }
-            if (token == null) {
-                throw new TokenizerException("Not a valid token");
-            }
-            return token;
-        }
-    }
 
+        if (token == null) {
+            token = tryTokenizeReservedWordOrIdentifier();
+        }
+        if (token == null) {
+            token = tryTokenizeString();
+        }
+        if (token == null) {
+            token = tryTokenizeInt();
+        }
+        if (token == null) {
+            throw new TokenizerException("Not a valid token");
+        }
+        return token;
+
+    }
+    
     /**
      * skips whitespace in the input
      */
