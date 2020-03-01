@@ -209,9 +209,8 @@ public class Tokenizer {
             throw new TokenizerException("Not a valid token");
         }
         return token;
-
     }
-    
+
     /**
      * skips whitespace in the input
      */
