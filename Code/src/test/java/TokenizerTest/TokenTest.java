@@ -528,6 +528,18 @@ public class TokenTest {
         checkTokenizes("== ", new OperatorToken("=="));
     }
     @Test
+    public void checkCorrectTokenizedNotEquals() throws TokenizerException {
+        checkTokenizes("!=", new OperatorToken("!="));
+    }
+    @Test
+    public void checkCorrectTokenizedNotEqualsWithWhitespaceBefore() throws TokenizerException {
+        checkTokenizes(" !=", new OperatorToken("!="));
+    }
+    @Test
+    public void checkCorrectTokenizedNotqualsWithWhitespaceAfter() throws TokenizerException {
+        checkTokenizes("!= ", new OperatorToken("!="));
+    }
+    @Test
     public void checkCorrectTokenizedDot() throws TokenizerException {
         checkTokenizes(".", new DotToken());
     }

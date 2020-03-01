@@ -55,6 +55,11 @@ public class Tokenizer {
                         inputPos++;
                         return new OperatorToken("||");
                     } else return null;
+                case "!":
+                    if (validPosition() && input[inputPos] == '=') {
+                        inputPos++;
+                        return new OperatorToken("!=");
+                    }
                 case "<":
                     if (validPosition() && input[inputPos] == '=') {
                         inputPos++;
