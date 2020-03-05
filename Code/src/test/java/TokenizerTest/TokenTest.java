@@ -540,6 +540,30 @@ public class TokenTest {
         checkTokenizes("!= ", new OperatorToken("!="));
     }
     @Test
+    public void checkCorrectTokenizedIncrement() throws TokenizerException {
+        checkTokenizes("++", new OperatorToken("++"));
+    }
+    @Test
+    public void checkCorrectTokenizedIncrementWhitespaceBefore() throws TokenizerException {
+        checkTokenizes(" ++", new OperatorToken("++"));
+    }
+    @Test
+    public void checkCorrectTokenizedIncrementWhitespaceAfter() throws TokenizerException {
+        checkTokenizes("++ ", new OperatorToken("++"));
+    }
+    @Test
+    public void checkCorrectTokenizedDecrement() throws TokenizerException {
+        checkTokenizes("--", new OperatorToken("--"));
+    }
+    @Test
+    public void checkCorrectTokenizedDecrementWhitespaceBefore() throws TokenizerException {
+        checkTokenizes(" --", new OperatorToken("--"));
+    }
+    @Test
+    public void checkCorrectTokenizedDecrementWhitespaceAfter() throws TokenizerException {
+        checkTokenizes("-- ", new OperatorToken("--"));
+    }
+    @Test
     public void checkCorrectTokenizedDot() throws TokenizerException {
         checkTokenizes(".", new DotToken());
     }
