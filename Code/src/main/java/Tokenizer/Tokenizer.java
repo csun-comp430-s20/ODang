@@ -27,7 +27,7 @@ public class Tokenizer {
 
         //regex containing the valid operators in the language
         if(validPosition() &&
-                String.valueOf(input[inputPos]).matches("[;.(){}+=\\-*/!%><&|]")) {
+                String.valueOf(input[inputPos]).matches("[;.(){}+=\\-*/!%><]")) {
 
             symbols += input[inputPos];
             inputPos++;
@@ -45,30 +45,10 @@ public class Tokenizer {
                     return new SemiColonToken();
                 case ".":
                     return new DotToken();
-                case "&":
-                    if (validPosition() && input[inputPos] == '&') {
-                        inputPos++;
-                        return new OperatorToken("&&");
-                    } else return null;
-                case "|":
-                    if (validPosition() && input[inputPos] == '|') {
-                        inputPos++;
-                        return new OperatorToken("||");
-                    } else return null;
                 case "!":
                     if (validPosition() && input[inputPos] == '=') {
                         inputPos++;
                         return new OperatorToken("!=");
-                    }
-                case "<":
-                    if (validPosition() && input[inputPos] == '=') {
-                        inputPos++;
-                        return new OperatorToken("<=");
-                    }
-                case ">":
-                    if (validPosition() && input[inputPos] == '=') {
-                        inputPos++;
-                        return new OperatorToken(">=");
                     }
                 case "=":
                     if (validPosition() && input[inputPos] == '=') {
