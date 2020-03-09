@@ -80,6 +80,14 @@ public class Tokenizer {
                     if (validPosition() && Character.isDigit(input[inputPos])) {
                         inputPos--;
                         return tryTokenizeInt();
+                    } else if (validPosition() && input[inputPos] == '-') {
+                        inputPos++;
+                        return new OperatorToken("--");
+                    }
+                case "+":
+                    if (validPosition() && input[inputPos] == '+') {
+                        inputPos++;
+                        return new OperatorToken("++");
                     }
                 default:
                     return new OperatorToken(symbols);
@@ -154,6 +162,10 @@ public class Tokenizer {
                     return new PrintlnToken();
                 case "void":
                     return new VoidToken();
+                case "true":
+                    return new BooleanToken(true);
+                case "false":
+                    return new BooleanToken(false);
                 default:
                     return new IdentifierToken(letters);
             }

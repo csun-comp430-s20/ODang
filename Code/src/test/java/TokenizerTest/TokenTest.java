@@ -287,6 +287,24 @@ public class TokenTest {
     public void checkCorrectTokenizedBooleanTypeWithWhitespaceAfter() throws TokenizerException {
         checkTokenizes("boolean ", new BooleanTypeToken());
     }
+    @Test public void checkCorrectTokenizedTrue() throws TokenizerException {
+        checkTokenizes("true", new BooleanToken(true));
+    }
+    @Test public void checkCorrectTokenizedTrueWhitespaceBefore() throws TokenizerException {
+        checkTokenizes(" true", new BooleanToken(true));
+    }
+    @Test public void checkCorrectTokenizedTrueWhitespaceAfter() throws TokenizerException {
+        checkTokenizes("true ", new BooleanToken(true));
+    }
+    @Test public void checkCorrectTokenizedFalse() throws TokenizerException {
+        checkTokenizes("false", new BooleanToken(false));
+    }
+    @Test public void checkCorrectTokenizedFalseWhitespaceBefore() throws TokenizerException {
+        checkTokenizes(" false", new BooleanToken(false));
+    }
+    @Test public void checkCorrectTokenizedFalseWhitespaceAfter() throws TokenizerException {
+        checkTokenizes("false ", new BooleanToken(false));
+    }
     @Test
     public void checkCorrectTokenizedIdentifier() throws TokenizerException {
         checkTokenizes("ifelsewhile", new IdentifierToken("ifelsewhile"));
@@ -538,6 +556,30 @@ public class TokenTest {
     @Test
     public void checkCorrectTokenizedNotqualsWithWhitespaceAfter() throws TokenizerException {
         checkTokenizes("!= ", new OperatorToken("!="));
+    }
+    @Test
+    public void checkCorrectTokenizedIncrement() throws TokenizerException {
+        checkTokenizes("++", new OperatorToken("++"));
+    }
+    @Test
+    public void checkCorrectTokenizedIncrementWhitespaceBefore() throws TokenizerException {
+        checkTokenizes(" ++", new OperatorToken("++"));
+    }
+    @Test
+    public void checkCorrectTokenizedIncrementWhitespaceAfter() throws TokenizerException {
+        checkTokenizes("++ ", new OperatorToken("++"));
+    }
+    @Test
+    public void checkCorrectTokenizedDecrement() throws TokenizerException {
+        checkTokenizes("--", new OperatorToken("--"));
+    }
+    @Test
+    public void checkCorrectTokenizedDecrementWhitespaceBefore() throws TokenizerException {
+        checkTokenizes(" --", new OperatorToken("--"));
+    }
+    @Test
+    public void checkCorrectTokenizedDecrementWhitespaceAfter() throws TokenizerException {
+        checkTokenizes("-- ", new OperatorToken("--"));
     }
     @Test
     public void checkCorrectTokenizedDot() throws TokenizerException {
