@@ -1,13 +1,11 @@
 package Parser.Nodes;
 
-import Parser.Nodes.Exp;
-
-public class IfExp implements Exp {
+public class IfStmt implements Stmt {
     public final Exp guard;
-    public final Exp trueBranch;
-    public final Exp falseBranch;
+    public final Stmt trueBranch;
+    public final Stmt falseBranch;
 
-    public IfExp(final Exp guard, final Exp trueBranch, final Exp falseBranch) {
+    public IfStmt(final Exp guard, final Stmt trueBranch, final Stmt falseBranch) {
         this.guard = guard;
         this.trueBranch = trueBranch;
         this.falseBranch = falseBranch;

@@ -3,6 +3,9 @@ package Parser;
 import Parser.Nodes.*;
 import Tokenizer.Tokens.*;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class Parser {
 
     private final Token[] tokens;
@@ -18,54 +21,68 @@ public class Parser {
             this.nextPos = nextPos;
         }
     }
-    private void assertTokenIs(final int position, final Token token) throws ParseException {
-        if (!tokens[position].equals(token)) {
-            throw new ParseException("Expected " + token.toString() +
+    private void checkTokenIs(final int position, final Token... possibleTokens) throws ParseException {
+        boolean member = false;
+        for (Token token : tokens) {
+            if (tokens[position].equals(token))
+                member = true;
+        }
+        if (!member) {
+            throw new ParseException("Expected " + possibleTokens.toString() +
                     "Received" + tokens[position].toString());
         }
     }
-    //if you dont know what the expression is at the time of parsing
-    public ParseResult<E> parseE(final int startPos) throws ParseException {
-        try {
-            final ParseResult<E> alpha = parseAlpha(startPos);
-        }
-        catch(ParseException e) {
-            return parseBeta(startPos);
-        }
-    }
-
+    /**
+     * tries to parse a primary
+     * @param startPos where in the list of tokens we are
+     * @return ParseResult<Exp>, either an IntegerExp, IdentifierExp or StringExp
+     * @throws ParseException
+     */
     public ParseResult<Exp> parsePrimary(final int startPos) throws ParseException {
         if (tokens[startPos] instanceof IdentifierToken) {
-            final IdentifierToken asVar = (IdentifierToken)tokens[startPos];
-            return new ParseResult<Exp>(new IdentifierExp(asVar.name), startPos + 1);
+            final IdentifierToken asID = (IdentifierToken)tokens[startPos];
+            return new ParseResult<Exp>(new IdentifierExp(asID.name), startPos + 1);
         } else if (tokens[startPos] instanceof IntegerToken) {
             final IntegerToken asInt = (IntegerToken)tokens[startPos];
             return new ParseResult<Exp>(new IntegerExp(asInt.value), startPos + 1);
         } else {
-            assertTokenIs(startPos, new LeftParenToken());
-            final ParseResult<Exp> inner = parseExp(startPos + 1);
-            assertTokenIs(inner.nextPos, new RightParenToken());
-            return new ParseResult<Exp>(inner.result, inner.nextPos + 1);
+            final StringToken asString = (StringToken)tokens[startPos];
+            return new ParseResult<Exp>(new StringExp(asString.name), startPos + 1);
         }
     }
+    public ParseResult<List<Exp>> parseAdditiveHelper(final int startPos) {
+        final List<Exp> resultList = new ArrayList<Exp>();
+        int curPos = startPos;
+
+        while (curPos < tokens.length) {
+            try{
+                checkTokenIs(curPos, new OperatorToken("+"), new OperatorToken("-"));
+                final ParseResult<Exp> curPrimary = parsePrimary(curPos + 1);
+                curPos = curPrimary.nextPos;
+                resultList.add(curPrimary.result);
+
+            } catch(ParseException e) {
+                break;
+            }
+        }
+        return new ParseResult<List<Exp>>(resultList, curPos);
+    }
+
     public ParseResult<Exp> parseAdditiveExp(final int startPos) throws ParseException {
+        final ParseResult<Exp> start = parsePrimary(startPos);
+        final ParseResult<List<Exp>> rest = parseAdditiveHelper(startPos + 1);
+        Exp resultExp = start.result;
+
+        for (final Exp otherExp : rest.result) {
+            resultExp = new PlusExp(resultExp, otherExp);
+        }
+
+        return new ParseResult<Exp>(resultExp, rest.nextPos);
 
     }
     public ParseResult<Exp> parseExp(final int startPos) throws ParseException {
-        if(tokens[startPos] instanceof IfToken) {
-            assertTokenIs(startPos + 1, new LeftParenToken());
-            final ParseResult<Exp> guard = parseExp(startPos + 2);
-            assertTokenIs(guard.nextPos, new RightParenToken());
-            final ParseResult<Exp> ifTrue = parseExp(guard.nextPos + 1);
-            assertTokenIs(ifTrue.nextPos, new ElseToken());
-            final ParseResult<Exp> ifFalse = parseExp(ifTrue.nextPos + 1);
-            return new ParseResult<Exp>(new IfExp(guard.result,
-                    ifTrue.result,
-                    ifFalse.result),
-                    ifFalse.nextPos);
-            //not an if token
-        } else {
-            return parseAdditiveExp(startPos);
+        if (tokens[startPos] instanceof IntegerToken) {
+
         }
     }
     public ParseResult<Stmt> parseStmt(final int startPos) throws ParseException {
@@ -74,7 +91,29 @@ public class Parser {
     public ParseResult<ClassDefinition> parseClassDefinition (final int startPos) throws ParseException {
 
     }
-    public ParseResult<Program> parseProgram (final int startPos) throws ParseException {
+    public ParseResult<Program> parseProgram(final int startPos) throws ParseException {
+
+        int curPos = 0;
+        Program program = new Program();
+
+        while (curPos < tokens.length) {
+
+            program.AST.add(new ClassDefinition(curPos));
+
+        }
+    }
+
+    /**
+     *
+     * @return AST
+     * @throws ParseException
+     */
+    public Program parseToplevel() throws ParseException {
+        ParseResult<Program> result = parseProgram(0);
+
+        if (result.nextPos == tokens.length)
+            return result.result;
+        else throw new ParseException("Tokens left to parse");
 
     }
 }
