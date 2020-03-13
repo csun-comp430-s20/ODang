@@ -14,4 +14,7 @@ public class IntegerToken implements Token {
         } else
             return false;
     }
+    public String toString() {
+        return String.format(IntegerToken.class.getName() + "<" + value + ">");
+    }
 }

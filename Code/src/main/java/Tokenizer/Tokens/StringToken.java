@@ -12,4 +12,7 @@ public class StringToken implements Token {
         } else
             return false;
     }
+    public String toString() {
+        return String.format(this.getClass().getName() + "<" + name + ">");
+    }
 }

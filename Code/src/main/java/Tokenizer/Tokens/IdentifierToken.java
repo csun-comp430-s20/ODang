@@ -14,4 +14,7 @@ public class IdentifierToken implements Token {
         } else
             return false;
     }
+    public String toString() {
+        return String.format(IdentifierToken.class.getName() + "<" + name + ">");
+    }
 }

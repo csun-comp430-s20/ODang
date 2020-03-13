@@ -14,4 +14,7 @@ public class OperatorToken implements Token {
         } else
             return false;
     }
+    public String toString() {
+        return String.format(OperatorToken.class.getName() + "<" + name + ">");
+    }
 }
