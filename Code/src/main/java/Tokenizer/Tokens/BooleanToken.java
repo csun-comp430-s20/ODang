@@ -14,6 +14,6 @@ public class BooleanToken implements Token {
             return false;
     }
     public String toString() {
-        return String.format(BooleanToken.class.getName() + "<" + value + ">");
+        return String.format(this.getClass().getName() + "<" + value + ">");
     }
 }
