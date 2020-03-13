@@ -9,4 +9,9 @@ public class StringLiteral implements Literal {
     public boolean equals(final StringLiteral other) {
         return this.name.equals(other.name);
     }
+    @Override
+    public boolean equals(final Object other) {
+        return (other instanceof StringLiteral &&
+                name.equals(((StringLiteral)other).name));
+    }
 }

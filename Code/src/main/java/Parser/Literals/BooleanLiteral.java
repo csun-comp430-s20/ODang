@@ -6,7 +6,10 @@ public class BooleanLiteral implements Literal {
     public BooleanLiteral(final boolean value) {
         this.value = value;
     }
-    public boolean equals(final BooleanLiteral other) {
-        return this.value == other.value;
+
+    @Override
+    public boolean equals(final Object other) {
+        return (other instanceof BooleanLiteral &&
+                value == ((BooleanLiteral)other).value);
     }
 }

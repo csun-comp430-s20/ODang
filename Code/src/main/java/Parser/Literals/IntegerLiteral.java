@@ -6,7 +6,9 @@ public class IntegerLiteral implements Literal {
     public IntegerLiteral(final int value) {
         this.value = value;
     }
-    public boolean equals(final IntegerLiteral other) {
-        return this.value == other.value;
+    @Override
+    public boolean equals(final Object other) {
+        return (other instanceof IntegerLiteral &&
+                value == ((IntegerLiteral)other).value);
     }
 }
