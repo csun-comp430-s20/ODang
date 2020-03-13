@@ -11,4 +11,7 @@ public class IntegerLiteral implements Literal {
         return (other instanceof IntegerLiteral &&
                 value == ((IntegerLiteral)other).value);
     }
+    public String toString() {
+        return String.format(this.getClass().getName() + "<" + value + ">");
+    }
 }

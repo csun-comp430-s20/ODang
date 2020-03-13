@@ -14,4 +14,7 @@ public class StringLiteral implements Literal {
         return (other instanceof StringLiteral &&
                 name.equals(((StringLiteral)other).name));
     }
+    public String toString() {
+        return String.format(this.getClass().getName() + "<" + name + ">");
+    }
 }
