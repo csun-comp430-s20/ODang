@@ -1,6 +1,5 @@
 package Parser;
 
-import Parser.Expressions.Exp;
 import Parser.Literals.*;
 import Tokenizer.Tokens.*;
 
@@ -20,6 +19,13 @@ public class Parser {
             this.nextPos = nextPos;
         }
     }
+
+    /**
+     * checks if a token is of a specific subtype
+     * @param position position in the token array
+     * @param token the token you want to check
+     * @throws ParseException if the tokens don't match
+     */
     private void checkTokenIs(final int position, final Token token) throws ParseException {
         final Token currentToken = readToken(position);
         if (!currentToken.equals(token)) {
@@ -27,6 +33,13 @@ public class Parser {
                     "Received" + currentToken.toString());
         }
     }
+
+    /**
+     * attempts to read in a token
+     * @param position position in the token array
+     * @return a Token
+     * @throws ParseException
+     */
     private Token readToken(final int position) throws ParseException {
         if (position < tokens.length) {
             return tokens[position];
@@ -34,6 +47,13 @@ public class Parser {
             throw new ParseException("Position out of bounds: " + position);
         }
     }
+
+    /**
+     * attempts to parse a literal
+     * @param startPos position in the token array
+     * @return ParseResult<Literal>
+     * @throws ParseException
+     */
     public ParseResult<Literal> parseLiteral (final int startPos) throws ParseException {
         final Token token = readToken(startPos);
         if (token instanceof IdentifierToken) {
@@ -50,6 +70,16 @@ public class Parser {
             return new ParseResult<Literal>(new StringLiteral(asString.name), startPos + 1);
         }
 
+    }
+
+    //for testing, not the final version
+    public Literal parseTest() throws ParseException {
+        final ParseResult<Literal> toplevel = parseLiteral(0);
+        if (toplevel.nextPos == tokens.length) {
+            return toplevel.result;
+        } else {
+            throw new ParseException("tokens remaining at end");
+        }
     }
 
 }

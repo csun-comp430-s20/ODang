@@ -8,10 +8,9 @@ import org.junit.jupiter.api.Assertions;
 
 public class ParserTest {
 
-    public static void assertParsesLiteral(final Literal expected,
-                                    final Token... tokens)
+    public static void assertParsesLiteral(final Literal expected, final Token... tokens)
             throws ParseException {
-        Assertions.assertEquals(expected, (new Parser(tokens)).parseLiteral(0));
+        Assertions.assertEquals(expected, (new Parser(tokens)).parseTest());
     }
 
     @Test
