@@ -63,11 +63,17 @@ public class Tokenizer {
                     } else if (validPosition() && input[inputPos] == '-') {
                         inputPos++;
                         return new OperatorToken("--");
+                    } else if (validPosition() && input[inputPos] == '=') {
+                        inputPos++;
+                        return new OperatorToken("-=");
                     }
                 case "+":
                     if (validPosition() && input[inputPos] == '+') {
                         inputPos++;
                         return new OperatorToken("++");
+                    } else if (validPosition() && input[inputPos] == '=') {
+                        inputPos++;
+                        return new OperatorToken("+=");
                     }
                 default:
                     return new OperatorToken(symbols);

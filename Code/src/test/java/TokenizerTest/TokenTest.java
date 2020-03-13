@@ -450,6 +450,30 @@ public class TokenTest {
         checkTokenizes("!= ", new OperatorToken("!="));
     }
     @Test
+    public void checkCorrectTokenizedPlusEquals() throws TokenizerException  {
+        checkTokenizes("+=", new OperatorToken("+="));
+    }
+    @Test
+    public void checkCorrectTokenizedPlusEqualsWhitespaceBefore() throws TokenizerException  {
+        checkTokenizes(" +=", new OperatorToken("+="));
+    }
+    @Test
+    public void checkCorrectTokenizedPlusEqualsWhitespaceAfter() throws TokenizerException  {
+        checkTokenizes("+= ", new OperatorToken("+="));
+    }
+    @Test
+    public void checkCorrectTokenizedMinusEquals() throws TokenizerException  {
+        checkTokenizes("-=", new OperatorToken("-="));
+    }
+    @Test
+    public void checkCorrectTokenizedMinusEqualsWhitespaceBefore() throws TokenizerException  {
+        checkTokenizes(" -=", new OperatorToken("-="));
+    }
+    @Test
+    public void checkCorrectTokenizedMinusEqualsWhitespaceAfter() throws TokenizerException  {
+        checkTokenizes("-= ", new OperatorToken("-="));
+    }
+    @Test
     public void checkCorrectTokenizedIncrement() throws TokenizerException {
         checkTokenizes("++", new OperatorToken("++"));
     }
