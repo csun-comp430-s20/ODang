@@ -1,8 +1,8 @@
 package Parser.Literals;
 
-import Tokenizer.Tokens.BooleanToken;
+import Parser.Expressions.Exp;
 
-public class BooleanLiteral implements Literal {
+public class BooleanLiteral implements Exp {
     public final boolean value;
 
     public BooleanLiteral(final boolean value) {

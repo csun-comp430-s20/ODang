@@ -1,6 +1,8 @@
 package Parser.Literals;
 
-public class IdentifierLiteral implements Literal {
+import Parser.Expressions.Exp;
+
+public class IdentifierLiteral implements Exp {
     public final String name;
 
     public IdentifierLiteral(final String name) {

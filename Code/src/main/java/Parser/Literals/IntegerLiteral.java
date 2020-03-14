@@ -1,6 +1,8 @@
 package Parser.Literals;
 
-public class IntegerLiteral implements Literal {
+import Parser.Expressions.Exp;
+
+public class IntegerLiteral implements Exp {
     public final int value;
 
     public IntegerLiteral(final int value) {
