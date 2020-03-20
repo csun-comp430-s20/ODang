@@ -14,6 +14,6 @@ public class StringLiteral implements Exp {
                 name.equals(((StringLiteral)other).name));
     }
     public String toString() {
-        return String.format(this.getClass().getName() + "<" + name + ">");
+        return String.format(this.getClass().getSimpleName() + "<" + name + ">");
     }
 }

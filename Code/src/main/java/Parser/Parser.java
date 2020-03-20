@@ -106,9 +106,9 @@ public class Parser {
         } else if (currentToken instanceof NewToken) {
             final ParseResult<Exp> classType = parseLiteral(startPos + 1);
             checkTokenIs(classType.nextPos, new LeftParenToken());
-            final ParseResult<Exp> argumentList = parseArgumentList(classType.nextPos + 1);
+            final ParseResult<ArgumentList> argumentList = parseArgumentList(classType.nextPos + 1);
             checkTokenIs(argumentList.nextPos, new RightParenToken());
-            return new ParseResult<Exp>(argumentList.result, argumentList.nextPos);
+            return new ParseResult<Exp>(new ClassInstance(classType.result, argumentList.result), argumentList.nextPos);
         }
         //Literal
         else {
@@ -123,11 +123,15 @@ public class Parser {
      * @param startPos
      * @return A ParseResult
      */
-    public ParseResult<Exp> parseArgumentList (final int startPos) {
+    public ParseResult<ArgumentList> parseArgumentList (final int startPos) {
         final ArgumentList argList = new ArgumentList();
         int curPos = startPos;
         while (curPos < tokens.length) {
             try {
+                //case of separation between arguments
+                if (readToken(curPos) instanceof CommaToken)
+                    curPos++;
+
                 final ParseResult<Exp> curArg = parseExp(curPos);
                 curPos = curArg.nextPos;
                 argList.expList.add(curArg.result);
@@ -135,9 +139,8 @@ public class Parser {
                 break;
             }
         }
-        return new ParseResult<Exp>(argList, curPos);
+        return new ParseResult<ArgumentList>(argList, curPos);
     }
-
     /**
      * attempts to parse a literal
      * @param startPos position in the token array

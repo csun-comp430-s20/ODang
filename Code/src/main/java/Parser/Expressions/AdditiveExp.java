@@ -22,7 +22,7 @@ public class AdditiveExp implements Exp {
         else return false;
     }
     public String toString() {
-        return String.format(this.getClass().getName() + "< " + left + operator + right + " >");
+        return String.format(this.getClass().getSimpleName() + "< " + left + operator + right + " >");
     }
 
 }

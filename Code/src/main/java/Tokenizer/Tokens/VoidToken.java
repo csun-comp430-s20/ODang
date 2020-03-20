@@ -5,6 +5,6 @@ public class VoidToken implements Token {
         return (other instanceof VoidToken);
     }
     public String toString() {
-        return String.format(this.getClass().getName());
+        return String.format(this.getClass().getSimpleName());
     }
 }

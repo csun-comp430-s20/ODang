@@ -5,6 +5,6 @@ public class CharTypeToken implements Token {
         return (other instanceof CharTypeToken);
     }
     public String toString() {
-        return String.format(this.getClass().getName());
+        return String.format(this.getClass().getSimpleName());
     }
 }

@@ -5,6 +5,6 @@ public class ThisToken implements Token {
         return (other instanceof ThisToken);
     }
     public String toString() {
-        return String.format(this.getClass().getName());
+        return String.format(this.getClass().getSimpleName());
     }
 }

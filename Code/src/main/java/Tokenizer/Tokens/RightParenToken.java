@@ -5,6 +5,6 @@ public class RightParenToken implements Token {
         return (other instanceof RightParenToken);
     }
     public String toString() {
-        return String.format(this.getClass().getName());
+        return String.format(this.getClass().getSimpleName());
     }
 }

@@ -5,6 +5,6 @@ public class IfToken implements Token {
         return (other instanceof IfToken);
     }
     public String toString() {
-        return String.format(this.getClass().getName());
+        return String.format(this.getClass().getSimpleName());
     }
 }

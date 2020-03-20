@@ -5,6 +5,6 @@ public class DotToken implements Token {
         return (other instanceof DotToken);
     }
     public String toString() {
-        return String.format(this.getClass().getName());
+        return String.format(this.getClass().getSimpleName());
     }
 }

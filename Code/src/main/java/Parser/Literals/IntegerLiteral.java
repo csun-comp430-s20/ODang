@@ -14,6 +14,6 @@ public class IntegerLiteral implements Exp {
                 value == ((IntegerLiteral)other).value);
     }
     public String toString() {
-        return String.format(this.getClass().getName() + "<" + value + ">");
+        return String.format(this.getClass().getSimpleName() + "<" + value + ">");
     }
 }

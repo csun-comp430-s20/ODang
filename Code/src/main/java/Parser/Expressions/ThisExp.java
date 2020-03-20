@@ -6,6 +6,6 @@ public class ThisExp implements Exp {
         return other instanceof ThisExp;
     }
     public String toString() {
-        return String.format(this.getClass().getName());
+        return String.format(this.getClass().getSimpleName());
     }
 }

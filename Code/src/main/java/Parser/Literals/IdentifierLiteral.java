@@ -14,6 +14,6 @@ public class IdentifierLiteral implements Exp {
                 name.equals(((IdentifierLiteral)other).name));
     }
     public String toString() {
-        return String.format(this.getClass().getName() + "<" + name + ">");
+        return String.format(this.getClass().getSimpleName() + "<" + name + ">");
     }
 }

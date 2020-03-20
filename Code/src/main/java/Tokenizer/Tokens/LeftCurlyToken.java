@@ -5,6 +5,6 @@ public class LeftCurlyToken implements Token {
         return (other instanceof LeftCurlyToken);
     }
     public String toString() {
-        return String.format(this.getClass().getName());
+        return String.format(this.getClass().getSimpleName());
     }
 }

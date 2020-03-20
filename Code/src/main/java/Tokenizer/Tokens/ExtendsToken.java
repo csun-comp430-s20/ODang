@@ -5,6 +5,6 @@ public class ExtendsToken implements Token {
         return (other instanceof ExtendsToken);
     }
     public String toString() {
-        return String.format(this.getClass().getName());
+        return String.format(this.getClass().getSimpleName());
     }
 }

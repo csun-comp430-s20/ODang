@@ -21,6 +21,6 @@ public class Assignment implements Exp  {
         else return false;
     }
     public String toString() {
-        return String.format(this.getClass().getName() + "< " + left + assignmentOp + assignmentExp + " >");
+        return String.format(this.getClass().getSimpleName() + "< " + left + assignmentOp + assignmentExp + " >");
     }
 }

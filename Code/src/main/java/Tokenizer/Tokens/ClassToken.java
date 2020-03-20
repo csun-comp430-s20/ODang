@@ -5,6 +5,6 @@ public class ClassToken implements Token {
         return (other instanceof ClassToken);
     }
     public String toString() {
-        return String.format(this.getClass().getName());
+        return String.format(this.getClass().getSimpleName());
     }
 }

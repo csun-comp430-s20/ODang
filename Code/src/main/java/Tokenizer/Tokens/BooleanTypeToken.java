@@ -5,6 +5,6 @@ public class BooleanTypeToken implements Token {
         return (other instanceof BooleanTypeToken);
     }
     public String toString() {
-        return String.format(this.getClass().getName());
+        return String.format(this.getClass().getSimpleName());
     }
 }

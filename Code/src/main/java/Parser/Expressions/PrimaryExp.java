@@ -7,6 +7,7 @@ public class PrimaryExp implements Exp {
         this.exp = exp;
     }
 
+    @Override
     public boolean equals(final Object other) {
         if (other instanceof PrimaryExp) {
             final PrimaryExp otherExp = (PrimaryExp) other;
@@ -16,7 +17,7 @@ public class PrimaryExp implements Exp {
         else return false;
     }
     public String toString() {
-        return String.format(this.getClass().getName() + "< " + exp + " >");
+        return String.format(this.getClass().getSimpleName() + "< " + exp + " >");
     }
 
 }

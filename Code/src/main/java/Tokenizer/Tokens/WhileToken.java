@@ -5,6 +5,6 @@ public class WhileToken implements Token {
         return (other instanceof WhileToken);
     }
     public String toString() {
-        return String.format(this.getClass().getName());
+        return String.format(this.getClass().getSimpleName());
     }
 }

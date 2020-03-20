@@ -5,6 +5,6 @@ public class IntTypeToken implements Token {
         return (other instanceof IntTypeToken);
     }
     public String toString() {
-        return String.format(this.getClass().getName());
+        return String.format(this.getClass().getSimpleName());
     }
 }

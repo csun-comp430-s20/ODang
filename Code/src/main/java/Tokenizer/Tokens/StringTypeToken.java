@@ -5,6 +5,6 @@ public class StringTypeToken implements Token {
         return (other instanceof StringTypeToken);
     }
     public String toString() {
-        return String.format(this.getClass().getName());
+        return String.format(this.getClass().getSimpleName());
     }
 }

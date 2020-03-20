@@ -9,8 +9,10 @@ public class ArgumentList implements Exp {
     public ArgumentList(final Exp... expList) {
         this.expList = new ArrayList<Exp>();
 
-        for (Exp e : expList) {
-            this.expList.add(e);
+        if (expList != null) {
+            for (Exp e : expList) {
+                this.expList.add(e);
+            }
         }
     }
     public boolean equals(final Object other) {
@@ -21,6 +23,6 @@ public class ArgumentList implements Exp {
         else return false;
     }
     public String toString() {
-        return String.format(this.getClass().getName() + "< " + expList +  " >");
+        return String.format(this.getClass().getSimpleName() + "< " + expList +  " >");
     }
 }

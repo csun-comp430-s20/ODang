@@ -3,9 +3,13 @@ package ParserTest;
 import Parser.*;
 import Parser.Literals.*;
 import Parser.Expressions.*;
+import Tokenizer.*;
 import Tokenizer.Tokens.*;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Assertions;
+
+import java.util.List;
+import java.util.ArrayList;
 
 public class ParserTest {
 
@@ -32,6 +36,15 @@ public class ParserTest {
     @Test
     public void checkParsesPrimaryThis() throws ParseException {
         assertParsesExp(new ThisExp(), new ThisToken());
+    }
+    @Test
+    public void checkParsesClassInstanceCreation() throws ParseException, TokenizerException {
+        final Tokenizer tokenizer = new Tokenizer(" new Foo(2, true)");
+        final List<Token> testTokens = tokenizer.tokenize();
+        System.out.println(testTokens);
+        assertParsesExp(new ClassInstance(new IdentifierLiteral("Foo"),
+                                          new ArgumentList(new IntegerLiteral(2),
+                                                           new BooleanLiteral(true))), (Token) testTokens);
     }
     @Test
     public void checkThrowsParseExceptionInvalidInput() {

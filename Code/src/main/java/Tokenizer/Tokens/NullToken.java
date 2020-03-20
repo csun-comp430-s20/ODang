@@ -1,8 +1,8 @@
 package Tokenizer.Tokens;
 
-public class SemiColonToken implements Token {
+public class NullToken implements Token {
     public boolean equals(final Object other) {
-        return (other instanceof SemiColonToken);
+        return (other instanceof NullToken);
     }
     public String toString() {
         return String.format(this.getClass().getSimpleName());

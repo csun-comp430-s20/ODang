@@ -287,6 +287,18 @@ public class TokenTest {
     public void checkCorrectTokenizedBooleanTypeWithWhitespaceAfter() throws TokenizerException {
         checkTokenizes("boolean ", new BooleanTypeToken());
     }
+    @Test
+    public void checkCorrectTokenizedNull() throws TokenizerException {
+        checkTokenizes("null", new NullToken());
+    }
+    @Test
+    public void checkCorrectTokenizedNullWhitespaceBefore() throws TokenizerException {
+        checkTokenizes(" null", new NullToken());
+    }
+    @Test
+    public void checkCorrectTokenizedNullWhitespaceAfter() throws TokenizerException {
+        checkTokenizes("null ", new NullToken());
+    }
     @Test public void checkCorrectTokenizedTrue() throws TokenizerException {
         checkTokenizes("true", new BooleanToken(true));
     }
@@ -508,6 +520,17 @@ public class TokenTest {
     @Test
     public void checkCorrectTokenizedDotWithWhitespaceAfter() throws TokenizerException {
         checkTokenizes(". ", new DotToken());
+    }
+    @Test
+    public void checkCorrectTokenizedComma() throws TokenizerException {
+        checkTokenizes(",", new CommaToken());
+    }
+    @Test
+    public void checkCorrectTokenizedCommaWhitespaceBefore() throws TokenizerException {
+        checkTokenizes(" ,", new CommaToken());
+    }
+    public void checkCorrectTokenizedCommaWhitespaceAfter() throws TokenizerException {
+        checkTokenizes(", ", new CommaToken());
     }
     @Test
     public void checkCorrectTokenizedSemiColon() throws TokenizerException {
