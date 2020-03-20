@@ -9,9 +9,9 @@ import java.util.ArrayList;
 
 public class Parser {
 
-    private final Token[] tokens;
+    private final List<Token> tokens;
 
-    public Parser(final Token[] tokens) {
+    public Parser(final List<Token> tokens) {
         this.tokens = tokens;
     }
 
@@ -50,8 +50,8 @@ public class Parser {
      * @throws ParseException
      */
     private Token readToken(final int position) throws ParseException {
-        if (position < tokens.length) {
-            return tokens[position];
+        if (position < tokens.size()) {
+            return tokens.get(position);
         } else {
             throw new ParseException("Position out of bounds: " + position);
         }
@@ -71,7 +71,7 @@ public class Parser {
         final ParseResult<List<Exp>> rest = parseAdditiveExpHelper(starting.nextPos);
         Exp resultExp = starting.result;
 
-        if (starting.nextPos < tokens.length) {
+        if (starting.nextPos < tokens.size()) {
 
         }
         return null;
@@ -81,7 +81,7 @@ public class Parser {
         final List<Exp> resultList = new ArrayList<Exp>();
         int curPos = startPos;
 
-        while (curPos < tokens.length) {
+        while (curPos < tokens.size()) {
             try {
                 checkTokenIs(curPos, new OperatorToken("+"), new OperatorToken("-"));
                 final ParseResult<Exp> curLiteral = parseLiteral(curPos + 1);
@@ -126,7 +126,7 @@ public class Parser {
     public ParseResult<ArgumentList> parseArgumentList (final int startPos) {
         final ArgumentList argList = new ArgumentList();
         int curPos = startPos;
-        while (curPos < tokens.length) {
+        while (curPos < tokens.size()) {
             try {
                 //case of separation between arguments
                 if (readToken(curPos) instanceof CommaToken)
@@ -167,7 +167,7 @@ public class Parser {
     //for testing, not the final version
     public Exp parseTest() throws ParseException {
         final ParseResult<Exp> toplevel = parsePrimary(0);
-        if (toplevel.nextPos == tokens.length) {
+        if (toplevel.nextPos == tokens.size()) {
             return toplevel.result;
         } else {
             throw new ParseException("tokens remaining at end");
