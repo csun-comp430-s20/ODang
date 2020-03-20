@@ -10,8 +10,10 @@ public class IdentifierLiteral implements Exp {
     }
     @Override
     public boolean equals(final Object other) {
-        return (other instanceof IdentifierLiteral &&
-                name.equals(((IdentifierLiteral)other).name));
+        if (other instanceof IdentifierLiteral) {
+            final IdentifierLiteral asId = (IdentifierLiteral) other;
+            return name.equals(asId.name);
+        } else return false;
     }
     public String toString() {
         return String.format(this.getClass().getSimpleName() + "<" + name + ">");

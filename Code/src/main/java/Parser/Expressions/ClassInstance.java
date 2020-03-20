@@ -20,6 +20,6 @@ public class ClassInstance implements Exp {
     }
     public String toString() {
         return String.format(this.getClass().getSimpleName() +
-                "className<" + className + "> argList< " + argList + ">");
+                "<className: " + className + " argList: " + argList + ">");
     }
 }

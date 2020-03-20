@@ -18,7 +18,7 @@ public class ArgumentList implements Exp {
     public boolean equals(final Object other) {
         if (other instanceof ArgumentList) {
             final ArgumentList otherList = (ArgumentList) other;
-            return expList.equals(otherList);
+            return expList.equals(otherList.expList);
         }
         else return false;
     }

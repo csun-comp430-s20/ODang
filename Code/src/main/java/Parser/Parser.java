@@ -3,6 +3,7 @@ package Parser;
 import Parser.Expressions.*;
 import Parser.Literals.*;
 import Tokenizer.Tokens.*;
+import Tokenizer.*;
 
 import java.util.List;
 import java.util.ArrayList;
@@ -94,7 +95,13 @@ public class Parser {
         return null;
     }
 
-    //TODO finish
+    /**
+     * attempts to parse a primary, ie identifier/string/integer/boolean/null
+     * @param startPos position in the token list
+     * @return ParseResult<Exp>
+     * @throws ParseException
+     */
+    //TODO implement method invocation
     public ParseResult<Exp> parsePrimary (final int startPos) throws ParseException {
         final Token currentToken = readToken(startPos);
         if (currentToken instanceof ThisToken) {
@@ -108,7 +115,7 @@ public class Parser {
             checkTokenIs(classType.nextPos, new LeftParenToken());
             final ParseResult<ArgumentList> argumentList = parseArgumentList(classType.nextPos + 1);
             checkTokenIs(argumentList.nextPos, new RightParenToken());
-            return new ParseResult<Exp>(new ClassInstance(classType.result, argumentList.result), argumentList.nextPos);
+            return new ParseResult<Exp>(new ClassInstance(classType.result, argumentList.result), argumentList.nextPos + 1);
         }
         //Literal
         else {
@@ -120,19 +127,18 @@ public class Parser {
 
     /**
      * tries to parse a list of expressions
-     * @param startPos
+     * @param startPos position in the token list
      * @return A ParseResult
      */
     public ParseResult<ArgumentList> parseArgumentList (final int startPos) {
-        final ArgumentList argList = new ArgumentList();
+        ArgumentList argList = new ArgumentList();
         int curPos = startPos;
         while (curPos < tokens.size()) {
             try {
                 //case of separation between arguments
                 if (readToken(curPos) instanceof CommaToken)
                     curPos++;
-
-                final ParseResult<Exp> curArg = parseExp(curPos);
+                final ParseResult<Exp> curArg = parsePrimary(curPos);   //TODO change to parseExp
                 curPos = curArg.nextPos;
                 argList.expList.add(curArg.result);
             } catch(final ParseException e) {
@@ -143,8 +149,8 @@ public class Parser {
     }
     /**
      * attempts to parse a literal
-     * @param startPos position in the token array
-     * @return ParseResult<Literal>
+     * @param startPos position in the token list
+     * @return ParseResult<Exp>
      * @throws ParseException
      */
     public ParseResult<Exp> parseLiteral (final int startPos) throws ParseException {
@@ -158,10 +164,14 @@ public class Parser {
         } else if(token instanceof IntegerToken) {
             final IntegerToken asInt = (IntegerToken)token;
             return new ParseResult<Exp>(new IntegerLiteral(asInt.value), startPos + 1);
-        } else {
+        } else if (token instanceof StringToken){
             final StringToken asString = (StringToken)token;
             return new ParseResult<Exp>(new StringLiteral(asString.name), startPos + 1);
+        } else if (token instanceof NullToken) {
+            return new ParseResult<Exp>(new NullLiteral(), startPos + 1);
         }
+        else
+            throw new ParseException("not a valid token: " + tokens.get(startPos));
     }
 
     //for testing, not the final version
@@ -172,6 +182,21 @@ public class Parser {
         } else {
             throw new ParseException("tokens remaining at end");
         }
+    }
+    //test main
+    public static void main(String[] args) {
+        final String input = "new Foo(2, true, foo, \"hello\", null)";
+        final Tokenizer tokenizer = new Tokenizer(input);
+
+        try {
+            final List<Token> tokens = tokenizer.tokenize();
+            final Parser parser = new Parser(tokens);
+            final Exp parsed = parser.parseTest();
+            System.out.println(parsed);
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
+
     }
 
 }

@@ -11,8 +11,10 @@ public class BooleanLiteral implements Exp {
 
     @Override
     public boolean equals(final Object other) {
-        return (other instanceof BooleanLiteral &&
-                value == ((BooleanLiteral)other).value);
+        if (other instanceof BooleanLiteral) {
+            final BooleanLiteral asBool = (BooleanLiteral) other;
+            return value == asBool.value;
+        } else return false;
     }
     public String toString() {
         return String.format(this.getClass().getSimpleName() + "<" + value + ">");

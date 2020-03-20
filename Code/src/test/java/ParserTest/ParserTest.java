@@ -13,9 +13,14 @@ import java.util.List;
 
 public class ParserTest {
 
-    public static void assertParses(final String received, final Exp... expected) throws ParseException, TokenizerException {
+    public static void assertParsesFromString(final Exp expected, final String received) {
         final Tokenizer tokenizer = new Tokenizer(received);
+        try {
         Assertions.assertEquals(expected, (new Parser(tokenizer.tokenize())).parseTest());
+        } catch (Exception e) {
+            System.out.println(e.getClass().getSimpleName());
+            e.printStackTrace();
+        }
     }
 
     public static void assertParsesExp(final Exp expected, final Token... tokens)
@@ -40,17 +45,25 @@ public class ParserTest {
         assertParsesExp(new IdentifierLiteral("foobar"), new IdentifierToken("foobar"));
     }
     @Test
+    public void checkParsesNull() throws ParseException {
+        assertParsesExp(new NullLiteral(), new NullToken());
+    }
+    @Test
     public void checkParsesPrimaryThis() throws ParseException {
         assertParsesExp(new ThisExp(), new ThisToken());
     }
     @Test
-    public void checkParsesClassInstanceCreation() throws ParseException, TokenizerException {
-        final ClassInstance expected = new ClassInstance(new IdentifierLiteral("Foo"),
+    public void checkParsesClassInstanceCreationNoArgs() {
+        assertParsesFromString(new ClassInstance(new IdentifierLiteral("foo"), new ArgumentList()), "new foo()");
+    }
+    @Test
+    public void checkParsesClassInstanceCreation() {
+        final Exp expected = new ClassInstance(new IdentifierLiteral("Foo"),
                                                           new ArgumentList(
                                                                   new IntegerLiteral(2),
                                                                   new BooleanLiteral(true)
                                                           ));
-        assertParses("new Foo(2 true)", expected);
+        assertParsesFromString(expected, "new Foo(2, true)");
     }
     @Test
     public void checkThrowsParseExceptionInvalidInput() {
