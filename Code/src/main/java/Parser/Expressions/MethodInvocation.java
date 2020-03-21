@@ -1,7 +1,5 @@
 package Parser.Expressions;
 
-import Parser.Literals.IdentifierLiteral;
-
 public class MethodInvocation implements Exp {
     public final Exp exp;
     public final Exp argList;

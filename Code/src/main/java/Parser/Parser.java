@@ -110,7 +110,6 @@ public class Parser {
      * @return ParseResult<Exp>
      * @throws ParseException
      */
-    //TODO implement method invocation
     private ParseResult<Exp> parsePrimaryHelper (final int startPos) throws ParseException {
         final Token currentToken = readToken(startPos);
         final Token nextToken = validPosition(startPos + 1) ? readToken(startPos + 1) : null;
