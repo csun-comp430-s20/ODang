@@ -102,6 +102,24 @@ public class Parser {
         }
         return null;
     }
+    /**
+     * attempts to parse a primary
+     * @param startPos current position in the list
+     * @return ParseResult<Exp>
+     * @throws ParseException
+     */
+    public ParseResult<Exp> parsePrimary(final int startPos) throws ParseException {
+        final ParseResult<Exp> primary = parsePrimaryHelper(startPos);
+
+        //<primary> ::= <method invocation> : <field access> (<arg list>?)
+        final ParseResult<List<Exp>> rest = parseFieldAccessExp(primary.nextPos);
+        Exp resultExp = primary.result;
+
+        for (final Exp otherExp : rest.result) {
+            resultExp = new FieldAccessExp(resultExp, otherExp);
+        }
+        return new ParseResult<Exp>(resultExp, rest.nextPos);
+    }
 
     /**
      * internal method to avoid left recursion in field access parsing
@@ -123,7 +141,7 @@ public class Parser {
             checkTokenIs(classType.nextPos, new LeftParenToken());
             final ParseResult<ArgumentList> argumentList = parseArgumentList(classType.nextPos + 1);
             checkTokenIs(argumentList.nextPos, new RightParenToken());
-            return new ParseResult<Exp>(new ClassInstance(classType.result, argumentList.result), argumentList.nextPos + 1);
+            return new ParseResult<Exp>(new ClassInstanceExp(classType.result, argumentList.result), argumentList.nextPos + 1);
         }
         //<primary> ::= <method invocation> : <method name> (<arg list>?)
         else if (currentToken instanceof IdentifierToken &&
@@ -147,31 +165,12 @@ public class Parser {
     }
 
     /**
-     * attempts to parse a primary
-     * @param startPos current position in the list
-     * @return ParseResult<Exp>
-     * @throws ParseException
-     */
-    public ParseResult<Exp> parsePrimary(final int startPos) throws ParseException {
-        final ParseResult<Exp> primary = parsePrimaryHelper(startPos);
-
-        //<primary> ::= <method invocation> : <field access> (<arg list>?)
-        final ParseResult<List<Exp>> rest = parseFieldAccess(primary.nextPos);
-        Exp resultExp = primary.result;
-
-        for (final Exp otherExp : rest.result) {
-            resultExp = new FieldAccess(resultExp, otherExp);
-        }
-        return new ParseResult<Exp>(resultExp, rest.nextPos);
-    }
-
-    /**
      * attempts to parse a field access, greedy approach that parses until no more
      * DotTokens appear
      * @param startPos
      * @return List of expressions
      */
-     public ParseResult<List<Exp>> parseFieldAccess(final int startPos) {
+     public ParseResult<List<Exp>> parseFieldAccessExp(final int startPos) {
         final List<Exp> resultList = new ArrayList<Exp>();
         int curPos = startPos;
 
@@ -245,6 +244,7 @@ public class Parser {
             throw new ParseException("tokens remaining at end");
         }
     }
+
     //test main
     public static void main(String[] args) {
         final String input = "this.foo().bar.toString()";

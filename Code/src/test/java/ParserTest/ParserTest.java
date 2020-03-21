@@ -55,12 +55,12 @@ public class ParserTest {
 
     @Test
     public void checkParsesClassInstanceCreationNoArgs() {
-        assertParsesFromString(new ClassInstance(new IdentifierLiteral("foo"), new ArgumentList()), "new foo()");
+        assertParsesFromString(new ClassInstanceExp(new IdentifierLiteral("foo"), new ArgumentList()), "new foo()");
     }
 
     @Test
     public void checkParsesClassInstanceCreation() {
-        final Exp expected = new ClassInstance(new IdentifierLiteral("Foo"),
+        final Exp expected = new ClassInstanceExp(new IdentifierLiteral("Foo"),
                 new ArgumentList(
                         new IntegerLiteral(2),
                         new BooleanLiteral(true)
@@ -80,7 +80,7 @@ public class ParserTest {
 
     @Test
     public void checkParsesFieldAccessOneDot() {
-        final Exp expected = new FieldAccess(new IdentifierLiteral("foo"),
+        final Exp expected = new FieldAccessExp(new IdentifierLiteral("foo"),
                 new MethodInvocation(new IdentifierLiteral("testMethod"),
                         new ArgumentList(
                                 new IntegerLiteral(2),
@@ -91,8 +91,8 @@ public class ParserTest {
 
     @Test
     public void checkParsesFieldAccessTwoDots() {
-        final Exp expected = new FieldAccess(new IdentifierLiteral("foo"),
-                new FieldAccess(new IdentifierLiteral("bar"),
+        final Exp expected = new FieldAccessExp(new IdentifierLiteral("foo"),
+                new FieldAccessExp(new IdentifierLiteral("bar"),
                         new MethodInvocation(new IdentifierLiteral("testMethod"),
                                 new ArgumentList(
                                         new IntegerLiteral(2),

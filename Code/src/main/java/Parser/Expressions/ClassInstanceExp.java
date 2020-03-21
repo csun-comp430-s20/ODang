@@ -1,17 +1,17 @@
 package Parser.Expressions;
 
-public class ClassInstance implements Exp {
+public class ClassInstanceExp implements Exp {
     public final Exp className;
     public final ArgumentList argList;
 
-    public ClassInstance(final Exp className, final ArgumentList argList) {
+    public ClassInstanceExp(final Exp className, final ArgumentList argList) {
         this.className = className;
         this.argList = argList;
     }
     @Override
     public boolean equals(final Object other) {
-        if (other instanceof ClassInstance) {
-            final ClassInstance otherClass = (ClassInstance) other;
+        if (other instanceof ClassInstanceExp) {
+            final ClassInstanceExp otherClass = (ClassInstanceExp) other;
             return className.equals(otherClass.className) &&
                     argList.equals(otherClass.argList);
 
