@@ -174,9 +174,28 @@ public class Parser {
             throw new ParseException("not a valid token: " + tokens.get(startPos));
     }
 
+    public ParseResult<Exp> parseFieldAccess (final int startPos) throws ParseException {
+        final ParseResult<Exp> leftPrimary = parsePrimary(startPos);//Going by the website link, it wants <primary> on the left
+        if (readToken(leftPrimary.nextPos) instanceof DotToken) {
+            final ParseResult<Exp> rightIdentifier = parseLiteral(startPos + 2);
+            return new ParseResult<Exp>(new FieldAccessExp(leftPrimary.result, ".", rightIdentifier.result), rightIdentifier.nextPos);
+        }
+        else
+            throw new ParseException("Not a field access, missing DotToken" + startPos);
+    }
     //for testing, not the final version
     public Exp parseTest() throws ParseException {
         final ParseResult<Exp> toplevel = parsePrimary(0);
+        if (toplevel.nextPos == tokens.size()) {
+            return toplevel.result;
+        } else {
+            throw new ParseException("tokens remaining at end");
+        }
+    }
+
+    //for testing the parseFieldAccess func
+    public Exp parseTest2() throws ParseException {
+        final ParseResult<Exp> toplevel = parseFieldAccess(0);
         if (toplevel.nextPos == tokens.size()) {
             return toplevel.result;
         } else {
@@ -197,6 +216,18 @@ public class Parser {
             e.printStackTrace();
         }
 
+        //testing parseFieldAccess, feel free to erase
+        final String input2 = "classexample.classmethod";
+        final Tokenizer tokenizer2 = new Tokenizer(input2);
+
+        try {
+            final List<Token> tokens = tokenizer2.tokenize();
+            final Parser parser = new Parser(tokens);
+            final Exp parsed = parser.parseTest2();
+            System.out.println(parsed);
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
     }
 
 }
