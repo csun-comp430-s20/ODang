@@ -23,34 +23,29 @@ public class ParserTest {
         }
     }
 
-    public static void assertParsesExp(final Exp expected, final Token... tokens)
-            throws ParseException {
-        List<Token> tokenList = Arrays.asList(tokens);
-        Assertions.assertEquals(expected, (new Parser(tokenList)).parseTest());
-    }
     @Test
     public void checkParsesInteger() throws ParseException {
-        assertParsesExp(new IntegerLiteral(1), new IntegerToken(1));
+        assertParsesFromString(new IntegerLiteral(1), "1");
     }
     @Test
     public void checkParsesString() throws ParseException {
-        assertParsesExp(new StringLiteral("foo"), new StringToken("foo"));
+        assertParsesFromString(new StringLiteral("foo"), "\"foo\"");
     }
     @Test
     public void checkParsesBoolean() throws ParseException {
-        assertParsesExp(new BooleanLiteral(true), new BooleanToken(true));
+        assertParsesFromString(new BooleanLiteral(true), "true");
     }
     @Test
     public void checkParsesIdentifier() throws ParseException {
-        assertParsesExp(new IdentifierLiteral("foobar"), new IdentifierToken("foobar"));
+        assertParsesFromString(new IdentifierLiteral("foobar"), "foobar");
     }
     @Test
     public void checkParsesNull() throws ParseException {
-        assertParsesExp(new NullLiteral(), new NullToken());
+        assertParsesFromString(new NullLiteral(), "null");
     }
     @Test
     public void checkParsesPrimaryThis() throws ParseException {
-        assertParsesExp(new ThisExp(), new ThisToken());
+        assertParsesFromString(new ThisExp(), "this");
     }
     @Test
     public void checkParsesClassInstanceCreationNoArgs() {

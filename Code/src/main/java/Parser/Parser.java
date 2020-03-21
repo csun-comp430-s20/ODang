@@ -165,8 +165,6 @@ public class Parser {
         return new ParseResult<Exp>(resultExp, rest.nextPos);
     }
 
-
-
     /**
      * attempts to parse a field access, greedy approach that parses until no more
      * DotTokens appear
@@ -249,7 +247,7 @@ public class Parser {
     }
     //test main
     public static void main(String[] args) {
-        final String input = "foo.bar.testMethod(2, true)";
+        final String input = "this.foo().bar.toString()";
         final Tokenizer tokenizer = new Tokenizer(input);
 
         try {
