@@ -24,14 +24,6 @@ public class Parser {
             this.nextPos = nextPos;
         }
     }
-    /**
-     * Checks the current position in the list, done a lot in this code
-     * so wrote a method for it
-     * @return true or false depending on current position on the list
-     */
-    private boolean validPosition(final int inputPos) {
-        return inputPos < tokens.size();
-    }
 
     /**
      * checks if a token is of a specific subtype
@@ -104,91 +96,35 @@ public class Parser {
     }
 
     /**
-     * internal method to avoid left recursion in field access parsing
-     * attempts to parse a primary, ie literal/this/(exp)/class creation/method invocation
+     * attempts to parse a primary, ie identifier/string/integer/boolean/null
      * @param startPos position in the token list
      * @return ParseResult<Exp>
      * @throws ParseException
      */
-    private ParseResult<Exp> parsePrimaryHelper (final int startPos) throws ParseException {
+    //TODO implement method invocation
+    public ParseResult<Exp> parsePrimary (final int startPos) throws ParseException {
         final Token currentToken = readToken(startPos);
-        final Token nextToken = validPosition(startPos + 1) ? readToken(startPos + 1) : null;
-        //<primary> ::= this
         if (currentToken instanceof ThisToken) {
             return new ParseResult<Exp>(new ThisExp(), startPos + 1);
-        }
-        //<primary> ::= <class instance creation expr>
-        else if (currentToken instanceof NewToken) {
+        } else if (currentToken instanceof LeftParenToken) {
+            final ParseResult<Exp> inner = parseExp(startPos + 1);
+            checkTokenIs(inner.nextPos, new RightParenToken());
+            return new ParseResult<Exp>(inner.result, inner.nextPos + 1);
+        } else if (currentToken instanceof NewToken) {
             final ParseResult<Exp> classType = parseLiteral(startPos + 1);
             checkTokenIs(classType.nextPos, new LeftParenToken());
             final ParseResult<ArgumentList> argumentList = parseArgumentList(classType.nextPos + 1);
             checkTokenIs(argumentList.nextPos, new RightParenToken());
             return new ParseResult<Exp>(new ClassInstance(classType.result, argumentList.result), argumentList.nextPos + 1);
         }
-        //<primary> ::= <method invocation> : <method name> (<arg list>?)
-        else if (currentToken instanceof IdentifierToken &&
-                nextToken instanceof LeftParenToken) {
-            final ParseResult<Exp> identifier = parseLiteral(startPos);
-            final ParseResult<ArgumentList> argumentList = parseArgumentList(identifier.nextPos + 1);
-            checkTokenIs(argumentList.nextPos, new RightParenToken());
-            return new ParseResult<Exp>(new MethodInvocation(identifier.result, argumentList.result), argumentList.nextPos + 1);
-        }
-        //<primary> ::= (expr)
-        else if (currentToken instanceof LeftParenToken) {
-            final ParseResult<Exp> inner = parseExp(startPos + 1);
-            checkTokenIs(inner.nextPos, new RightParenToken());
-            return new ParseResult<Exp>(inner.result, inner.nextPos + 1);
-        }
-        //<primary> ::= <literal>
+        //Literal
         else {
             final ParseResult<Exp> literal = parseLiteral(startPos);
-            return new ParseResult<Exp>(literal.result, literal.nextPos);
+            return new ParseResult<Exp> (literal.result, literal.nextPos);
         }
+
     }
 
-    /**
-     * attempts to parse a primary
-     * @param startPos current position in the list
-     * @return ParseResult<Exp>
-     * @throws ParseException
-     */
-    public ParseResult<Exp> parsePrimary(final int startPos) throws ParseException {
-        final ParseResult<Exp> primary = parsePrimaryHelper(startPos);
-
-        //<primary> ::= <method invocation> : <field access> (<arg list>?)
-        final ParseResult<List<Exp>> rest = parseFieldAccess(primary.nextPos);
-        Exp resultExp = primary.result;
-
-        for (final Exp otherExp : rest.result) {
-            resultExp = new FieldAccess(resultExp, otherExp);
-        }
-        return new ParseResult<Exp>(resultExp, rest.nextPos);
-    }
-
-
-
-    /**
-     * attempts to parse a field access, greedy approach that parses until no more
-     * DotTokens appear
-     * @param startPos
-     * @return List of expressions
-     */
-     public ParseResult<List<Exp>> parseFieldAccess(final int startPos) {
-        final List<Exp> resultList = new ArrayList<Exp>();
-        int curPos = startPos;
-
-        while (curPos < tokens.size()) {
-            try {
-                checkTokenIs(curPos, new DotToken());
-                final ParseResult<Exp> curPrimary = parsePrimary(curPos + 1);
-                curPos = curPrimary.nextPos;
-                resultList.add(curPrimary.result);
-            } catch (final ParseException e) {
-                break;
-            }
-        }
-        return new ParseResult<List<Exp>>(resultList, curPos);
-     }
     /**
      * tries to parse a list of expressions
      * @param startPos position in the token list
@@ -268,7 +204,7 @@ public class Parser {
     }
     //test main
     public static void main(String[] args) {
-        final String input = "foo.bar.testMethod(2, true)";
+        final String input = "new Foo(2, true, foo, \"hello\", null)";
         final Tokenizer tokenizer = new Tokenizer(input);
 
         try {

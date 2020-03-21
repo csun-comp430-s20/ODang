@@ -8,7 +8,7 @@ public class IdentifierLiteral implements Exp {
     public IdentifierLiteral(final String name) {
         this.name = name;
     }
-
+    @Override
     public boolean equals(final Object other) {
         if (other instanceof IdentifierLiteral) {
             final IdentifierLiteral asId = (IdentifierLiteral) other;

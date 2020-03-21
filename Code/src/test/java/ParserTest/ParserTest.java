@@ -66,36 +66,6 @@ public class ParserTest {
         assertParsesFromString(expected, "new Foo(2, true)");
     }
     @Test
-    public void checkParsesMethodInvocationMethodNameArgList() {
-        final Exp expected = new MethodInvocation(new IdentifierLiteral("testMethod"),
-                                                  new ArgumentList(
-                                                         new IntegerLiteral(2),
-                                                         new BooleanLiteral(true)
-                                                  ));
-        assertParsesFromString(expected, "testMethod(2, true)");
-    }
-    @Test
-    public void checkParsesFieldAccessOneDot() {
-        final Exp expected = new FieldAccess(new IdentifierLiteral("foo"),
-                                             new MethodInvocation(new IdentifierLiteral("testMethod"),
-                                                     new ArgumentList(
-                                                             new IntegerLiteral(2),
-                                                             new BooleanLiteral(true)
-                                                     )));
-        assertParsesFromString(expected, "foo.testMethod(2, true)");
-    }
-    @Test
-    public void checkParsesFieldAccessTwoDots() {
-        final Exp expected = new FieldAccess(new IdentifierLiteral("foo"),
-                new FieldAccess(new IdentifierLiteral("bar"),
-                new MethodInvocation(new IdentifierLiteral("testMethod"),
-                        new ArgumentList(
-                                new IntegerLiteral(2),
-                                new BooleanLiteral(true)
-                        ))));
-        assertParsesFromString(expected, "foo.bar.testMethod(2, true)");
-    }
-    @Test
     public void checkThrowsParseExceptionInvalidInput() {
         final List<Token> testTokens = Arrays.asList(new IdentifierToken("foo"), new LeftCurlyToken());
         final Parser testParser = new Parser(testTokens);

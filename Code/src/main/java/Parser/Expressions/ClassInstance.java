@@ -1,8 +1,8 @@
 package Parser.Expressions;
 
 public class ClassInstance implements Exp {
-    public final Exp className;
-    public final ArgumentList argList;
+    final Exp className;
+    final ArgumentList argList;
 
     public ClassInstance(final Exp className, final ArgumentList argList) {
         this.className = className;
