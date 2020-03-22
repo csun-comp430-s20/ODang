@@ -4,6 +4,7 @@ import Parser.Expressions.*;
 import Parser.Literals.*;
 import Tokenizer.Tokens.*;
 import Tokenizer.*;
+import sun.tools.jstat.Identifier;
 
 import java.util.List;
 import java.util.ArrayList;
@@ -67,6 +68,7 @@ public class Parser {
     }
     //TODO implement
     public ParseResult<Exp> parseExp(final int startPos) throws ParseException {
+        //parseAssignment
         return null;
     }
     /**
@@ -75,6 +77,7 @@ public class Parser {
      * @return ParseResult<Exp>
      * @throws ParseException
      */
+
     public ParseResult<Exp> parseAdditive(final int startPos) throws ParseException {
         final ParseResult<Exp> starting = parseLiteral(startPos);
         final ParseResult<List<Exp>> rest = parseAdditiveExpHelper(starting.nextPos);
@@ -102,6 +105,33 @@ public class Parser {
         }
         return null;
     }
+
+    /**
+     * attempts to parse a postincrement expression
+     * @param startPos position in the token array
+     * @return ParseResult<Exp>
+     * @throws ParseException
+     */
+    public ParseResult<Exp> parsePostIncrExpr(final int startPos) throws ParseException {
+        final ParseResult<Exp> postfixExpr = parsePrimary(startPos);
+        checkTokenIs(postfixExpr.nextPos, new OperatorToken("++"));
+        PostIncrDecrExp result = new PostIncrDecrExp(postfixExpr.result, "++");
+        return new ParseResult<Exp>(result, postfixExpr.nextPos + 1);
+    }
+
+    /**
+     * attempts to parse a postdecrement expression
+     * @param startPos position in the token array
+     * @return ParseResult<Exp>
+     * @throws ParseException
+     */
+    public ParseResult<Exp> parsePostDecrExpr(final int startPos) throws ParseException {
+        final ParseResult<Exp> postfixExpr = parsePrimary(startPos);
+        checkTokenIs(postfixExpr.nextPos, new OperatorToken("--"));
+        PostIncrDecrExp result = new PostIncrDecrExp(postfixExpr.result, "--");
+        return new ParseResult<Exp>(result, postfixExpr.nextPos + 1);
+    }
+
     /**
      * attempts to parse a primary
      * @param startPos current position in the list
@@ -244,6 +274,7 @@ public class Parser {
             throw new ParseException("tokens remaining at end");
         }
     }
+
 
     //test main
     public static void main(String[] args) {
