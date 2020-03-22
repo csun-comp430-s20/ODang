@@ -140,6 +140,8 @@ public class Tokenizer {
                     return new StringTypeToken();
                 case "this":
                     return new ThisToken();
+                case "super":
+                    return new SuperToken();
                 case "char":
                     return new CharTypeToken();
                 case "int":
