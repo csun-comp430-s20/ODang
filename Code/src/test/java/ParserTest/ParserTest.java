@@ -1,6 +1,7 @@
 package ParserTest;
 
 import Parser.*;
+import Parser.Types.*;
 import Parser.Literals.*;
 import Parser.Expressions.*;
 import Tokenizer.*;

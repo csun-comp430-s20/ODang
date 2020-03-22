@@ -4,7 +4,7 @@ import Parser.Expressions.*;
 import Parser.Literals.*;
 import Tokenizer.Tokens.*;
 import Tokenizer.*;
-import sun.tools.jstat.Identifier;
+import Parser.Types.*;
 
 import java.util.List;
 import java.util.ArrayList;
@@ -106,6 +106,31 @@ public class Parser {
         return null;
     }
 
+    /**
+     * attempts to parse a type
+     * @param startPos current position in the list
+     * @return ParseResult<Type>
+     * @throws ParseException
+     */
+    public ParseResult<Type> parseType(final int startPos) throws ParseException {
+        final Token currentToken = readToken(startPos);
+        //boolean
+        if (currentToken instanceof BooleanTypeToken) {
+            return new ParseResult<Type>(new PrimitiveType(new BooleanType()), startPos + 1);
+        }
+        //int
+        else if (currentToken instanceof IntTypeToken) {
+            return new ParseResult<Type>(new PrimitiveType(new IntType()), startPos + 1);
+        }
+        //<primitive type>:str
+        else if (currentToken instanceof StringTypeToken) {
+            return new ParseResult<Type>(new PrimitiveType(new StringType()), startPos + 1);
+        }
+        //<class type>: <identifier>
+        else {
+            return new ParseResult<Type>(new ClassType(), startPos + 1);
+        }
+    }
     /**
      * attempts to parse a postincrement expression
      * @param startPos position in the token array
