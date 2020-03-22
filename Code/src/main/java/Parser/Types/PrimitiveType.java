@@ -16,6 +16,6 @@ public class PrimitiveType implements Type {
             return false;
     }
     public String toString() {
-        return String.format(this.getClass().getSimpleName() + " type <" + type + ">");
+        return String.format(this.getClass().getSimpleName() + " type: <" + type + ">");
     }
 }

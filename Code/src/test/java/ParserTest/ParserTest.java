@@ -17,13 +17,12 @@ public class ParserTest {
     public static void assertParsesFromString(final Exp expected, final String received) {
         final Tokenizer tokenizer = new Tokenizer(received);
         try {
-            Assertions.assertEquals(expected, (new Parser(tokenizer.tokenize())).parseTest());
+            Assertions.assertEquals(expected, (new Parser(tokenizer.tokenize())).parseTest2()); //TODO change to parseExp
         } catch (Exception e) {
             System.out.println(e.getClass().getSimpleName());
             e.printStackTrace();
         }
     }
-
     @Test
     public void checkParsesInteger() throws ParseException {
         assertParsesFromString(new IntegerLiteral(1), "1");

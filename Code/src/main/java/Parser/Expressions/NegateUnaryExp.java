@@ -1,16 +1,15 @@
 package Parser.Expressions;
 
-//TODO might be redundant
-public class PrimaryExp implements Exp {
+public class NegateUnaryExp implements Exp {
     public final Exp exp;
 
-    public PrimaryExp(final Exp exp) {
+    public NegateUnaryExp(final Exp exp) {
         this.exp = exp;
     }
 
     public boolean equals(final Object other) {
-        if (other instanceof PrimaryExp) {
-            final PrimaryExp otherExp = (PrimaryExp) other;
+        if (other instanceof NegateUnaryExp) {
+            final NegateUnaryExp otherExp = (NegateUnaryExp) other;
 
             return exp.equals(otherExp.exp);
         }

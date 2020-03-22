@@ -107,6 +107,72 @@ public class Parser {
     }
 
     /**
+     * attempts to parse a UnaryExp, ie NoIncDecUnaryExp, PreIncrDecrExp
+     * @param startPos
+     * @return ParseResult<Exp>
+     * @throws ParseException
+     */
+    public ParseResult<Exp> parseUnaryExp(final int startPos) throws ParseException {
+        final Token currentToken = readToken(startPos);
+        if (currentToken instanceof OperatorToken) {
+            final OperatorToken OpToken = (OperatorToken) currentToken;
+            //++
+            if (OpToken.name.equals("++")) {
+                final ParseResult<Exp> preIncrExp = parsePreIncrExpr(startPos);
+                return new ParseResult<Exp>(preIncrExp.result, preIncrExp.nextPos);
+            }
+            //--
+            else if (OpToken.name.equals("--")) {
+                final ParseResult<Exp> preDecrExp = parsePreDecrExpr(startPos);
+                return new ParseResult<Exp>(preDecrExp.result, preDecrExp.nextPos);
+            }
+            else throw new ParseException("invalid unary incr/decr oparator" + OpToken.name);
+        }
+        //<unary expr no incr decr
+        else {
+            final ParseResult<Exp> noIncrDecrExp = parseNoIncDecUnaryExp(startPos);
+            return new ParseResult<Exp>(noIncrDecrExp.result, noIncrDecrExp.nextPos);
+        }
+    }
+    /**
+     * attempts to parse a NoIncDecUnaryExp, ie primary, !<unary exp>, <cast exp>
+     * @param startPos
+     * @return ParseResult<Exp>
+     * @throws ParseException
+     */
+    public ParseResult<Exp> parseNoIncDecUnaryExp(final int startPos) throws ParseException {
+        final Token currentToken = readToken(startPos);
+        //! <unary exp>
+        if (currentToken.equals(new OperatorToken("!"))) {
+            final ParseResult<Exp> unaryExp = parseUnaryExp(startPos+1);
+            return new ParseResult<Exp>(new NegateUnaryExp(unaryExp.result), unaryExp.nextPos);
+        }
+        //<cast exp>
+        else if (currentToken instanceof LeftParenToken) {
+            final ParseResult<Exp> castExp = parseCastExp(startPos);
+            return new ParseResult<Exp>(castExp.result, castExp.nextPos);
+        }
+        //primary
+        else {
+            final ParseResult<Exp> primary = parsePrimary(startPos);
+            return new ParseResult<Exp>(primary.result, primary.nextPos);
+        }
+    }
+
+    /**
+     * attempts to parse a type cast
+     * @param startPos
+     * @return
+     * @throws ParseException
+     */
+    public ParseResult<Exp> parseCastExp(final int startPos) throws ParseException {
+        checkTokenIs(startPos, new LeftParenToken());
+        ParseResult<Type> castType = parseType(startPos + 1);
+        checkTokenIs(castType.nextPos, new RightParenToken());
+        ParseResult<Exp> unaryExp = parseUnaryExp(castType.nextPos + 1);
+        return new ParseResult<Exp>(new CastExp(castType.result, unaryExp.result), unaryExp.nextPos);
+    }
+    /**
      * attempts to parse a type
      * @param startPos current position in the list
      * @return ParseResult<Type>
@@ -132,13 +198,35 @@ public class Parser {
         }
     }
     /**
+     * attempts to parse a preincrement expression
+     * @param startPos position in the token array
+     * @return ParseResult<Exp>
+     * @throws ParseException
+     */
+    public ParseResult<Exp> parsePreIncrExpr(final int startPos) throws ParseException {
+        checkTokenIs(startPos, new OperatorToken("++"));
+        final ParseResult<Exp> preIncrExpr = parsePrimary(startPos + 1); //TODO change to parseExp
+        return new ParseResult<Exp>(new PreIncrDecrExp(preIncrExpr.result, "++"), preIncrExpr.nextPos);
+    }
+    /**
+     * attempts to parse a preincrement expression
+     * @param startPos position in the token array
+     * @return ParseResult<Exp>
+     * @throws ParseException
+     */
+    public ParseResult<Exp> parsePreDecrExpr(final int startPos) throws ParseException {
+        checkTokenIs(startPos, new OperatorToken("--"));
+        final ParseResult<Exp> preDecrExpr = parsePrimary(startPos + 1); //TODO change to parseExp
+        return new ParseResult<Exp>(new PreIncrDecrExp(preDecrExpr.result, "--"), preDecrExpr.nextPos);
+    }
+    /**
      * attempts to parse a postincrement expression
      * @param startPos position in the token array
      * @return ParseResult<Exp>
      * @throws ParseException
      */
     public ParseResult<Exp> parsePostIncrExpr(final int startPos) throws ParseException {
-        final ParseResult<Exp> postfixExpr = parsePrimary(startPos);
+        final ParseResult<Exp> postfixExpr = parsePrimary(startPos); //TODO change to parseExp
         checkTokenIs(postfixExpr.nextPos, new OperatorToken("++"));
         PostIncrDecrExp result = new PostIncrDecrExp(postfixExpr.result, "++");
         return new ParseResult<Exp>(result, postfixExpr.nextPos + 1);
@@ -151,7 +239,7 @@ public class Parser {
      * @throws ParseException
      */
     public ParseResult<Exp> parsePostDecrExpr(final int startPos) throws ParseException {
-        final ParseResult<Exp> postfixExpr = parsePrimary(startPos);
+        final ParseResult<Exp> postfixExpr = parsePrimary(startPos); //TODO change to parseExp
         checkTokenIs(postfixExpr.nextPos, new OperatorToken("--"));
         PostIncrDecrExp result = new PostIncrDecrExp(postfixExpr.result, "--");
         return new ParseResult<Exp>(result, postfixExpr.nextPos + 1);
@@ -303,16 +391,24 @@ public class Parser {
         }
     }
 
+    public Exp parseTest2() throws ParseException {
+        final ParseResult<Exp> toplevel = parseUnaryExp(0);
+        if (toplevel.nextPos == tokens.size()) {
+            return toplevel.result;
+        } else {
+            throw new ParseException("tokens remaining at end");
+        }
+    }
 
     //test main
     public static void main(String[] args) {
-        final String input = "this.toString()";
+        final String input = "(int) ++testString.testMethod(null)";
         final Tokenizer tokenizer = new Tokenizer(input);
 
         try {
             final List<Token> tokens = tokenizer.tokenize();
             final Parser parser = new Parser(tokens);
-            final Exp parsed = parser.parseTest();
+            final Exp parsed = parser.parseTest2();
             System.out.println(parsed);
         } catch(Exception e) {
             e.printStackTrace();
