@@ -216,6 +216,18 @@ public class TokenTest {
         checkTokenizes("this ", new ThisToken());
     }
     @Test
+    public void checkCorrectTokenizedSuper() throws TokenizerException {
+        checkTokenizes("super", new SuperToken());
+    }
+    @Test
+    public void checkCorrectTokenizedSuperWhitespaceBefore() throws TokenizerException {
+        checkTokenizes(" super", new SuperToken());
+    }
+    @Test
+    public void checkCorrectTokenizedSuperWhitespaceAfter() throws TokenizerException {
+        checkTokenizes("super ", new SuperToken());
+    }
+    @Test
     public void checkCorrectTokenizedNewToken() throws TokenizerException {
         checkTokenizes("new", new NewToken());
     }

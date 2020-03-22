@@ -141,7 +141,7 @@ public class Parser {
     public ParseResult<Exp> parsePrimary(final int startPos) throws ParseException {
         final ParseResult<Exp> primary = parsePrimaryHelper(startPos);
 
-        //<primary> ::= <method invocation> : <field access> (<arg list>?)
+        //<primary> ::= <method invocation> : <field access> : <primary> . <identifier> (<arg list>?)
         final ParseResult<List<Exp>> rest = parseFieldAccessExp(primary.nextPos);
         Exp resultExp = primary.result;
 
@@ -186,6 +186,9 @@ public class Parser {
             final ParseResult<Exp> inner = parseExp(startPos + 1);
             checkTokenIs(inner.nextPos, new RightParenToken());
             return new ParseResult<Exp>(inner.result, inner.nextPos + 1);
+        } //super
+        else if (currentToken instanceof SuperToken) {
+            return new ParseResult<Exp>(new SuperExp(), startPos + 1);
         }
         //<primary> ::= <literal>
         else {
@@ -278,7 +281,7 @@ public class Parser {
 
     //test main
     public static void main(String[] args) {
-        final String input = "this.foo().bar.toString()";
+        final String input = "this.toString()";
         final Tokenizer tokenizer = new Tokenizer(input);
 
         try {
