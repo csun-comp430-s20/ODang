@@ -77,7 +77,26 @@ public class ParserTest {
                 ));
         assertParsesFromString(expected, "testMethod(2, true)");
     }
-
+    @Test
+    public void checkParsesFieldAccessThis() {
+        final Exp expected = new FieldAccessExp(new ThisExp(),
+                new MethodInvocation(new IdentifierLiteral("testMethod"),
+                        new ArgumentList(
+                                new IntegerLiteral(2),
+                                new BooleanLiteral(true)
+                        )));
+        assertParsesFromString(expected, "this.testMethod(2, true)");
+    }
+    @Test
+    public void checkParsesFieldAccessSuper() {
+        final Exp expected = new FieldAccessExp(new SuperExp(),
+                new MethodInvocation(new IdentifierLiteral("testMethod"),
+                        new ArgumentList(
+                                new IntegerLiteral(2),
+                                new BooleanLiteral(true)
+                        )));
+        assertParsesFromString(expected, "super.testMethod(2, true)");
+    }
     @Test
     public void checkParsesFieldAccessOneDot() {
         final Exp expected = new FieldAccessExp(new IdentifierLiteral("foo"),
