@@ -27,7 +27,7 @@ public class Tokenizer {
 
         //regex containing the valid operators in the language
         if(validPosition() &&
-                String.valueOf(input[inputPos]).matches("[;,.(){}+=\\-*/!%><]")) {
+                String.valueOf(input[inputPos]).matches("[;,.(){}+=\\-*/!><]")) {
 
             symbols += input[inputPos];
             inputPos++;

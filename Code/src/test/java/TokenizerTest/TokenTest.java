@@ -414,18 +414,6 @@ public class TokenTest {
         checkTokenizes("! ", new OperatorToken("!"));
     }
     @Test
-    public void checkCorrectTokenizedModulo() throws TokenizerException {
-        checkTokenizes("%", new OperatorToken("%"));
-    }
-    @Test
-    public void checkCorrectTokenizedModuloWitWhitespaceBefore() throws TokenizerException {
-        checkTokenizes(" %", new OperatorToken("%"));
-    }
-    @Test
-    public void checkCorrectTokenizedModuloWithWhitespaceAfter() throws TokenizerException {
-        checkTokenizes("% ", new OperatorToken("%"));
-    }
-    @Test
     public void checkCorrectTokenizedGreaterThan() throws TokenizerException {
         checkTokenizes(">", new OperatorToken(">"));
     }

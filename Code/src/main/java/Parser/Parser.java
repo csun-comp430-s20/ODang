@@ -8,6 +8,7 @@ import Parser.Types.*;
 
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Stack;
 
 public class Parser {
 
@@ -31,6 +32,9 @@ public class Parser {
         public Pair(final U first, final V second) {
             this.first = first;
             this.second = second;
+        }
+        public String toString() {
+            return String.format("(" + first + ", " + second + ")");
         }
     }
     /**
@@ -74,6 +78,24 @@ public class Parser {
             throw new ParseException("Position out of bounds: " + position);
         }
     }
+
+    /**
+     * assigns a precedence to a binary operator
+     * @param operator
+     * @return
+     */
+    private static int checkPresedence(String operator) {
+
+        if (operator.equals("==") || operator.equals("!="))
+            return 0;
+        else if (operator.equals("<") || operator.equals(">"))
+            return 1;
+        else if (operator.equals("+") || operator.equals("-"))
+            return 2;
+        else if (operator.equals("*") || operator.equals("/"))
+            return 3;
+        else return -1;
+    }
     /**
      * attempts to parse an expression
      * @param startPos position in the token array
@@ -115,41 +137,87 @@ public class Parser {
     }
 
     /**
-     * attempts to parse a multiplicative expression, ie
-     * <unary expr> | <multiplicative expr> * <unary expr> |
-     * <multiplicative expr> / <unary expr> |
-     * <multiplicative expr> % <unary expr>
+     * attempts to parse a binary operator expression in this sequence
+     * (excluded <assignment expr> because of differences)
+     * 1. equality exp
+     * 2. relational exp
+     * 3. additive exp
+     * 4. multiplicative exp
+     *
      * @param startPos current position in the list
      * @return ParseResult<Exp>
      * @throws ParseException
      */
-    public ParseResult<Exp> parseMultiplicativeExp(final int startPos) throws ParseException {
-        final ParseResult<Exp> starting = parseUnaryExp(startPos);
-        final ParseResult<List<Pair<String, Exp>>> rest = parseMultiplicativeExpHelper(starting.nextPos);
+    public ParseResult<Exp> parseBinaryOperatorExp(final int startPos) throws ParseException {
 
+        final ParseResult<Exp> starting = parseUnaryExp(startPos);
         Exp resultExp = starting.result;
 
+        final ParseResult<List<Pair<String, Exp>>> rest =
+                parseBinaryOperatorExpHelper(starting.nextPos,
+                        new OperatorToken("=="), new OperatorToken("!="),
+                        new OperatorToken(">"), new OperatorToken("<"),
+                        new OperatorToken("+"), new OperatorToken("-"),
+                        new OperatorToken("*"), new OperatorToken("/"));
+
+        //calculating precedence using Dijkstras shunting yard algorithm
+        Stack<Exp> operands = new Stack<>();
+        Stack<String> operators = new Stack<>();
+
+        //first value
+        operands.push(resultExp);
+
+        //going through the parsed list of Pair(Op, Unary exp)
         for (final Pair pair : rest.result) {
-            resultExp = new MultiplicativeExp((String) pair.first, resultExp, (Exp) pair.second);
+            final String currentOperator = (String) pair.first;
+            final int currentOpPrecedence = checkPresedence(currentOperator);
+            final Exp currentExp = (Exp) pair.second;
+
+            //no operators to compare the new operator with
+            if (operators.isEmpty()) {
+                operators.push(currentOperator);
+                operands.push(currentExp);
+            }
+            //pop stack with higher precedence operators
+            else {
+                while (!operators.isEmpty() && currentOpPrecedence < checkPresedence(operators.peek())) {
+                    //have to pop right before left to get left-associativity
+                    final Exp right = operands.pop();
+                    final Exp left = operands.pop();
+                    resultExp = new BinaryOperatorExp(operators.pop(), left, right);
+                    operands.push(resultExp);   //push the result expression on the operand stack
+                }
+                //push the new highest precedence operator and the next expression
+                operators.push(currentOperator);
+                operands.push(currentExp);
+            }
+        }
+        //list of Pair(Op, unary exp) is empty, run through the stacks and generate expressions
+        while (!operators.isEmpty()) {
+            //have to pop right before left to get left-associativity
+            final Exp right = operands.pop();
+            final Exp left = operands.pop();
+            resultExp = new BinaryOperatorExp(operators.pop(), left, right);
+            operands.push(resultExp);
         }
         return new ParseResult<Exp>(resultExp, rest.nextPos);
+
     }
 
     /**
-     * greedy implementation of multiplication parsing. using a private class Pair to store both
+     * greedy implementation of binary op exp parsing. using a private class Pair to store both
      * the expressions and the operators in between
      * @param startPos current position in the list
+     * @param operators list of valid operators
      * @return ParseResult<List<Pair<String, Exp>>>
      */
-    private ParseResult<List<Pair<String, Exp>>> parseMultiplicativeExpHelper(final int startPos) {
+    private ParseResult<List<Pair<String, Exp>>> parseBinaryOperatorExpHelper(final int startPos, final Token... operators) {
         final List<Pair<String, Exp>> resultList = new ArrayList<Pair<String, Exp>>();
         int curPos = startPos;
 
         while (curPos < tokens.size()) {
             try {
-                checkTokenIs(curPos, new OperatorToken("*"),
-                                     new OperatorToken("/"),
-                                     new OperatorToken("%"));
+                checkTokenIs(curPos, operators);
                 final OperatorToken currentOperator = (OperatorToken)readToken(curPos);
                 final ParseResult<Exp> currentUnaryExp = parseUnaryExp(curPos + 1);
                 curPos = currentUnaryExp.nextPos;
@@ -180,7 +248,7 @@ public class Parser {
                 final ParseResult<Exp> preDecrExp = parsePreDecrExpr(startPos);
                 return new ParseResult<Exp>(preDecrExp.result, preDecrExp.nextPos);
             }
-            else throw new ParseException("invalid unary incr/decr oparator" + OpToken.name);
+            else throw new ParseException("invalid unary incr/decr operator" + OpToken.name);
         }
         //<unary expr no incr decr
         else {
@@ -399,7 +467,7 @@ public class Parser {
                 //case of separation between arguments
                 if (readToken(curPos) instanceof CommaToken)
                     curPos++;
-                final ParseResult<Exp> curArg = parseMultiplicativeExp(curPos);   //TODO change to parseExp
+                final ParseResult<Exp> curArg = parseBinaryOperatorExp(curPos);   //TODO change to parseExp
                 curPos = curArg.nextPos;
                 argList.expList.add(curArg.result);
             } catch(final ParseException e) {
@@ -455,7 +523,7 @@ public class Parser {
     }
 
     public Exp parseTest3() throws ParseException {
-        final ParseResult<Exp> toplevel = parseMultiplicativeExp(0);
+        final ParseResult<Exp> toplevel = parseBinaryOperatorExp(0);
         if (toplevel.nextPos == tokens.size()) {
             return toplevel.result;
         } else {
@@ -465,7 +533,7 @@ public class Parser {
 
     //test main
     public static void main(String[] args) {
-        final String input = "new Foo(1*2, true)";
+        final String input = "1*2+3";
         final Tokenizer tokenizer = new Tokenizer(input);
 
         try {
