@@ -17,6 +17,6 @@ public class FieldAccessExp implements Exp {
         } else return false;
     }
     public String toString() {
-        return String.format(this.getClass().getSimpleName() + "<" + left + "." + right + ">");
+        return String.format(this.getClass().getSimpleName() + " " + left + "." + right);
     }
 }

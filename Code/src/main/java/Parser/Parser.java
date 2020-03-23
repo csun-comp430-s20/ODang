@@ -25,6 +25,14 @@ public class Parser {
             this.nextPos = nextPos;
         }
     }
+    private class Pair<U, V> {
+        public final U first;
+        public final V second;
+        public Pair(final U first, final V second) {
+            this.first = first;
+            this.second = second;
+        }
+    }
     /**
      * Checks the current position in the list, done a lot in this code
      * so wrote a method for it
@@ -66,17 +74,17 @@ public class Parser {
             throw new ParseException("Position out of bounds: " + position);
         }
     }
-    //TODO implement
-    public ParseResult<Exp> parseExp(final int startPos) throws ParseException {
-        //parseAssignment
-        return null;
-    }
     /**
      * attempts to parse an expression
      * @param startPos position in the token array
      * @return ParseResult<Exp>
      * @throws ParseException
      */
+    //TODO implement
+    public ParseResult<Exp> parseExp(final int startPos) throws ParseException {
+        //parseAssignment
+        return null;
+    }
 
     public ParseResult<Exp> parseAdditive(final int startPos) throws ParseException {
         final ParseResult<Exp> starting = parseLiteral(startPos);
@@ -107,8 +115,54 @@ public class Parser {
     }
 
     /**
+     * attempts to parse a multiplicative expression, ie
+     * <unary expr> | <multiplicative expr> * <unary expr> |
+     * <multiplicative expr> / <unary expr> |
+     * <multiplicative expr> % <unary expr>
+     * @param startPos current position in the list
+     * @return ParseResult<Exp>
+     * @throws ParseException
+     */
+    public ParseResult<Exp> parseMultiplicativeExp(final int startPos) throws ParseException {
+        final ParseResult<Exp> starting = parseUnaryExp(startPos);
+        final ParseResult<List<Pair<String, Exp>>> rest = parseMultiplicativeExpHelper(starting.nextPos);
+
+        Exp resultExp = starting.result;
+
+        for (final Pair pair : rest.result) {
+            resultExp = new MultiplicativeExp((String) pair.first, resultExp, (Exp) pair.second);
+        }
+        return new ParseResult<Exp>(resultExp, rest.nextPos);
+    }
+
+    /**
+     * greedy implementation of multiplication parsing. using a private class Pair to store both
+     * the expressions and the operators in between
+     * @param startPos current position in the list
+     * @return ParseResult<List<Pair<String, Exp>>>
+     */
+    private ParseResult<List<Pair<String, Exp>>> parseMultiplicativeExpHelper(final int startPos) {
+        final List<Pair<String, Exp>> resultList = new ArrayList<Pair<String, Exp>>();
+        int curPos = startPos;
+
+        while (curPos < tokens.size()) {
+            try {
+                checkTokenIs(curPos, new OperatorToken("*"),
+                                     new OperatorToken("/"),
+                                     new OperatorToken("%"));
+                final OperatorToken currentOperator = (OperatorToken)readToken(curPos);
+                final ParseResult<Exp> currentUnaryExp = parseUnaryExp(curPos + 1);
+                curPos = currentUnaryExp.nextPos;
+                resultList.add(new Pair(currentOperator.name, currentUnaryExp.result));
+            } catch (ParseException e) {
+                break;
+            }
+        }
+        return new ParseResult<List<Pair<String, Exp>>>(resultList, curPos);
+    }
+    /**
      * attempts to parse a UnaryExp, ie NoIncDecUnaryExp, PreIncrDecrExp
-     * @param startPos
+     * @param startPos current position in the list
      * @return ParseResult<Exp>
      * @throws ParseException
      */
@@ -161,8 +215,8 @@ public class Parser {
 
     /**
      * attempts to parse a type cast
-     * @param startPos
-     * @return
+     * @param startPos current position in the list
+     * @return ParseResult<Exp>
      * @throws ParseException
      */
     public ParseResult<Exp> parseCastExp(final int startPos) throws ParseException {
@@ -299,7 +353,7 @@ public class Parser {
             final ParseResult<Exp> inner = parseExp(startPos + 1);
             checkTokenIs(inner.nextPos, new RightParenToken());
             return new ParseResult<Exp>(inner.result, inner.nextPos + 1);
-        } //super
+        } //super, TODO might move?
         else if (currentToken instanceof SuperToken) {
             return new ParseResult<Exp>(new SuperExp(), startPos + 1);
         }
@@ -345,7 +399,7 @@ public class Parser {
                 //case of separation between arguments
                 if (readToken(curPos) instanceof CommaToken)
                     curPos++;
-                final ParseResult<Exp> curArg = parsePrimary(curPos);   //TODO change to parseExp
+                final ParseResult<Exp> curArg = parseMultiplicativeExp(curPos);   //TODO change to parseExp
                 curPos = curArg.nextPos;
                 argList.expList.add(curArg.result);
             } catch(final ParseException e) {
@@ -400,15 +454,24 @@ public class Parser {
         }
     }
 
+    public Exp parseTest3() throws ParseException {
+        final ParseResult<Exp> toplevel = parseMultiplicativeExp(0);
+        if (toplevel.nextPos == tokens.size()) {
+            return toplevel.result;
+        } else {
+            throw new ParseException("tokens remaining at end");
+        }
+    }
+
     //test main
     public static void main(String[] args) {
-        final String input = "(int) ++testString.testMethod(null)";
+        final String input = "new Foo(1*2, true)";
         final Tokenizer tokenizer = new Tokenizer(input);
 
         try {
             final List<Token> tokens = tokenizer.tokenize();
             final Parser parser = new Parser(tokens);
-            final Exp parsed = parser.parseTest2();
+            final Exp parsed = parser.parseTest3();
             System.out.println(parsed);
         } catch(Exception e) {
             e.printStackTrace();
