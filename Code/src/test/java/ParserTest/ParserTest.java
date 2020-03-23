@@ -19,7 +19,6 @@ public class ParserTest {
         try {
             Assertions.assertEquals(expected, (new Parser(tokenizer.tokenize())).parseTest3()); //TODO change to parseExp
         } catch (Exception e) {
-            System.out.println(e.getClass().getSimpleName());
             e.printStackTrace();
         }
     }
@@ -119,17 +118,151 @@ public class ParserTest {
                                 ))));
         assertParsesFromString(expected, "foo.bar.testMethod(2, true)");
     }
-
+    @Test
+    public void checkParsesBinaryOperatorExpOnePlus() {
+        final Exp expected = new BinaryOperatorExp("+",
+                new IntegerLiteral(1),
+                new IntegerLiteral(2));
+        assertParsesFromString(expected, "1+2");
+    }
+    @Test
+    public void checkParsesBinaryOperatorExpTwoPlus() {
+        final Exp expected = new BinaryOperatorExp("+",
+                new BinaryOperatorExp("+",
+                        new IntegerLiteral(1),
+                        new IntegerLiteral(2)),
+                new IntegerLiteral(3));
+        assertParsesFromString(expected, "1+2+3");
+    }
+    @Test
+    public void checkParsesBinaryOperatorExpOneMinus() {
+        final Exp expected = new BinaryOperatorExp("-",
+                new IntegerLiteral(1),
+                new IntegerLiteral(2));
+        assertParsesFromString(expected, "1-2");
+    }
+    @Test
+    public void checkParsesBinaryOperatorExpTwoMinus() {
+        final Exp expected = new BinaryOperatorExp("-",
+                new BinaryOperatorExp("-",
+                        new IntegerLiteral(1),
+                        new IntegerLiteral(2)),
+                new IntegerLiteral(3));
+        assertParsesFromString(expected, "1-2-3");
+    }
+    @Test
+    public void checkParsesBinaryOperatorExpOneDivide() {
+        final Exp expected = new BinaryOperatorExp("/",
+                new IntegerLiteral(1),
+                new IntegerLiteral(2));
+        assertParsesFromString(expected, "1/2");
+    }
+    @Test
+    public void checkParsesBinaryOperatorExpTwoDivide() {
+        final Exp expected = new BinaryOperatorExp("/",
+                new BinaryOperatorExp("/",
+                        new IntegerLiteral(1),
+                        new IntegerLiteral(2)),
+                new IntegerLiteral(3));
+        assertParsesFromString(expected, "1/2/3");
+    }
+    @Test
+    public void checkParsesBinaryOperatorExpOneMult() {
+        final Exp expected = new BinaryOperatorExp("*",
+                new IntegerLiteral(1),
+                new IntegerLiteral(2));
+        assertParsesFromString(expected, "1*2");
+    }
+    @Test
+    public void checkParsesBinaryOperatorExpTwoMult() {
+        final Exp expected = new BinaryOperatorExp("*",
+                new BinaryOperatorExp("*",
+                        new IntegerLiteral(1),
+                        new IntegerLiteral(2)),
+                new IntegerLiteral(3));
+        assertParsesFromString(expected, "1*2*3");
+    }
+    @Test
+    public void checkParsesBinaryOperatorExpOneLessThan() {
+        final Exp expected = new BinaryOperatorExp("<",
+                new IntegerLiteral(1),
+                new IntegerLiteral(2));
+        assertParsesFromString(expected, "1<2");
+    }
+    @Test
+    public void checkParsesBinaryOperatorExpTwoLessThan() {
+        final Exp expected = new BinaryOperatorExp("<",
+                new BinaryOperatorExp("<",
+                        new IntegerLiteral(1),
+                        new IntegerLiteral(2)),
+                new IntegerLiteral(3));
+        assertParsesFromString(expected, "1<2<3");
+    }
+    @Test
+    public void checkParsesBinaryOperatorExpOneGreaterThan() {
+        final Exp expected = new BinaryOperatorExp(">",
+                new IntegerLiteral(1),
+                new IntegerLiteral(2));
+        assertParsesFromString(expected, "1>2");
+    }
+    @Test
+    public void checkParsesBinaryOperatorExpTwoGreaterThan() {
+        final Exp expected = new BinaryOperatorExp(">",
+                new BinaryOperatorExp(">",
+                        new IntegerLiteral(1),
+                        new IntegerLiteral(2)),
+                new IntegerLiteral(3));
+        assertParsesFromString(expected, "1>2>3");
+    }
+    @Test
+    public void checkParsesBinaryOperatorExpOneReferenceEquals() {
+        final Exp expected = new BinaryOperatorExp("==",
+                new IntegerLiteral(1),
+                new IntegerLiteral(2));
+        assertParsesFromString(expected, "1==2");
+    }
+    @Test
+    public void checkParsesBinaryOperatorExpTwoReferenceEquals() {
+        final Exp expected = new BinaryOperatorExp("==",
+                new BinaryOperatorExp("==",
+                        new IntegerLiteral(1),
+                        new IntegerLiteral(2)),
+                new IntegerLiteral(3));
+        assertParsesFromString(expected, "1==2==3");
+    }
+    @Test
+    public void checkParsesBinaryOperatorExpOneNotEquals() {
+        final Exp expected = new BinaryOperatorExp("!=",
+                new IntegerLiteral(1),
+                new IntegerLiteral(2));
+        assertParsesFromString(expected, "1!=2");
+    }
+    @Test
+    public void checkParsesBinaryOperatorExpTwoNotEquals() {
+        final Exp expected = new BinaryOperatorExp("!=",
+                new BinaryOperatorExp("!=",
+                        new IntegerLiteral(1),
+                        new IntegerLiteral(2)),
+                new IntegerLiteral(3));
+        assertParsesFromString(expected, "1!=2!=3");
+    }
+    @Test
+    public void checkThrowsParseExceptionInvalidOperatorSequence() {
+        final List<Token> testTokens = Arrays.asList(new IntegerToken(1),
+                new OperatorToken("+"), new OperatorToken("/"));
+        final Parser testParser = new Parser(testTokens);
+        Assertions.assertThrows(ParseException.class, testParser::parseTest3);//TODO change to parseExp
+    }
     @Test
     public void checkThrowsParseExceptionInvalidInputMethodOpenLeftParen() {
         final List<Token> testTokens = Arrays.asList(new IdentifierToken("foo"), new LeftParenToken());
         final Parser testParser = new Parser(testTokens);
-        Assertions.assertThrows(ParseException.class, testParser::parseTest);
+        Assertions.assertThrows(ParseException.class, testParser::parseTest3);//TODO change to parseExp
     }
     @Test
     public void checkThrowsParseExceptionInvalidInputMethodOnlyRightParen() {
         final List<Token> testTokens = Arrays.asList(new IdentifierToken("foo"), new RightParenToken());
         final Parser testParser = new Parser(testTokens);
-        Assertions.assertThrows(ParseException.class, testParser::parseTest);
+        Assertions.assertThrows(ParseException.class, testParser::parseTest3);//TODO change to parseExp
     }
 }

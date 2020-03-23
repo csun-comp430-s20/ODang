@@ -180,7 +180,7 @@ public class Parser {
             }
             //pop stack with higher precedence operators
             else {
-                while (!operators.isEmpty() && currentOpPrecedence < checkPresedence(operators.peek())) {
+                while (!operators.isEmpty() && currentOpPrecedence <= checkPresedence(operators.peek())) {
                     //have to pop right before left to get left-associativity
                     final Exp right = operands.pop();
                     final Exp left = operands.pop();
@@ -533,7 +533,7 @@ public class Parser {
 
     //test main
     public static void main(String[] args) {
-        final String input = "1*2+3";
+        final String input = "1+1";
         final Tokenizer tokenizer = new Tokenizer(input);
 
         try {
