@@ -17,6 +17,6 @@ public class MethodInvocation implements Exp {
         } else return false;
     }
     public String toString() {
-        return String.format(this.getClass().getSimpleName() + "<" + "exp: " + exp + " arglist: " + argList + ">");
+        return String.format(this.getClass().getSimpleName() + " exp: " + exp + " arglist: " + argList);
     }
 }

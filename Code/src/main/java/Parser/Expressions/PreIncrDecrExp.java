@@ -19,7 +19,7 @@ public class PreIncrDecrExp implements Exp {
     }
 
     public String toString() {
-        return String.format(this.getClass().getSimpleName() + "<" + preOp + prefixExp + " >");
+        return String.format(this.getClass().getSimpleName() + " " + preOp + prefixExp);
     }
 }
 

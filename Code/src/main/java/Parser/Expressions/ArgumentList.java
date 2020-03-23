@@ -23,6 +23,6 @@ public class ArgumentList implements Exp {
         else return false;
     }
     public String toString() {
-        return String.format(this.getClass().getSimpleName() + "< " + expList +  " >");
+        return String.format(this.getClass().getSimpleName() + "( " + expList +  " )");
     }
 }
