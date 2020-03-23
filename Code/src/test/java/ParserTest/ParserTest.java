@@ -17,7 +17,7 @@ public class ParserTest {
     public static void assertParsesFromString(final Exp expected, final String received) {
         final Tokenizer tokenizer = new Tokenizer(received);
         try {
-            Assertions.assertEquals(expected, (new Parser(tokenizer.tokenize())).parseTest3()); //TODO change to parseExp
+            Assertions.assertEquals(expected, (new Parser(tokenizer.tokenize())).parseTest2()); //TODO change to parseExp
         } catch (Exception e) {
             System.out.println(e.getClass().getSimpleName());
             e.printStackTrace();

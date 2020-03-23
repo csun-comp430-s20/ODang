@@ -20,6 +20,7 @@ public class CastExp implements Exp {
         else return false;
     }
     public String toString() {
-        return String.format(this.getClass().getSimpleName() + " (" + type + ") " + exp);
+        return String.format(this.getClass().getSimpleName() + " type: < " + type + " >" +
+                " exp: <" + exp + ">");
     }
 }

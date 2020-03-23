@@ -16,7 +16,7 @@ public class NegateUnaryExp implements Exp {
         else return false;
     }
     public String toString() {
-        return String.format(this.getClass().getSimpleName() + " !" + exp);
+        return String.format(this.getClass().getSimpleName() + "< " + exp + " >");
     }
 
 }
