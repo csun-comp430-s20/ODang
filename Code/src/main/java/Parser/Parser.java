@@ -107,6 +107,59 @@ public class Parser {
     }
 
     /**
+     * attempts to parse an multiplicative expression
+     * @param startPos position in the token array
+     * @return ParseResult<Exp>
+     * @throws ParseException
+     */
+    public ParseResult<Exp> parseMultiplicativeExp(final int startPos) throws ParseException {
+        final ParseResult<Exp> initialUnary = parseUnaryExp(startPos);
+        List<String> opList = new ArrayList<String>();
+        final ParseResult<List<Exp>> list = parseMultiplicativeExpHelper(initialUnary.nextPos, opList);
+        Exp finalResult = initialUnary.result;
+
+
+        int opCount = 0;
+        for (final Exp current : list.result) {
+            finalResult = new MultiplicativeExp(finalResult, opList.get(opCount), current);
+            opCount++;
+        }
+
+        return new ParseResult<Exp>(finalResult, list.nextPos);
+    }
+
+    public ParseResult<List<Exp>> parseMultiplicativeExpHelper(int curPos, List<String> opList) {
+        final List<Exp> result = new ArrayList<Exp>();
+
+        while(curPos < tokens.size()) {
+            try {
+                checkTokenIs(curPos, new OperatorToken("*"), new OperatorToken("/"), new OperatorToken("%"));
+                final ParseResult<Exp> currentUnary = parseUnaryExp(curPos + 1);
+                //System.out.println("Here.");
+                result.add((currentUnary).result);
+                final Token currentToken = readToken(curPos);
+                final OperatorToken OpToken = (OperatorToken) currentToken;
+                switch(OpToken.name){
+                    case "*":
+                        opList.add("*");
+                        break;
+                    case "/":
+                        opList.add("/");
+                        break;
+                    case "%":
+                        opList.add("%");
+                        break;
+                }
+                curPos = currentUnary.nextPos;
+            } catch (final ParseException e) {
+                break;
+            }
+        }
+
+        return new ParseResult<List<Exp>>(result, curPos);
+    }
+
+    /**
      * attempts to parse a UnaryExp, ie NoIncDecUnaryExp, PreIncrDecrExp
      * @param startPos
      * @return ParseResult<Exp>
@@ -400,6 +453,15 @@ public class Parser {
         }
     }
 
+    public Exp parseTest3() throws ParseException {
+        final ParseResult<Exp> toplevel = parseMultiplicativeExp(0);
+        if (toplevel.nextPos == tokens.size()) {
+            return toplevel.result;
+        } else {
+            throw new ParseException("tokens remaining at end");
+        }
+    }
+
     //test main
     public static void main(String[] args) {
         final String input = "(int) ++testString.testMethod(null)";
@@ -414,6 +476,17 @@ public class Parser {
             e.printStackTrace();
         }
 
+        final String input2 = "5*7*7/3/3/4*5/64";
+        final Tokenizer tokenizer2 = new Tokenizer(input2);
+
+        try {
+            final List<Token> tokens = tokenizer2.tokenize();
+            final Parser parser = new Parser(tokens);
+            final Exp parsed = parser.parseTest3();
+            System.out.println(parsed);
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
     }
 
 }
