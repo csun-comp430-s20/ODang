@@ -280,7 +280,7 @@ public class Parser {
         //! <unary exp>
         if (currentToken.equals(new OperatorToken("!"))) {
             final ParseResult<Exp> unaryExp = parseUnaryExp(startPos + 1);
-            return new ParseResult<Exp>(new NegateUnaryExp(unaryExp.result), unaryExp.nextPos);
+            return new ParseResult<Exp>(new NegateUnaryExp("!", unaryExp.result), unaryExp.nextPos);
         }
         //<cast exp> || (expr)
         else if (currentToken instanceof LeftParenToken) {
@@ -289,7 +289,7 @@ public class Parser {
             if (nextToken instanceof BooleanTypeToken ||
                 nextToken instanceof IntTypeToken ||
                 nextToken instanceof StringTypeToken) {
-                System.out.println("hei");
+
                 final ParseResult<Exp> castExp = parseCastExp(startPos);
                 return new ParseResult<Exp>(castExp.result, castExp.nextPos);
             }
