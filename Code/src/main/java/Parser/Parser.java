@@ -284,11 +284,16 @@ public class Parser {
         }
         //<cast exp> || (expr)
         else if (currentToken instanceof LeftParenToken) {
-            final Token nextToken = readToken(startPos + 1);
 
+            final Token nextToken = validPosition(startPos + 1) ?
+                    readToken(startPos + 1) : null;
+
+            //TODO maybe rework at some point?
+            // assumes that IdentifierToken have no other use alone between two parens
             if (nextToken instanceof BooleanTypeToken ||
                 nextToken instanceof IntTypeToken ||
-                nextToken instanceof StringTypeToken) {
+                nextToken instanceof StringTypeToken ||
+                nextToken instanceof IdentifierToken) {
 
                 final ParseResult<Exp> castExp = parseCastExp(startPos);
                 return new ParseResult<Exp>(castExp.result, castExp.nextPos);
@@ -339,9 +344,12 @@ public class Parser {
             return new ParseResult<Type>(new PrimitiveType(new StringType()), startPos + 1);
         }
         //<class type>: <identifier>
-        else {
-            return new ParseResult<Type>(new ClassType(), startPos + 1);
+        else if (currentToken instanceof IdentifierToken){
+            IdentifierToken identifierToken = (IdentifierToken) currentToken;
+            return new ParseResult<Type>(new ClassType(new IdentifierLiteral(identifierToken.name)), startPos + 1);
         }
+        else
+            throw new ParseException("Not a valid type to cast: " + currentToken);
     }
     /**
      * attempts to parse a preincrement expression
@@ -537,7 +545,7 @@ public class Parser {
     }
     //test main
     public static void main(String[] args) {
-        final String input = "(2 + 2) * (2 - 2) < (2 /6)";
+        final String input = "(Foo) foo";
         final Tokenizer tokenizer = new Tokenizer(input);
 
         try {

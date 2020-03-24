@@ -1,5 +1,6 @@
 package Parser.Expressions;
 
+@Deprecated
 public class PrimaryExp implements Exp {
     public final Exp exp;
 

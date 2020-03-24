@@ -248,11 +248,32 @@ public class ParserTest {
         assertParsesFromString(expected, "1!=2!=3");
     }
     @Test
-    public void checkparsesTypeInt() {
+    public void checkParsesCastExpInt() {
         final Exp expected = new CastExp(
                 new PrimitiveType(
                         new IntType()), new IdentifierLiteral("foo"));
         assertParsesFromString(expected, "(int) foo");
+    }
+    @Test
+    public void checkParsesCastExpString() {
+        final Exp expected = new CastExp(
+                new PrimitiveType(
+                        new StringType()), new IdentifierLiteral("foo"));
+        assertParsesFromString(expected, "(String) foo");
+    }
+    @Test
+    public void checkParsesCastExpBoolean() {
+        final Exp expected = new CastExp(
+                new PrimitiveType(
+                        new BooleanType()), new IdentifierLiteral("foo"));
+        assertParsesFromString(expected, "(boolean) foo");
+    }
+    @Test
+    public void checkParsesCastExpClass() {
+        final Exp expected = new CastExp(
+                new ClassType(
+                        new IdentifierLiteral("Foo")), new IdentifierLiteral("bar"));
+        assertParsesFromString(expected, "(Foo) bar");
     }
     @Test
     public void checkThrowsParseExceptionInvalidOperatorSequence() {
