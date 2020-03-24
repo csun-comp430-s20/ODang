@@ -134,12 +134,13 @@ public class ParserTest {
                 new IntegerLiteral(3));
         assertParsesFromString(expected, "1+2+3");
     }
+    //TODO rework minus?
     @Test
     public void checkParsesBinaryOperatorExpOneMinus() {
         final Exp expected = new BinaryOperatorExp("-",
                 new IntegerLiteral(1),
                 new IntegerLiteral(2));
-        assertParsesFromString(expected, "1-2");
+        assertParsesFromString(expected, "1 - 2");
     }
     @Test
     public void checkParsesBinaryOperatorExpTwoMinus() {
@@ -148,7 +149,7 @@ public class ParserTest {
                         new IntegerLiteral(1),
                         new IntegerLiteral(2)),
                 new IntegerLiteral(3));
-        assertParsesFromString(expected, "1-2-3");
+        assertParsesFromString(expected, "1 - 2 - 3");
     }
     @Test
     public void checkParsesBinaryOperatorExpOneDivide() {
@@ -245,6 +246,13 @@ public class ParserTest {
                         new IntegerLiteral(2)),
                 new IntegerLiteral(3));
         assertParsesFromString(expected, "1!=2!=3");
+    }
+    @Test
+    public void checkparsesTypeInt() {
+        final Exp expected = new CastExp(
+                new PrimitiveType(
+                        new IntType()), new IdentifierLiteral("foo"));
+        assertParsesFromString(expected, "(int) foo");
     }
     @Test
     public void checkThrowsParseExceptionInvalidOperatorSequence() {

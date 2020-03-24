@@ -280,7 +280,7 @@ public class Parser {
         //! <unary exp>
         if (currentToken.equals(new OperatorToken("!"))) {
             final ParseResult<Exp> unaryExp = parseUnaryExp(startPos + 1);
-            return new ParseResult<Exp>(new NegateUnaryExp("!", unaryExp.result), unaryExp.nextPos);
+            return new ParseResult<Exp>(new NegateUnaryExp(unaryExp.result), unaryExp.nextPos);
         }
         //<cast exp> || (expr)
         else if (currentToken instanceof LeftParenToken) {
@@ -537,7 +537,7 @@ public class Parser {
     }
     //test main
     public static void main(String[] args) {
-        final String input = "(2 + 2) * 2";
+        final String input = "(2 + 2) * (2 - 2) < (2 /6)";
         final Tokenizer tokenizer = new Tokenizer(input);
 
         try {
