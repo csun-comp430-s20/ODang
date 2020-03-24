@@ -102,38 +102,9 @@ public class Parser {
      * @return ParseResult<Exp>
      * @throws ParseException
      */
-    //TODO implement
     public ParseResult<Exp> parseExp(final int startPos) throws ParseException {
-        //parseAssignment
-        return null;
-    }
-
-    public ParseResult<Exp> parseAdditive(final int startPos) throws ParseException {
-        final ParseResult<Exp> starting = parseLiteral(startPos);
-        final ParseResult<List<Exp>> rest = parseAdditiveExpHelper(starting.nextPos);
-        Exp resultExp = starting.result;
-
-        if (starting.nextPos < tokens.size()) {
-
-        }
-        return null;
-    }
-    //TODO finish
-    public ParseResult<List<Exp>> parseAdditiveExpHelper(final int startPos) {
-        final List<Exp> resultList = new ArrayList<Exp>();
-        int curPos = startPos;
-
-        while (curPos < tokens.size()) {
-            try {
-                checkTokenIs(curPos, new OperatorToken("+"), new OperatorToken("-"));
-                final ParseResult<Exp> curLiteral = parseLiteral(curPos + 1);
-                curPos = curLiteral.nextPos;
-                resultList.add(curLiteral.result);
-            } catch (final ParseException e) {
-                break;
-            }
-        }
-        return null;
+        final ParseResult<Exp> exp = parseAssignmentExpr(startPos);
+        return exp;
     }
 
     /**
@@ -146,16 +117,19 @@ public class Parser {
      * @throws ParseException
      */
     public ParseResult<Exp> parseAssignmentExpr (final int startPos) throws ParseException{
-        ParseResult<List<Pair<String,Exp>>> list = parseAssignmentExpHelper(startPos, new OperatorToken("="),
-                new OperatorToken("+="), new OperatorToken("-="));
-        ParseResult<Exp> equalityExpr = parsePrimary(startPos);
+        ParseResult<Exp> equalityExpr = parseBinaryOperatorExp(startPos);
+        ParseResult<List<Pair<String,Exp>>> rest = parseAssignmentExpHelper(equalityExpr.nextPos,
+                new OperatorToken("="),
+                new OperatorToken("+="),
+                new OperatorToken("-="));
+
         Exp finalResult = equalityExpr.result;
 
-        for (final Pair<String, Exp> current : list.result) {
+        for (final Pair<String, Exp> current : rest.result) {
             finalResult = new BinaryOperatorExp(current.first, current.second, finalResult);
         }
 
-        return new ParseResult<Exp>(finalResult, list.nextPos);
+        return new ParseResult<Exp>(finalResult, rest.nextPos);
     }
 
     public ParseResult<List<Pair<String, Exp>>> parseAssignmentExpHelper(int curPos, final Token... operators) {
@@ -168,6 +142,7 @@ public class Parser {
                 final OperatorToken currentOperator = (OperatorToken)readToken(curPos);
                 curPos = currentLeftSide.nextPos;
                 resultList.add(new Pair(currentOperator.name, currentLeftSide.result));
+
             } catch (final ParseException e) {
                 break;
             }
@@ -304,13 +279,24 @@ public class Parser {
         final Token currentToken = readToken(startPos);
         //! <unary exp>
         if (currentToken.equals(new OperatorToken("!"))) {
-            final ParseResult<Exp> unaryExp = parseUnaryExp(startPos+1);
+            final ParseResult<Exp> unaryExp = parseUnaryExp(startPos + 1);
             return new ParseResult<Exp>(new NegateUnaryExp(unaryExp.result), unaryExp.nextPos);
         }
-        //<cast exp>
+        //<cast exp> || (expr)
         else if (currentToken instanceof LeftParenToken) {
-            final ParseResult<Exp> castExp = parseCastExp(startPos);
-            return new ParseResult<Exp>(castExp.result, castExp.nextPos);
+            final Token nextToken = readToken(startPos + 1);
+
+            if (nextToken instanceof BooleanTypeToken ||
+                nextToken instanceof IntTypeToken ||
+                nextToken instanceof StringTypeToken) {
+                System.out.println("hei");
+                final ParseResult<Exp> castExp = parseCastExp(startPos);
+                return new ParseResult<Exp>(castExp.result, castExp.nextPos);
+            }
+            else {
+                final ParseResult<Exp> primary = parsePrimary(startPos);
+                return new ParseResult<Exp>(primary.result, primary.nextPos);
+            }
         }
         //primary
         else {
@@ -365,7 +351,7 @@ public class Parser {
      */
     public ParseResult<Exp> parsePreIncrExpr(final int startPos) throws ParseException {
         checkTokenIs(startPos, new OperatorToken("++"));
-        final ParseResult<Exp> preIncrExpr = parsePrimary(startPos + 1); //TODO change to parseExp
+        final ParseResult<Exp> preIncrExpr = parseUnaryExp(startPos + 1);
         return new ParseResult<Exp>(new PreIncrDecrExp(preIncrExpr.result, "++"), preIncrExpr.nextPos);
     }
     /**
@@ -376,7 +362,7 @@ public class Parser {
      */
     public ParseResult<Exp> parsePreDecrExpr(final int startPos) throws ParseException {
         checkTokenIs(startPos, new OperatorToken("--"));
-        final ParseResult<Exp> preDecrExpr = parsePrimary(startPos + 1); //TODO change to parseExp
+        final ParseResult<Exp> preDecrExpr = parseUnaryExp(startPos + 1);
         return new ParseResult<Exp>(new PreIncrDecrExp(preDecrExpr.result, "--"), preDecrExpr.nextPos);
     }
     /**
@@ -386,7 +372,7 @@ public class Parser {
      * @throws ParseException
      */
     public ParseResult<Exp> parsePostIncrExpr(final int startPos) throws ParseException {
-        final ParseResult<Exp> postfixExpr = parsePrimary(startPos); //TODO change to parseExp
+        final ParseResult<Exp> postfixExpr = parseUnaryExp(startPos);
         checkTokenIs(postfixExpr.nextPos, new OperatorToken("++"));
         PostIncrDecrExp result = new PostIncrDecrExp(postfixExpr.result, "++");
         return new ParseResult<Exp>(result, postfixExpr.nextPos + 1);
@@ -399,7 +385,7 @@ public class Parser {
      * @throws ParseException
      */
     public ParseResult<Exp> parsePostDecrExpr(final int startPos) throws ParseException {
-        final ParseResult<Exp> postfixExpr = parsePrimary(startPos); //TODO change to parseExp
+        final ParseResult<Exp> postfixExpr = parseUnaryExp(startPos);
         checkTokenIs(postfixExpr.nextPos, new OperatorToken("--"));
         PostIncrDecrExp result = new PostIncrDecrExp(postfixExpr.result, "--");
         return new ParseResult<Exp>(result, postfixExpr.nextPos + 1);
@@ -505,7 +491,7 @@ public class Parser {
                 //case of separation between arguments
                 if (readToken(curPos) instanceof CommaToken)
                     curPos++;
-                final ParseResult<Exp> curArg = parseBinaryOperatorExp(curPos);   //TODO change to parseExp
+                final ParseResult<Exp> curArg = parseExp(curPos);
                 curPos = curArg.nextPos;
                 argList.expList.add(curArg.result);
             } catch(final ParseException e) {
@@ -541,43 +527,23 @@ public class Parser {
             throw new ParseException("not a valid token: " + tokens.get(startPos));
     }
 
-    //for testing, not the final version
-    public Exp parseTest() throws ParseException {
-        final ParseResult<Exp> toplevel = parsePrimary(0);
+    public Exp parseTopLevel() throws ParseException {
+        final ParseResult<Exp> toplevel = parseExp(0);
         if (toplevel.nextPos == tokens.size()) {
             return toplevel.result;
         } else {
             throw new ParseException("tokens remaining at end");
         }
     }
-
-    public Exp parseTest2() throws ParseException {
-        final ParseResult<Exp> toplevel = parseUnaryExp(0);
-        if (toplevel.nextPos == tokens.size()) {
-            return toplevel.result;
-        } else {
-            throw new ParseException("tokens remaining at end");
-        }
-    }
-
-    public Exp parseTest3() throws ParseException {
-        final ParseResult<Exp> toplevel = parseBinaryOperatorExp(0);
-        if (toplevel.nextPos == tokens.size()) {
-            return toplevel.result;
-        } else {
-            throw new ParseException("tokens remaining at end");
-        }
-    }
-
     //test main
     public static void main(String[] args) {
-        final String input = "1+1+3";
+        final String input = "(2 + 2) * 2";
         final Tokenizer tokenizer = new Tokenizer(input);
 
         try {
             final List<Token> tokens = tokenizer.tokenize();
             final Parser parser = new Parser(tokens);
-            final Exp parsed = parser.parseTest3();
+            final Exp parsed = parser.parseTopLevel();
             System.out.println(parsed);
         } catch(Exception e) {
             e.printStackTrace();

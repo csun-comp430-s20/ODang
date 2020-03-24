@@ -17,7 +17,7 @@ public class ParserTest {
     public static void assertParsesFromString(final Exp expected, final String received) {
         final Tokenizer tokenizer = new Tokenizer(received);
         try {
-            Assertions.assertEquals(expected, (new Parser(tokenizer.tokenize())).parseTest3()); //TODO change to parseExp
+            Assertions.assertEquals(expected, (new Parser(tokenizer.tokenize())).parseTopLevel()); //TODO change to parseExp
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -251,18 +251,18 @@ public class ParserTest {
         final List<Token> testTokens = Arrays.asList(new IntegerToken(1),
                 new OperatorToken("+"), new OperatorToken("/"));
         final Parser testParser = new Parser(testTokens);
-        Assertions.assertThrows(ParseException.class, testParser::parseTest3);//TODO change to parseExp
+        Assertions.assertThrows(ParseException.class, testParser::parseTopLevel);
     }
     @Test
     public void checkThrowsParseExceptionInvalidInputMethodOpenLeftParen() {
         final List<Token> testTokens = Arrays.asList(new IdentifierToken("foo"), new LeftParenToken());
         final Parser testParser = new Parser(testTokens);
-        Assertions.assertThrows(ParseException.class, testParser::parseTest3);//TODO change to parseExp
+        Assertions.assertThrows(ParseException.class, testParser::parseTopLevel);
     }
     @Test
     public void checkThrowsParseExceptionInvalidInputMethodOnlyRightParen() {
         final List<Token> testTokens = Arrays.asList(new IdentifierToken("foo"), new RightParenToken());
         final Parser testParser = new Parser(testTokens);
-        Assertions.assertThrows(ParseException.class, testParser::parseTest3);//TODO change to parseExp
+        Assertions.assertThrows(ParseException.class, testParser::parseTopLevel);
     }
 }

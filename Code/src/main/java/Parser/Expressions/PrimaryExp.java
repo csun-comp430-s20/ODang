@@ -1,6 +1,5 @@
 package Parser.Expressions;
 
-//TODO might be redundant
 public class PrimaryExp implements Exp {
     public final Exp exp;
 
