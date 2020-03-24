@@ -137,6 +137,44 @@ public class Parser {
     }
 
     /**
+     * <assignment expr ::= <equality expr> | <assignment>
+     * attempts to parse an assignment expr
+     * <assignment> calls <assignment expr> so the parse function goes through as many <assignment> as possible before
+     * moving on to the <equality expr>
+     * @param startPos current position in the list
+     * @return ParseResult<Exp>
+     * @throws ParseException
+     */
+    public ParseResult<Exp> parseAssignmentExpr (final int startPos) throws ParseException{
+        ParseResult<List<Pair<String,Exp>>> list = parseAssignmentExpHelper(startPos, new OperatorToken("="),
+                new OperatorToken("+="), new OperatorToken("-="));
+        ParseResult<Exp> equalityExpr = parsePrimary(startPos);
+        Exp finalResult = equalityExpr.result;
+
+        for (final Pair<String, Exp> current : list.result) {
+            finalResult = new BinaryOperatorExp(current.first, current.second, finalResult);
+        }
+
+        return new ParseResult<Exp>(finalResult, list.nextPos);
+    }
+
+    public ParseResult<List<Pair<String, Exp>>> parseAssignmentExpHelper(int curPos, final Token... operators) {
+        final List<Pair<String, Exp>> resultList = new ArrayList<Pair<String, Exp>>();
+
+        while(curPos + 1 < tokens.size()) {
+            try {
+                checkTokenIs( curPos + 1, operators);
+                final ParseResult<Exp> currentLeftSide = parsePrimary(curPos);
+                final OperatorToken currentOperator = (OperatorToken)readToken(curPos);
+                curPos = currentLeftSide.nextPos;
+                resultList.add(new Pair(currentOperator.name, currentLeftSide.result));
+            } catch (final ParseException e) {
+                break;
+            }
+        }
+        return new ParseResult<List<Pair<String, Exp>>>(resultList, curPos);
+    }
+    /**
      * attempts to parse a binary operator expression in this sequence
      * (excluded <assignment expr> because of differences)
      * 1. equality exp
@@ -533,7 +571,7 @@ public class Parser {
 
     //test main
     public static void main(String[] args) {
-        final String input = "1+1";
+        final String input = "1+1+3";
         final Tokenizer tokenizer = new Tokenizer(input);
 
         try {
