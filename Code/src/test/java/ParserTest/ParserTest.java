@@ -276,6 +276,11 @@ public class ParserTest {
         assertParsesFromString(expected, "(Foo) bar");
     }
     @Test
+    public void checkParsesAssignmentEquals() {
+        final Exp expected = new BinaryOperatorExp("=", new IdentifierLiteral("foo"), new IntegerLiteral(1));
+        assertParsesFromString(expected, "foo = 1");
+    }
+    @Test
     public void checkThrowsParseExceptionInvalidOperatorSequence() {
         final List<Token> testTokens = Arrays.asList(new IntegerToken(1),
                 new OperatorToken("+"), new OperatorToken("/"));

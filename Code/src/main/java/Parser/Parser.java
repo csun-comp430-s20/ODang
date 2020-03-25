@@ -109,10 +109,6 @@ public class Parser {
         return null;
     }
 
-
-    /*TODO should if else parse <block> or <stmt>? right now trueBranch and falseBranch are <stmt>, but we want
-     {} around dont we?
-     */
     /**
      * attempts to parse an If Else statement
      * @param startPos position on the token list
@@ -158,9 +154,19 @@ public class Parser {
     public ParseResult<Stmt> parseForInit(final int startPos) throws ParseException {
         return null;
     }
+
+    /**
+     * attempts to parse an ExpStmt, ie <assignment> | <preincrement expr> | <predecrement expr> |
+     *<postdecrement expr> | <postincrement expr> | <method invocation> | <class instance creation expr>
+     * @param startPos position in the token list
+     * @return ParseResult<Stmt>
+     * @throws ParseException
+     */
     public ParseResult<Stmt> parseExpStmt (final int startPos) throws ParseException {
-        return null;
+        final ParseResult<Exp> stmtExp = parseExp(startPos);
+        return new ParseResult<Stmt>(new ExpStmt(stmtExp.result), stmtExp.nextPos);
     }
+
     public ParseResult<Stmt> parseStmtExpList(final int startPos) throws ParseException {
         return null;
     }
@@ -233,7 +239,7 @@ public class Parser {
         Exp finalResult = equalityExpr.result;
 
         for (final Pair<String, Exp> current : rest.result) {
-            finalResult = new BinaryOperatorExp(current.first, current.second, finalResult);
+            finalResult = new BinaryOperatorExp(current.first, finalResult, current.second);
         }
 
         return new ParseResult<Exp>(finalResult, rest.nextPos);
@@ -242,10 +248,10 @@ public class Parser {
     public ParseResult<List<Pair<String, Exp>>> parseAssignmentExpHelper(int curPos, final Token... operators) {
         final List<Pair<String, Exp>> resultList = new ArrayList<Pair<String, Exp>>();
 
-        while(curPos + 1 < tokens.size()) {
+        while(curPos < tokens.size()) {
             try {
-                checkTokenIs( curPos + 1, operators);
-                final ParseResult<Exp> currentLeftSide = parsePrimary(curPos);
+                checkTokenIs( curPos, operators);
+                final ParseResult<Exp> currentLeftSide = parsePrimary(curPos + 1);
                 final OperatorToken currentOperator = (OperatorToken)readToken(curPos);
                 curPos = currentLeftSide.nextPos;
                 resultList.add(new Pair(currentOperator.name, currentLeftSide.result));
@@ -392,16 +398,17 @@ public class Parser {
         }
         //<cast exp> || (expr)
         else if (currentToken instanceof LeftParenToken) {
-
             final Token nextToken = validPosition(startPos + 1) ?
                     readToken(startPos + 1) : null;
-
+            final Token nextNextToken = validPosition(startPos + 2) ?
+                    readToken(startPos + 2) : null;
             //TODO maybe rework at some point?
             // assumes that IdentifierToken have no other use alone between two parens
             if (nextToken instanceof BooleanTypeToken ||
                 nextToken instanceof IntTypeToken ||
                 nextToken instanceof StringTypeToken ||
-                nextToken instanceof IdentifierToken) {
+               (nextToken instanceof IdentifierToken &&
+                nextNextToken instanceof RightParenToken)) {
 
                 final ParseResult<Exp> castExp = parseCastExp(startPos);
                 return new ParseResult<Exp>(castExp.result, castExp.nextPos);
@@ -481,7 +488,7 @@ public class Parser {
                 final ParseResult<Exp> postDecrExp = parsePostDecrExpr(startPos);
                 return new ParseResult<Exp>(postDecrExp.result, postDecrExp.nextPos);
             }
-            else throw new ParseException("not a valid postfix operator: " + postfixOp.name);
+            else return new ParseResult<Exp>(primary.result, primary.nextPos);
         }
         //primary
         else {
@@ -701,7 +708,7 @@ public class Parser {
 
     //test main
     public static void main(String[] args) {
-        final String input = "foo++";
+        final String input = "(foo) bar";
         final Tokenizer tokenizer = new Tokenizer(input);
 
         try {
