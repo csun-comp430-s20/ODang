@@ -19,7 +19,7 @@ public class PostIncrDecrExp implements  Exp {
     }
 
     public String toString() {
-        return String.format(this.getClass().getSimpleName() + " " + postfixExp + " " + postOp);
+        return String.format(this.getClass().getSimpleName() + " (" + postfixExp + " " + postOp + ")");
     }
 }
 

@@ -6,9 +6,7 @@ import Parser.Literals.*;
 import Tokenizer.Tokens.*;
 import Tokenizer.*;
 import Parser.Types.*;
-//import sun.tools.jstat.Identifier;
 
-import javax.swing.*;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Stack;
@@ -87,7 +85,7 @@ public class Parser {
      * @param operator
      * @return
      */
-    private static int checkPresedence(String operator) {
+    private static int checkPrecedence(String operator) {
 
         if (operator.equals("==") || operator.equals("!="))
             return 0;
@@ -100,9 +98,76 @@ public class Parser {
         else return -1;
     }
 
+    //TODO implement later, just need it now to implement other parseStmts
     /**
-     * attempts to parse an expression
-     * @param startPos position in the token array
+     * attempts to parse a block, ie {<block statements>?}
+     * @param startPos position on the token list
+     * @return ParseResult<Stmt>
+     * @throws ParseException
+     */
+    public ParseResult<Stmt> parseBlock(final int startPos) throws ParseException {
+        return null;
+    }
+
+
+    /*TODO should if else parse <block> or <stmt>? right now trueBranch and falseBranch are <stmt>, but we want
+     {} around dont we?
+     */
+    /**
+     * attempts to parse an If Else statement
+     * @param startPos position on the token list
+     * @return  ParseResult<Stmt>
+     * @throws ParseException
+     */
+    public ParseResult<Stmt> parseIfElseStmt(final int startPos) throws ParseException {
+        checkTokenIs(startPos, new IfToken());
+        checkTokenIs(startPos + 1, new LeftParenToken());
+        final ParseResult<Exp> guard = parseExp(startPos + 2);
+        checkTokenIs(guard.nextPos, new RightParenToken());
+        final ParseResult<Stmt> trueBranch = parseBlock(guard.nextPos + 1);
+        checkTokenIs(trueBranch.nextPos, new ElseToken());
+        final ParseResult<Stmt> falseBranch = parseBlock(trueBranch.nextPos + 1);
+        return new ParseResult<Stmt>(new IfElseStmt(
+                guard.result, trueBranch.result, falseBranch.result),
+                falseBranch.nextPos);
+    }
+
+    /**
+     * attempts to parse a ForStmt
+     * @param startPos current position in the list
+     * @return ParseResult<Stmt> with a ForStmt
+     * @throws ParseException
+     */
+    public ParseResult<Stmt> parseForStmt(final int startPos) throws ParseException {
+        checkTokenIs(startPos, new ForToken());
+        checkTokenIs(startPos + 1, new LeftParenToken());
+        final ParseResult<Stmt> forInit = parseForInit(startPos + 2);
+        checkTokenIs(forInit.nextPos, new SemiColonToken());
+        final ParseResult<Exp> conditional = parseExp(forInit.nextPos + 1);
+        checkTokenIs(conditional.nextPos, new SemiColonToken());
+        final ParseResult<Stmt> forUpdate = parseStmtExpList(conditional.nextPos + 1);
+        checkTokenIs(forUpdate.nextPos, new RightParenToken());
+        final ParseResult<Stmt> body = parseBlock(forUpdate.nextPos + 1);
+        return new ParseResult<Stmt>(new ForStmt(
+                forInit.result,
+                conditional.result,
+                forUpdate.result,
+                body.result), body.nextPos);
+    }
+
+    public ParseResult<Stmt> parseForInit(final int startPos) throws ParseException {
+        return null;
+    }
+    public ParseResult<Stmt> parseExpStmt (final int startPos) throws ParseException {
+        return null;
+    }
+    public ParseResult<Stmt> parseStmtExpList(final int startPos) throws ParseException {
+        return null;
+    }
+
+    /**
+     * attempts to parse a break statement
+     * @param startPos position in the token list
      * @return ParseResult<Stmt>
      * @throws ParseException
      */
@@ -121,7 +186,7 @@ public class Parser {
     }
 
     /**
-     * attempts to parse an expression
+     * attempts to parse a return statement
      * @param startPos position in the token array
      * @return ParseResult<Stmt>
      * @throws ParseException
@@ -140,7 +205,7 @@ public class Parser {
 
     /**
      * attempts to parse an expression
-     * @param startPos position in the token array
+     * @param startPos position in the token list
      * @return ParseResult<Exp>
      * @throws ParseException
      */
@@ -225,7 +290,7 @@ public class Parser {
         //going through the parsed list of Pair(Op, Unary exp)
         for (final Pair pair : rest.result) {
             final String currentOperator = (String) pair.first;
-            final int currentOpPrecedence = checkPresedence(currentOperator);
+            final int currentOpPrecedence = checkPrecedence(currentOperator);
             final Exp currentExp = (Exp) pair.second;
 
             //no operators to compare the new operator with
@@ -235,7 +300,7 @@ public class Parser {
             }
             //pop stack with higher precedence operators
             else {
-                while (!operators.isEmpty() && currentOpPrecedence <= checkPresedence(operators.peek())) {
+                while (!operators.isEmpty() && currentOpPrecedence <= checkPrecedence(operators.peek())) {
                     //have to pop right before left to get left-associativity
                     final Exp right = operands.pop();
                     final Exp left = operands.pop();
@@ -320,7 +385,8 @@ public class Parser {
     public ParseResult<Exp> parseNoIncDecUnaryExp(final int startPos) throws ParseException {
         final Token currentToken = readToken(startPos);
         //! <unary exp>
-        if (currentToken.equals(new OperatorToken("!"))) {
+        if (currentToken instanceof OperatorToken) {
+            checkTokenIs(startPos, new OperatorToken("!"));
             final ParseResult<Exp> unaryExp = parseUnaryExp(startPos + 1);
             return new ParseResult<Exp>(new NegateUnaryExp(unaryExp.result), unaryExp.nextPos);
         }
@@ -345,10 +411,10 @@ public class Parser {
                 return new ParseResult<Exp>(primary.result, primary.nextPos);
             }
         }
-        //primary
+        //postfix
         else {
-            final ParseResult<Exp> primary = parsePrimary(startPos);
-            return new ParseResult<Exp>(primary.result, primary.nextPos);
+            final ParseResult<Exp> postfix = parsePostfixExp(startPos);
+            return new ParseResult<Exp>(postfix.result, postfix.nextPos);
         }
     }
 
@@ -393,6 +459,35 @@ public class Parser {
         else
             throw new ParseException("Not a valid type to cast: " + currentToken);
     }
+
+
+    /**
+     * attempts to parse a postfix exp, ie <primary>, <postincr exp>, <postdecr exp>
+     * @param startPos current position in the list
+     * @return ParseResult<Exp>
+     * @throws ParseException
+     */
+    public ParseResult<Exp> parsePostfixExp(final int startPos) throws ParseException {
+        final ParseResult<Exp> primary = parsePrimary(startPos);
+        Token nextToken = validPosition(primary.nextPos) ? readToken(primary.nextPos) : null;
+
+        if (nextToken instanceof OperatorToken) {
+            OperatorToken postfixOp = (OperatorToken) nextToken;
+            if (postfixOp.name.equals("++")) {
+                final ParseResult<Exp> postIncrExp = parsePostIncrExpr(startPos);
+                return new ParseResult<Exp>(postIncrExp.result, postIncrExp.nextPos);
+            }
+            else if (postfixOp.name.equals("--")) {
+                final ParseResult<Exp> postDecrExp = parsePostDecrExpr(startPos);
+                return new ParseResult<Exp>(postDecrExp.result, postDecrExp.nextPos);
+            }
+            else throw new ParseException("not a valid postfix operator: " + postfixOp.name);
+        }
+        //primary
+        else {
+            return new ParseResult<Exp>(primary.result, primary.nextPos);
+        }
+    }
     /**
      * attempts to parse a preincrement expression
      * @param startPos position in the token array
@@ -422,12 +517,11 @@ public class Parser {
      * @throws ParseException
      */
     public ParseResult<Exp> parsePostIncrExpr(final int startPos) throws ParseException {
-        final ParseResult<Exp> postfixExpr = parseUnaryExp(startPos);
+        final ParseResult<Exp> postfixExpr = parsePrimary(startPos);
         checkTokenIs(postfixExpr.nextPos, new OperatorToken("++"));
         PostIncrDecrExp result = new PostIncrDecrExp(postfixExpr.result, "++");
         return new ParseResult<Exp>(result, postfixExpr.nextPos + 1);
     }
-
     /**
      * attempts to parse a postdecrement expression
      * @param startPos position in the token array
@@ -435,7 +529,7 @@ public class Parser {
      * @throws ParseException
      */
     public ParseResult<Exp> parsePostDecrExpr(final int startPos) throws ParseException {
-        final ParseResult<Exp> postfixExpr = parseUnaryExp(startPos);
+        final ParseResult<Exp> postfixExpr = parsePrimary(startPos);
         checkTokenIs(postfixExpr.nextPos, new OperatorToken("--"));
         PostIncrDecrExp result = new PostIncrDecrExp(postfixExpr.result, "--");
         return new ParseResult<Exp>(result, postfixExpr.nextPos + 1);
@@ -607,7 +701,7 @@ public class Parser {
 
     //test main
     public static void main(String[] args) {
-        final String input = "(Foo) foo";
+        final String input = "foo++";
         final Tokenizer tokenizer = new Tokenizer(input);
 
         try {
