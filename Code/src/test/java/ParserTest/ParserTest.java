@@ -276,9 +276,65 @@ public class ParserTest {
         assertParsesFromString(expected, "(Foo) bar");
     }
     @Test
-    public void checkParsesAssignmentEquals() {
+    public void checkParsesAssignmentEqualsOneOperator() {
         final Exp expected = new BinaryOperatorExp("=", new IdentifierLiteral("foo"), new IntegerLiteral(1));
         assertParsesFromString(expected, "foo = 1");
+    }
+    @Test
+    public void checkParsesAssignmentTwoOperatorsWithParen() {
+        final Exp expected = new BinaryOperatorExp("=", new IdentifierLiteral("foo"),
+                new BinaryOperatorExp("=", new IdentifierLiteral("bar"), new IntegerLiteral(1)));
+        assertParsesFromString(expected, "foo = (bar = 1)");
+    }
+    @Test
+    public void checkParsesAssignmentPlusEqualsOneOperator() {
+        final Exp expected = new BinaryOperatorExp("+=", new IdentifierLiteral("foo"), new IntegerLiteral(1));
+        assertParsesFromString(expected, "foo += 1");
+    }
+    @Test
+    public void checkParsesAssignmentMinusEqualsOneOperator() {
+        final Exp expected = new BinaryOperatorExp("-=", new IdentifierLiteral("foo"), new IntegerLiteral(1));
+        assertParsesFromString(expected, "foo -= 1");
+    }
+    @Test
+    public void checkParsesEqualityExpNotEqualsOneOperator() {
+        final Exp expected = new BinaryOperatorExp("!=", new IdentifierLiteral("foo"), new IntegerLiteral(1));
+        assertParsesFromString(expected, "foo != 1");
+    }
+    @Test
+    public void checkParsesEqualityExpReferenceEqualsOneOperator() {
+        final Exp expected = new BinaryOperatorExp("==", new IdentifierLiteral("foo"), new IntegerLiteral(1));
+        assertParsesFromString(expected, "foo == 1");
+    }
+    @Test
+    public void checkParseRelationalGreaterThanOneOperator() {
+        final Exp expected = new BinaryOperatorExp(">", new IdentifierLiteral("foo"), new IntegerLiteral(1));
+        assertParsesFromString(expected, "foo > 1");
+    }
+    @Test
+    public void checkParseRelationalLessThanOneOperator() {
+        final Exp expected = new BinaryOperatorExp("<", new IdentifierLiteral("foo"), new IntegerLiteral(1));
+        assertParsesFromString(expected, "foo < 1");
+    }
+    @Test
+    public void checkParsesAdditivePlusOneOperator() {
+        final Exp expected = new BinaryOperatorExp("+", new IdentifierLiteral("foo"), new IntegerLiteral(1));
+        assertParsesFromString(expected, "foo + 1");
+    }
+    @Test
+    public void checkParsesAdditiveMinusOneOperator() {
+        final Exp expected = new BinaryOperatorExp("-", new IdentifierLiteral("foo"), new IntegerLiteral(1));
+        assertParsesFromString(expected, "foo - 1");
+    }
+    @Test
+    public void checkParsesMultiplicativeMultiplicationOneOperator() {
+        final Exp expected = new BinaryOperatorExp("*", new IdentifierLiteral("foo"), new IntegerLiteral(1));
+        assertParsesFromString(expected, "foo * 1");
+    }
+    @Test
+    public void checkParsesMultiplicativeDivisionOneOperator() {
+        final Exp expected = new BinaryOperatorExp("/", new IdentifierLiteral("foo"), new IntegerLiteral(1));
+        assertParsesFromString(expected, "foo / 1");
     }
     @Test
     public void checkThrowsParseExceptionInvalidOperatorSequence() {
