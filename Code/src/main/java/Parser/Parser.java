@@ -1,11 +1,14 @@
 package Parser;
 
+import Parser.Statements.*;
 import Parser.Expressions.*;
 import Parser.Literals.*;
 import Tokenizer.Tokens.*;
 import Tokenizer.*;
 import Parser.Types.*;
+//import sun.tools.jstat.Identifier;
 
+import javax.swing.*;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Stack;
@@ -96,6 +99,45 @@ public class Parser {
             return 3;
         else return -1;
     }
+
+    /**
+     * attempts to parse an expression
+     * @param startPos position in the token array
+     * @return ParseResult<Stmt>
+     * @throws ParseException
+     */
+    public ParseResult<Stmt> parseBreakStmt(final int startPos) throws ParseException{
+        checkTokenIs(startPos, new BreakToken());
+        if (readToken(startPos + 1) instanceof IdentifierToken){
+            ParseResult<Exp> identifier = parsePrimary(startPos + 1);
+            checkTokenIs(identifier.nextPos, new SemiColonToken());
+            return new ParseResult<Stmt>(new BreakStmt("break", identifier.result, ";"),
+                    identifier.nextPos + 1);
+        } else {
+            checkTokenIs(startPos + 1, new SemiColonToken());
+            return new ParseResult<Stmt>(new BreakStmt("break", null, ";"),
+                    startPos + 2);
+        }
+    }
+
+    /**
+     * attempts to parse an expression
+     * @param startPos position in the token array
+     * @return ParseResult<Stmt>
+     * @throws ParseException
+     */
+    public ParseResult<Stmt> parseReturnStmt(final int startPos) throws ParseException{
+        checkTokenIs(startPos, new ReturnToken());
+        if (readToken(startPos + 1) instanceof SemiColonToken){
+            return new ParseResult<Stmt>(new ReturnStmt("return", null, ";"), startPos + 2);
+        }
+        else {
+            ParseResult<Exp> returnExp = parseExp(startPos + 1);
+            checkTokenIs(returnExp.nextPos, new SemiColonToken());
+            return new ParseResult<Stmt>(new ReturnStmt("return", returnExp.result, ";"), returnExp.nextPos + 1);
+        }
+    }
+
     /**
      * attempts to parse an expression
      * @param startPos position in the token array
@@ -543,6 +585,26 @@ public class Parser {
             throw new ParseException("tokens remaining at end");
         }
     }
+
+    //Testing out some statements, remove later
+    public Stmt parseTest() throws ParseException {
+        final ParseResult<Stmt> toplevel = parseReturnStmt(0);
+        if (toplevel.nextPos == tokens.size()) {
+            return toplevel.result;
+        } else {
+            throw new ParseException("tokens remaining at end");
+        }
+    }
+
+    public Stmt parseTest2() throws ParseException {
+        final ParseResult<Stmt> toplevel = parseBreakStmt(0);
+        if (toplevel.nextPos == tokens.size()) {
+            return toplevel.result;
+        } else {
+            throw new ParseException("tokens remaining at end");
+        }
+    }
+
     //test main
     public static void main(String[] args) {
         final String input = "(Foo) foo";
@@ -557,6 +619,29 @@ public class Parser {
             e.printStackTrace();
         }
 
+        final String input2 = "return 5;";
+        final Tokenizer tokenizer2 = new Tokenizer(input2);
+
+        try {
+            final List<Token> tokens2 = tokenizer2.tokenize();
+            final Parser parser = new Parser(tokens2);
+            final Stmt parsed = parser.parseTest();
+            System.out.println(parsed);
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
+
+        final String input3 = "break;";
+        final Tokenizer tokenizer3 = new Tokenizer(input3);
+
+        try {
+            final List<Token> tokens3 = tokenizer3.tokenize();
+            final Parser parser = new Parser(tokens3);
+            final Stmt parsed = parser.parseTest2();
+            System.out.println(parsed);
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
     }
 
 }
