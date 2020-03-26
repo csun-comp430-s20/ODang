@@ -17,7 +17,7 @@ public class ReturnStmt implements Stmt {
 
     public String toString() {
         return String.format(this.getClass().getSimpleName() +
-                " (return " + exp + ")");
+                " (" + exp + ")");
     }
 }
 

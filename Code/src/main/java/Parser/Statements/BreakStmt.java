@@ -17,6 +17,6 @@ public class BreakStmt implements Stmt{
 
     public String toString() {
         return String.format(this.getClass().getSimpleName() +
-                " (break " + " " + identifier + ")");
+                " (" + identifier + ")");
     }
 }

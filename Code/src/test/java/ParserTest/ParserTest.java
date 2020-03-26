@@ -4,6 +4,8 @@ import Parser.*;
 import Parser.Types.*;
 import Parser.Literals.*;
 import Parser.Expressions.*;
+import Parser.Declarations.*;
+import Parser.Statements.*;
 import Tokenizer.*;
 import Tokenizer.Tokens.*;
 import org.junit.jupiter.api.Test;
@@ -14,47 +16,67 @@ import java.util.List;
 
 public class ParserTest {
 
-    public static void assertParsesFromString(final Exp expected, final String received) {
+    public static void assertParsesExpFromString(final Exp expected, final String received) {
         final Tokenizer tokenizer = new Tokenizer(received);
         try {
-            Assertions.assertEquals(expected, (new Parser(tokenizer.tokenize())).parseTopLevel()); //TODO change to parseExp
+            Assertions.assertEquals(expected, (new Parser(tokenizer.tokenize())).parseTopLevelExp());
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
+
+    public static void assertParsesStmtFromString(final Stmt expected, final String received) {
+        final Tokenizer tokenizer = new Tokenizer(received);
+        try {
+            Assertions.assertEquals(expected, (new Parser(tokenizer.tokenize())).parseTopLevelStmt());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void assertCorrectStmtToString (final String expected, final String received) {
+        final Tokenizer tokenizer = new Tokenizer(received);
+        try {
+            Assertions.assertEquals(expected, (new Parser(tokenizer.tokenize())).parseTopLevelStmt().toString());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    //***EXP TESTS***//
+
     @Test
     public void checkParsesInteger() throws ParseException {
-        assertParsesFromString(new IntegerLiteral(1), "1");
+        assertParsesExpFromString(new IntegerLiteral(1), "1");
     }
 
     @Test
     public void checkParsesString() throws ParseException {
-        assertParsesFromString(new StringLiteral("foo"), "\"foo\"");
+        assertParsesExpFromString(new StringLiteral("foo"), "\"foo\"");
     }
 
     @Test
     public void checkParsesBoolean() throws ParseException {
-        assertParsesFromString(new BooleanLiteral(true), "true");
+        assertParsesExpFromString(new BooleanLiteral(true), "true");
     }
 
     @Test
     public void checkParsesIdentifier() throws ParseException {
-        assertParsesFromString(new IdentifierLiteral("foobar"), "foobar");
+        assertParsesExpFromString(new IdentifierLiteral("foobar"), "foobar");
     }
 
     @Test
     public void checkParsesNull() throws ParseException {
-        assertParsesFromString(new NullLiteral(), "null");
+        assertParsesExpFromString(new NullLiteral(), "null");
     }
 
     @Test
     public void checkParsesPrimaryThis() throws ParseException {
-        assertParsesFromString(new ThisExp(), "this");
+        assertParsesExpFromString(new ThisExp(), "this");
     }
 
     @Test
     public void checkParsesClassInstanceCreationNoArgs() {
-        assertParsesFromString(new ClassInstanceExp(new IdentifierLiteral("foo"), new ArgumentList()), "new foo()");
+        assertParsesExpFromString(new ClassInstanceExp(new IdentifierLiteral("foo"), new ArgumentList()), "new foo()");
     }
 
     @Test
@@ -64,7 +86,7 @@ public class ParserTest {
                         new IntegerLiteral(2),
                         new BooleanLiteral(true)
                 ));
-        assertParsesFromString(expected, "new Foo(2, true)");
+        assertParsesExpFromString(expected, "new Foo(2, true)");
     }
 
     @Test
@@ -74,7 +96,7 @@ public class ParserTest {
                         new IntegerLiteral(2),
                         new BooleanLiteral(true)
                 ));
-        assertParsesFromString(expected, "testMethod(2, true)");
+        assertParsesExpFromString(expected, "testMethod(2, true)");
     }
     @Test
     public void checkParsesFieldAccessThis() {
@@ -84,7 +106,7 @@ public class ParserTest {
                                 new IntegerLiteral(2),
                                 new BooleanLiteral(true)
                         )));
-        assertParsesFromString(expected, "this.testMethod(2, true)");
+        assertParsesExpFromString(expected, "this.testMethod(2, true)");
     }
     @Test
     public void checkParsesFieldAccessSuper() {
@@ -94,7 +116,7 @@ public class ParserTest {
                                 new IntegerLiteral(2),
                                 new BooleanLiteral(true)
                         )));
-        assertParsesFromString(expected, "super.testMethod(2, true)");
+        assertParsesExpFromString(expected, "super.testMethod(2, true)");
     }
     @Test
     public void checkParsesFieldAccessOneDot() {
@@ -104,7 +126,7 @@ public class ParserTest {
                                 new IntegerLiteral(2),
                                 new BooleanLiteral(true)
                         )));
-        assertParsesFromString(expected, "foo.testMethod(2, true)");
+        assertParsesExpFromString(expected, "foo.testMethod(2, true)");
     }
 
     @Test
@@ -116,14 +138,14 @@ public class ParserTest {
                                         new IntegerLiteral(2),
                                         new BooleanLiteral(true)
                                 ))));
-        assertParsesFromString(expected, "foo.bar.testMethod(2, true)");
+        assertParsesExpFromString(expected, "foo.bar.testMethod(2, true)");
     }
     @Test
     public void checkParsesBinaryOperatorExpOnePlus() {
         final Exp expected = new BinaryOperatorExp("+",
                 new IntegerLiteral(1),
                 new IntegerLiteral(2));
-        assertParsesFromString(expected, "1+2");
+        assertParsesExpFromString(expected, "1+2");
     }
     @Test
     public void checkParsesBinaryOperatorExpTwoPlus() {
@@ -132,7 +154,7 @@ public class ParserTest {
                         new IntegerLiteral(1),
                         new IntegerLiteral(2)),
                 new IntegerLiteral(3));
-        assertParsesFromString(expected, "1+2+3");
+        assertParsesExpFromString(expected, "1+2+3");
     }
     //TODO rework minus?
     @Test
@@ -140,7 +162,7 @@ public class ParserTest {
         final Exp expected = new BinaryOperatorExp("-",
                 new IntegerLiteral(1),
                 new IntegerLiteral(2));
-        assertParsesFromString(expected, "1 - 2");
+        assertParsesExpFromString(expected, "1 - 2");
     }
     @Test
     public void checkParsesBinaryOperatorExpTwoMinus() {
@@ -149,14 +171,14 @@ public class ParserTest {
                         new IntegerLiteral(1),
                         new IntegerLiteral(2)),
                 new IntegerLiteral(3));
-        assertParsesFromString(expected, "1 - 2 - 3");
+        assertParsesExpFromString(expected, "1 - 2 - 3");
     }
     @Test
     public void checkParsesBinaryOperatorExpOneDivide() {
         final Exp expected = new BinaryOperatorExp("/",
                 new IntegerLiteral(1),
                 new IntegerLiteral(2));
-        assertParsesFromString(expected, "1/2");
+        assertParsesExpFromString(expected, "1/2");
     }
     @Test
     public void checkParsesBinaryOperatorExpTwoDivide() {
@@ -165,14 +187,14 @@ public class ParserTest {
                         new IntegerLiteral(1),
                         new IntegerLiteral(2)),
                 new IntegerLiteral(3));
-        assertParsesFromString(expected, "1/2/3");
+        assertParsesExpFromString(expected, "1/2/3");
     }
     @Test
     public void checkParsesBinaryOperatorExpOneMult() {
         final Exp expected = new BinaryOperatorExp("*",
                 new IntegerLiteral(1),
                 new IntegerLiteral(2));
-        assertParsesFromString(expected, "1*2");
+        assertParsesExpFromString(expected, "1*2");
     }
     @Test
     public void checkParsesBinaryOperatorExpTwoMult() {
@@ -181,14 +203,14 @@ public class ParserTest {
                         new IntegerLiteral(1),
                         new IntegerLiteral(2)),
                 new IntegerLiteral(3));
-        assertParsesFromString(expected, "1*2*3");
+        assertParsesExpFromString(expected, "1*2*3");
     }
     @Test
     public void checkParsesBinaryOperatorExpOneLessThan() {
         final Exp expected = new BinaryOperatorExp("<",
                 new IntegerLiteral(1),
                 new IntegerLiteral(2));
-        assertParsesFromString(expected, "1<2");
+        assertParsesExpFromString(expected, "1<2");
     }
     @Test
     public void checkParsesBinaryOperatorExpTwoLessThan() {
@@ -197,14 +219,14 @@ public class ParserTest {
                         new IntegerLiteral(1),
                         new IntegerLiteral(2)),
                 new IntegerLiteral(3));
-        assertParsesFromString(expected, "1<2<3");
+        assertParsesExpFromString(expected, "1<2<3");
     }
     @Test
     public void checkParsesBinaryOperatorExpOneGreaterThan() {
         final Exp expected = new BinaryOperatorExp(">",
                 new IntegerLiteral(1),
                 new IntegerLiteral(2));
-        assertParsesFromString(expected, "1>2");
+        assertParsesExpFromString(expected, "1>2");
     }
     @Test
     public void checkParsesBinaryOperatorExpTwoGreaterThan() {
@@ -213,14 +235,14 @@ public class ParserTest {
                         new IntegerLiteral(1),
                         new IntegerLiteral(2)),
                 new IntegerLiteral(3));
-        assertParsesFromString(expected, "1>2>3");
+        assertParsesExpFromString(expected, "1>2>3");
     }
     @Test
     public void checkParsesBinaryOperatorExpOneReferenceEquals() {
         final Exp expected = new BinaryOperatorExp("==",
                 new IntegerLiteral(1),
                 new IntegerLiteral(2));
-        assertParsesFromString(expected, "1==2");
+        assertParsesExpFromString(expected, "1==2");
     }
     @Test
     public void checkParsesBinaryOperatorExpTwoReferenceEquals() {
@@ -229,14 +251,14 @@ public class ParserTest {
                         new IntegerLiteral(1),
                         new IntegerLiteral(2)),
                 new IntegerLiteral(3));
-        assertParsesFromString(expected, "1==2==3");
+        assertParsesExpFromString(expected, "1==2==3");
     }
     @Test
     public void checkParsesBinaryOperatorExpOneNotEquals() {
         final Exp expected = new BinaryOperatorExp("!=",
                 new IntegerLiteral(1),
                 new IntegerLiteral(2));
-        assertParsesFromString(expected, "1!=2");
+        assertParsesExpFromString(expected, "1!=2");
     }
     @Test
     public void checkParsesBinaryOperatorExpTwoNotEquals() {
@@ -245,114 +267,179 @@ public class ParserTest {
                         new IntegerLiteral(1),
                         new IntegerLiteral(2)),
                 new IntegerLiteral(3));
-        assertParsesFromString(expected, "1!=2!=3");
+        assertParsesExpFromString(expected, "1!=2!=3");
     }
     @Test
     public void checkParsesCastExpInt() {
         final Exp expected = new CastExp(
                 new PrimitiveType(
                         new IntType()), new IdentifierLiteral("foo"));
-        assertParsesFromString(expected, "(int) foo");
+        assertParsesExpFromString(expected, "(int) foo");
     }
     @Test
     public void checkParsesCastExpString() {
         final Exp expected = new CastExp(
                 new PrimitiveType(
                         new StringType()), new IdentifierLiteral("foo"));
-        assertParsesFromString(expected, "(String) foo");
+        assertParsesExpFromString(expected, "(String) foo");
     }
     @Test
     public void checkParsesCastExpBoolean() {
         final Exp expected = new CastExp(
                 new PrimitiveType(
                         new BooleanType()), new IdentifierLiteral("foo"));
-        assertParsesFromString(expected, "(boolean) foo");
+        assertParsesExpFromString(expected, "(boolean) foo");
     }
     @Test
     public void checkParsesCastExpClass() {
         final Exp expected = new CastExp(
                 new ClassType(
                         new IdentifierLiteral("Foo")), new IdentifierLiteral("bar"));
-        assertParsesFromString(expected, "(Foo) bar");
+        assertParsesExpFromString(expected, "(Foo) bar");
     }
     @Test
     public void checkParsesAssignmentEqualsOneOperator() {
         final Exp expected = new BinaryOperatorExp("=", new IdentifierLiteral("foo"), new IntegerLiteral(1));
-        assertParsesFromString(expected, "foo = 1");
+        assertParsesExpFromString(expected, "foo = 1");
     }
     @Test
     public void checkParsesAssignmentTwoOperatorsWithParen() {
         final Exp expected = new BinaryOperatorExp("=", new IdentifierLiteral("foo"),
                 new BinaryOperatorExp("=", new IdentifierLiteral("bar"), new IntegerLiteral(1)));
-        assertParsesFromString(expected, "foo = (bar = 1)");
+        assertParsesExpFromString(expected, "foo = (bar = 1)");
     }
     @Test
     public void checkParsesAssignmentPlusEqualsOneOperator() {
         final Exp expected = new BinaryOperatorExp("+=", new IdentifierLiteral("foo"), new IntegerLiteral(1));
-        assertParsesFromString(expected, "foo += 1");
+        assertParsesExpFromString(expected, "foo += 1");
     }
     @Test
     public void checkParsesAssignmentMinusEqualsOneOperator() {
         final Exp expected = new BinaryOperatorExp("-=", new IdentifierLiteral("foo"), new IntegerLiteral(1));
-        assertParsesFromString(expected, "foo -= 1");
+        assertParsesExpFromString(expected, "foo -= 1");
     }
     @Test
     public void checkParsesEqualityExpNotEqualsOneOperator() {
         final Exp expected = new BinaryOperatorExp("!=", new IdentifierLiteral("foo"), new IntegerLiteral(1));
-        assertParsesFromString(expected, "foo != 1");
+        assertParsesExpFromString(expected, "foo != 1");
     }
     @Test
     public void checkParsesEqualityExpReferenceEqualsOneOperator() {
         final Exp expected = new BinaryOperatorExp("==", new IdentifierLiteral("foo"), new IntegerLiteral(1));
-        assertParsesFromString(expected, "foo == 1");
+        assertParsesExpFromString(expected, "foo == 1");
     }
     @Test
     public void checkParseRelationalGreaterThanOneOperator() {
         final Exp expected = new BinaryOperatorExp(">", new IdentifierLiteral("foo"), new IntegerLiteral(1));
-        assertParsesFromString(expected, "foo > 1");
+        assertParsesExpFromString(expected, "foo > 1");
     }
     @Test
     public void checkParseRelationalLessThanOneOperator() {
         final Exp expected = new BinaryOperatorExp("<", new IdentifierLiteral("foo"), new IntegerLiteral(1));
-        assertParsesFromString(expected, "foo < 1");
+        assertParsesExpFromString(expected, "foo < 1");
     }
     @Test
     public void checkParsesAdditivePlusOneOperator() {
         final Exp expected = new BinaryOperatorExp("+", new IdentifierLiteral("foo"), new IntegerLiteral(1));
-        assertParsesFromString(expected, "foo + 1");
+        assertParsesExpFromString(expected, "foo + 1");
     }
     @Test
     public void checkParsesAdditiveMinusOneOperator() {
         final Exp expected = new BinaryOperatorExp("-", new IdentifierLiteral("foo"), new IntegerLiteral(1));
-        assertParsesFromString(expected, "foo - 1");
+        assertParsesExpFromString(expected, "foo - 1");
     }
     @Test
     public void checkParsesMultiplicativeMultiplicationOneOperator() {
         final Exp expected = new BinaryOperatorExp("*", new IdentifierLiteral("foo"), new IntegerLiteral(1));
-        assertParsesFromString(expected, "foo * 1");
+        assertParsesExpFromString(expected, "foo * 1");
     }
     @Test
     public void checkParsesMultiplicativeDivisionOneOperator() {
         final Exp expected = new BinaryOperatorExp("/", new IdentifierLiteral("foo"), new IntegerLiteral(1));
-        assertParsesFromString(expected, "foo / 1");
+        assertParsesExpFromString(expected, "foo / 1");
     }
     @Test
     public void checkThrowsParseExceptionInvalidOperatorSequence() {
         final List<Token> testTokens = Arrays.asList(new IntegerToken(1),
                 new OperatorToken("+"), new OperatorToken("/"));
         final Parser testParser = new Parser(testTokens);
-        Assertions.assertThrows(ParseException.class, testParser::parseTopLevel);
+        Assertions.assertThrows(ParseException.class, testParser::parseTopLevelExp);
     }
     @Test
     public void checkThrowsParseExceptionInvalidInputMethodOpenLeftParen() {
         final List<Token> testTokens = Arrays.asList(new IdentifierToken("foo"), new LeftParenToken());
         final Parser testParser = new Parser(testTokens);
-        Assertions.assertThrows(ParseException.class, testParser::parseTopLevel);
+        Assertions.assertThrows(ParseException.class, testParser::parseTopLevelExp);
     }
     @Test
     public void checkThrowsParseExceptionInvalidInputMethodOnlyRightParen() {
         final List<Token> testTokens = Arrays.asList(new IdentifierToken("foo"), new RightParenToken());
         final Parser testParser = new Parser(testTokens);
-        Assertions.assertThrows(ParseException.class, testParser::parseTopLevel);
+        Assertions.assertThrows(ParseException.class, testParser::parseTopLevelExp);
     }
+
+    //***STMT TESTS***//
+
+    @Test
+    public void checkParsesEmptyStmt() {
+        final Stmt expected = new EmptyStmt();
+        assertParsesStmtFromString(expected, ";");
+    }
+    @Test
+    public void checkPrintsParsedEmptyStmt() {
+        assertCorrectStmtToString("EmptyStmt", ";");
+    }
+    @Test
+    public void checkParsesReturnStmt() {
+        final Stmt expected = new ReturnStmt(new IdentifierLiteral("foo"));
+        assertParsesStmtFromString(expected, "return foo;");
+    }
+    @Test
+    public void checkPrintsParsedReturnStmt() {
+        assertCorrectStmtToString("ReturnStmt (IdentifierLiteral<foo>)", "return foo;");
+    }
+
+    @Test
+    public void checkParsesBreakStmt() {
+        final Stmt expected = new BreakStmt(new IdentifierLiteral("foo"));
+        assertParsesStmtFromString(expected, "break foo;");
+    }
+    @Test
+    public void checkPrintsParsedBreakStmt() {
+        assertCorrectStmtToString("BreakStmt (IdentifierLiteral<foo>)", "break foo;");
+    }
+    @Test
+    public void checkParsesForStmt() {
+        final Stmt expected = new ForStmt(new LocalVardec(
+                new PrimitiveType(new IntType()), new VarDeclaratorList(
+                        new VarDeclarator(new IdentifierLiteral("foo"), new IntegerLiteral(0)))),
+                new BinaryOperatorExp("<", new IdentifierLiteral("foo"), new IntegerLiteral(5)),
+                new StmtExprList(new StmtExpr(new PostIncrDecrExp(new IdentifierLiteral("foo"), "++"))),
+                new ReturnStmt(new IdentifierLiteral("foo")));
+
+        assertParsesStmtFromString(expected, "for(int foo = 0; foo < 5; foo++) {return foo;}");
+    }
+    @Test
+    public void checkParsesWhileStmt() {
+        final Stmt expected = new WhileStmt(
+                new BinaryOperatorExp("<", new IdentifierLiteral("foo"), new IntegerLiteral(5)),
+                new StmtExpr(new BinaryOperatorExp(
+                        "+=", new IdentifierLiteral("foo"), new IntegerLiteral(1))));
+
+        assertParsesStmtFromString(expected, "while (foo < 5) {foo += 1;}");
+    }
+    @Test
+    public void checkParsesIfElseStmtWithFieldAccess() {
+        final Stmt expected = new IfElseStmt(new BinaryOperatorExp(
+                "==", new IdentifierLiteral("foo"), new IntegerLiteral(2)),
+                new StmtExpr(new FieldAccessExp(new IdentifierLiteral("foo"), new MethodInvocation(
+                        new IdentifierLiteral("method"), new ArgumentList(null)))),
+                new StmtExpr(new FieldAccessExp(new IdentifierLiteral("bar"), new MethodInvocation(
+                        new IdentifierLiteral("method2"), new ArgumentList(null)))));
+
+        assertParsesStmtFromString(expected, "if (foo == 2) {foo.method();} else {bar.method2();}");
+
+    }
+
+    
 }

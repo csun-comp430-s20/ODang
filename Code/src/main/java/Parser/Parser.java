@@ -1024,8 +1024,16 @@ public class Parser {
             throw new ParseException("not a valid token: " + tokens.get(startPos));
     }
 
-    public Exp parseTopLevel() throws ParseException {
+    public Exp parseTopLevelExp() throws ParseException {
         final ParseResult<Exp> toplevel = parseExp(0);
+        if (toplevel.nextPos == tokens.size()) {
+            return toplevel.result;
+        } else {
+            throw new ParseException("tokens remaining at end");
+        }
+    }
+    public Stmt parseTopLevelStmt() throws ParseException {
+        final ParseResult<Stmt> toplevel = parseStmt(0);
         if (toplevel.nextPos == tokens.size()) {
             return toplevel.result;
         } else {
@@ -1071,13 +1079,13 @@ public class Parser {
     }
     //test main
     public static void main(String[] args) {
-        final String input = "{for (int i = 0; i < 10; i++) {foo;}}";
+        final String input = "if (foo == 2) {foo.method();} else {bar.method();}";
         final Tokenizer tokenizer = new Tokenizer(input);
 
         try {
             final List<Token> tokens = tokenizer.tokenize();
             final Parser parser = new Parser(tokens);
-            final Stmt parsed = parser.parseTest3();
+            final Stmt parsed = parser.parseTopLevelStmt();
             System.out.println(parsed);
         } catch(Exception e) {
             e.printStackTrace();
