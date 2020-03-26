@@ -99,6 +99,12 @@ public class Parser {
         else return -1;
     }
 
+    /**
+     * attempts to parse a block
+     * @param startPos position in the list
+     * @return ParseResult<Stmt> containing a Block-object with all statements parsed
+     * @throws ParseException
+     */
     public ParseResult<Stmt> parseBlock(final int startPos) throws ParseException {
         checkTokenIs(startPos, new LeftCurlyToken());
         final ParseResult<Stmt> blockStmts = parseBlockStmts(startPos + 1);
@@ -106,6 +112,12 @@ public class Parser {
         return new ParseResult<Stmt>(new Block(blockStmts.result), blockStmts.nextPos + 1);
     }
 
+    /**
+     * attempts to parse the the statements in a block, assumes each Stmt separated by semi-colons
+     * @param startPos position in the token list
+     * @return ParseResult<Stmt> containing all statements in the block
+     * @throws ParseException
+     */
     public ParseResult<Stmt> parseBlockStmts(final int startPos) throws ParseException {
         //empty block
         if (readToken(startPos) instanceof RightCurlyToken) {
@@ -122,6 +134,12 @@ public class Parser {
         }
     }
 
+    /**
+     * greedy method for parsing statements inside a block"
+     * @param startPos position in the list
+     * @return ParseResult<List<Stmt>> containing all but the first Stmt in the block if any
+     * @throws ParseException
+     */
     private ParseResult<List<Stmt>> parseBlockStmtHelper(final int startPos) throws ParseException {
         final List<Stmt> resultList = new ArrayList<Stmt>();
         int curPos = startPos;
@@ -869,7 +887,7 @@ public class Parser {
 
     //test main
     public static void main(String[] args) {
-        final String input = "{foo; bar;}";
+        final String input = "{foo; bar; x + 2;}";
         final Tokenizer tokenizer = new Tokenizer(input);
 
         try {
