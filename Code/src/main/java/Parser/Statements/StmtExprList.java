@@ -1,15 +1,12 @@
 package Parser.Statements;
 
-import Parser.Expressions.ArgumentList;
-import Parser.Expressions.Exp;
-
 import java.util.ArrayList;
 import java.util.List;
 
-public class ExpStmtList implements Stmt{
+public class StmtExprList implements Stmt{
     public final List<Stmt> list;
 
-    public ExpStmtList(final Stmt... expStmtList) {
+    public StmtExprList(final Stmt... expStmtList) {
         this.list = new ArrayList<Stmt>();
 
         if (expStmtList != null) {
@@ -19,8 +16,8 @@ public class ExpStmtList implements Stmt{
         }
     }
     public boolean equals(final Object other) {
-        if (other instanceof ExpStmtList) {
-            final ExpStmtList otherList = (ExpStmtList) other;
+        if (other instanceof StmtExprList) {
+            final StmtExprList otherList = (StmtExprList) other;
             return list.equals(otherList.list);
         }
         else return false;

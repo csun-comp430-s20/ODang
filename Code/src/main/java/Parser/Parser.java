@@ -100,6 +100,12 @@ public class Parser {
         else return -1;
     }
 
+    /**
+     * attempts to parse a list of <var declarator>, ie <var declarator> | <var declarators> , <var declarator>
+     * @param startPos position in the token list
+     * @return ParseResult<Decl>
+     * @throws ParseException
+     */
     public ParseResult<Decl> parseVarDeclarators(final int startPos) throws ParseException {
         final ParseResult<Decl> firstVarDecl = parseVarDeclarator(startPos);
         final ParseResult<List<Decl>> rest = parseVarDeclaratorsHelper(firstVarDecl.nextPos);
@@ -110,7 +116,13 @@ public class Parser {
         }
         return new ParseResult<Decl>(resultDecl, rest.nextPos);
     }
-    public ParseResult<List<Decl>> parseVarDeclaratorsHelper(final int startPos) {
+    /**
+     * helper to parse multiple <var declarator>
+     * @param startPos position in the token list
+     * @return ParseResult<List<Decl>>
+     * @throws ParseException
+     */
+    private ParseResult<List<Decl>> parseVarDeclaratorsHelper(final int startPos) {
         final List<Decl> resultList = new ArrayList<>();
         int curPos = startPos;
 
@@ -128,6 +140,13 @@ public class Parser {
         }
         return new ParseResult<List<Decl>>(resultList, curPos);
     }
+
+    /**
+     * attempts to parse a <var declarator>, ie <identifier> | <identifier> = <expr>
+     * @param startPos position in the token list
+     * @return ParseResult<Decl>
+     * @throws ParseException
+     */
     public ParseResult<Decl> parseVarDeclarator(final int startPos) throws ParseException {
         final Token currentToken = readToken(startPos);
         if (currentToken instanceof IdentifierToken) {
@@ -265,29 +284,47 @@ public class Parser {
         return new ParseResult<List<Stmt>>(resultList, curPos);
     }
 
-
+    /**
+     * attempts to parse a <block stmt>, ie <local vardec stmt> | <stmt>
+     * @param startPos position in the token list
+     * @return ParseResult<Stmt>
+     * @throws ParseException
+     */
     public ParseResult<Stmt> parseBlockStmt(final int startPos) throws ParseException {
 
-        final Token currentToken = readToken(startPos);
-
-        //try to parse as a <local vardec>, if it fails parse as <stmt>
+        //try to parse as a <local vardec stmt>, if it fails parse as <stmt>
         try {
-            final ParseResult<Stmt> localVarDec = parseLocalVardecStmt(startPos);
-            return new ParseResult<Stmt>(localVarDec.result, localVarDec.nextPos);
+            final ParseResult<Stmt> localVarDecStmt = parseLocalVardecStmt(startPos);
+            return new ParseResult<Stmt>(localVarDecStmt.result, localVarDecStmt.nextPos);
         } catch (ParseException e) {
             final ParseResult<Stmt> stmt = parseStmt(startPos);
             return new ParseResult<Stmt>(stmt.result, stmt.nextPos);
         }
 
     }
+    /**
+     * attempts to parse a <local vardec stmt>, ie <local vardec> ;
+     * @param startPos position in the token list
+     * @return ParseResult<Stmt>
+     * @throws ParseException
+     */
     public ParseResult<Stmt> parseLocalVardecStmt(final int startPos) throws ParseException {
 
+        final ParseResult<Stmt> localVardec = parseLocalVardec(startPos);
+        checkTokenIs(localVardec.nextPos, new SemiColonToken());
+        return new ParseResult<Stmt>(localVardec.result, localVardec.nextPos + 1);
+    }
+
+    /**
+     * attempts to parse a <local vardec>, ie <type> <vardeclarators>
+     * @param startPos position in the token list
+     * @return ParseResult<Stmt>
+     * @throws ParseException
+     */
+    public ParseResult<Stmt> parseLocalVardec(final int startPos) throws ParseException {
         final ParseResult<Type> type = parseType(startPos);
         final ParseResult<Decl> varDeclarators = parseVarDeclarators(type.nextPos);
-        checkTokenIs(varDeclarators.nextPos, new SemiColonToken());
-        return new ParseResult<Stmt>(new LocalVardecStmt(
-                type.result,
-                varDeclarators.result), varDeclarators.nextPos + 1);
+        return new ParseResult<Stmt>(new LocalVardec(type.result, varDeclarators.result), varDeclarators.nextPos);
     }
     /**
      * attempts to parse a stmt, ie <stmt without trailing substmt> | <if then else stmt> |
@@ -351,7 +388,7 @@ public class Parser {
         }
         //<expr stmt>
         else {
-            final ParseResult<Stmt> exprStmt = parseExpStmt(startPos);
+            final ParseResult<Stmt> exprStmt = parseExprStmt(startPos);
             return new ParseResult<Stmt>(exprStmt.result, exprStmt.nextPos);
         }
     }
@@ -403,7 +440,7 @@ public class Parser {
         checkTokenIs(forInit.nextPos, new SemiColonToken());
         final ParseResult<Exp> conditional = parseExp(forInit.nextPos + 1);
         checkTokenIs(conditional.nextPos, new SemiColonToken());
-        final ParseResult<Stmt> forUpdate = parseExpStmtList(conditional.nextPos + 1);
+        final ParseResult<Stmt> forUpdate = parseStmtExprList(conditional.nextPos + 1);
         checkTokenIs(forUpdate.nextPos, new RightParenToken());
         final ParseResult<Stmt> body = parseBlock(forUpdate.nextPos + 1);
         return new ParseResult<Stmt>(new ForStmt(
@@ -413,29 +450,46 @@ public class Parser {
                 body.result), body.nextPos);
     }
 
+    /**
+     * attempts to parse a <for init>, ie <stmt expr list> | <local vardec>
+     * @param startPos current position in the list
+     * @return ParseResult<Stmt>
+     * @throws ParseException
+     */
     private ParseResult<Stmt> parseForInit(final int startPos) throws ParseException {
 
-        //try to parse as <stmt expr list>, if fails parse as <local vardec>
+        //try to parse as <local vardec>, if fails parse as <stmt expr list>
         try {
-            final ParseResult<Stmt> expStmtList = parseExpStmtList(startPos);
-            return new ParseResult<Stmt>(expStmtList.result, expStmtList.nextPos);
-        } catch (ParseException e) {
-            final ParseResult<Stmt> localVarDec = parseLocalVardecStmt(startPos);
+            final ParseResult<Stmt> localVarDec = parseLocalVardec(startPos);
             return new ParseResult<Stmt>(localVarDec.result, localVarDec.nextPos);
+
+        } catch (ParseException e) {
+            final ParseResult<Stmt> expStmtList = parseStmtExprList(startPos);
+            return new ParseResult<Stmt>(expStmtList.result, expStmtList.nextPos);
         }
     }
 
     /**
-     * attempts to parse an ExpStmt, ie <assignment> | <preincrement expr> | <predecrement expr> |
+     * attempts to parse an <expr stmt>, ie <stmt expr> ;
+     * @param startPos position in the token list
+     * @return ParseResult<Stmt>
+     * @throws ParseException
+     */
+    public ParseResult<Stmt> parseExprStmt(final int startPos) throws ParseException {
+        final ParseResult<Stmt> stmtExpr = parseStmtExpr(startPos);
+        checkTokenIs(stmtExpr.nextPos, new SemiColonToken());
+        return new ParseResult<Stmt>(stmtExpr.result, stmtExpr.nextPos + 1);
+    }
+    /**
+     * attempts to parse a <stmt expr>, ie <assignment> | <preincrement expr> | <predecrement expr> |
      *<postdecrement expr> | <postincrement expr> | <method invocation> | <class instance creation expr>
      * @param startPos position in the token list
      * @return ParseResult<Stmt>
      * @throws ParseException
      */
-    public ParseResult<Stmt> parseExpStmt (final int startPos) throws ParseException {
+    public ParseResult<Stmt> parseStmtExpr (final int startPos) throws ParseException {
         final ParseResult<Exp> stmtExp = parseExp(startPos);
-        checkTokenIs(stmtExp.nextPos, new SemiColonToken());
-        return new ParseResult<Stmt>(new ExpStmt(stmtExp.result), stmtExp.nextPos + 1);
+        return new ParseResult<Stmt>(new StmtExpr(stmtExp.result), stmtExp.nextPos);
     }
 
     /**
@@ -444,23 +498,23 @@ public class Parser {
      * @return ParseResult<Stmt> containing an ExpStmt
      * @throws ParseException
      */
-    public ParseResult<Stmt> parseExpStmtList(final int startPos) throws ParseException {
+    public ParseResult<Stmt> parseStmtExprList(final int startPos) throws ParseException {
 
-        ExpStmtList expStmtList = new ExpStmtList();
+        StmtExprList stmtExprList = new StmtExprList();
         int curPos = startPos;
 
         while (curPos < tokens.size()) {
             try {
                 if (readToken(curPos) instanceof CommaToken)
                     curPos++;
-                final ParseResult<Stmt> curExpStmt = parseExpStmt(curPos);
+                final ParseResult<Stmt> curExpStmt = parseStmtExpr(curPos);
                 curPos = curExpStmt.nextPos;
-                expStmtList.list.add(curExpStmt.result);
+                stmtExprList.list.add(curExpStmt.result);
             } catch (final ParseException e) {
                 break;
             }
         }
-        return new ParseResult<Stmt>(expStmtList,curPos);
+        return new ParseResult<Stmt>(stmtExprList,curPos);
     }
 
     /**
@@ -1017,7 +1071,7 @@ public class Parser {
     }
     //test main
     public static void main(String[] args) {
-        final String input = "{int foo = 2, bar = 3;}";
+        final String input = "{for (int i = 0; i < 10; i++) {foo;}}";
         final Tokenizer tokenizer = new Tokenizer(input);
 
         try {

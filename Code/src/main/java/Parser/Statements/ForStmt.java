@@ -29,7 +29,7 @@ public class ForStmt implements Stmt {
 
     public String toString() {
         return String.format(getClass().getSimpleName() +
-                " forInit: " + forInit + " conditional: " + conditional +
-                " forUpdate: " + forUpdate + " body: " + body);
+                " (forInit: " + forInit + " conditional: " + conditional +
+                " forUpdate: " + forUpdate + " body: " + body + ")");
     }
 }

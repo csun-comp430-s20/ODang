@@ -2,19 +2,17 @@ package Parser.Statements;
 
 import Parser.Expressions.Exp;
 
-import java.util.Objects;
-
-public class ExpStmt implements Stmt {
+public class StmtExpr implements Stmt {
     public final Exp exp;
 
-    public ExpStmt(final Exp exp) {
+    public StmtExpr(final Exp exp) {
         this.exp = exp;
     }
 
     public boolean equals(Object other) {
-        if (other instanceof ExpStmt) {
-            ExpStmt otherExpStmt = (ExpStmt) other;
-            return exp.equals(otherExpStmt.exp);
+        if (other instanceof StmtExpr) {
+            StmtExpr otherStmtExpr = (StmtExpr) other;
+            return exp.equals(otherStmtExpr.exp);
         }
         else return false;
     }
