@@ -105,7 +105,6 @@ public class Parser {
         final ParseResult<List<Decl>> rest = parseVarDeclaratorsHelper(firstVarDecl.nextPos);
 
         VarDeclaratorList resultDecl = new VarDeclaratorList(firstVarDecl.result);
-
         for (final Decl otherDecl : rest.result) {
             resultDecl.varDeclList.add(otherDecl);
         }
@@ -119,7 +118,7 @@ public class Parser {
             try {
                 if (readToken(curPos) instanceof CommaToken)
                     curPos++;
-                final ParseResult<Decl> curVarDec = parseVarDeclarator(startPos);
+                final ParseResult<Decl> curVarDec = parseVarDeclarator(curPos);
                 curPos = curVarDec.nextPos;
                 resultList.add(curVarDec.result);
             }
@@ -133,7 +132,6 @@ public class Parser {
         final Token currentToken = readToken(startPos);
         if (currentToken instanceof IdentifierToken) {
             final ParseResult<Exp> identifier = parsePrimary(startPos);
-
             //<identifier> = <expr>
             if (readToken(identifier.nextPos) instanceof OperatorToken) {
                 checkTokenIs(identifier.nextPos, new OperatorToken("="));
@@ -218,7 +216,7 @@ public class Parser {
         checkTokenIs(startPos, new LeftCurlyToken());
         final ParseResult<Stmt> blockStmts = parseBlockStmts(startPos + 1);
         checkTokenIs(blockStmts.nextPos, new RightCurlyToken());
-        return new ParseResult<Stmt>(new Block(blockStmts.result), blockStmts.nextPos + 1);
+        return new ParseResult<Stmt>(blockStmts.result, blockStmts.nextPos + 1);
     }
 
     /**
@@ -271,6 +269,8 @@ public class Parser {
     public ParseResult<Stmt> parseBlockStmt(final int startPos) throws ParseException {
 
         final Token currentToken = readToken(startPos);
+
+        //try to parse as a <local vardec>, if it fails parse as <stmt>
         try {
             final ParseResult<Stmt> localVarDec = parseLocalVardecStmt(startPos);
             return new ParseResult<Stmt>(localVarDec.result, localVarDec.nextPos);
@@ -412,9 +412,17 @@ public class Parser {
                 forUpdate.result,
                 body.result), body.nextPos);
     }
-    //TODO implement
+
     private ParseResult<Stmt> parseForInit(final int startPos) throws ParseException {
-        return null;
+
+        //try to parse as <stmt expr list>, if fails parse as <local vardec>
+        try {
+            final ParseResult<Stmt> expStmtList = parseExpStmtList(startPos);
+            return new ParseResult<Stmt>(expStmtList.result, expStmtList.nextPos);
+        } catch (ParseException e) {
+            final ParseResult<Stmt> localVarDec = parseLocalVardecStmt(startPos);
+            return new ParseResult<Stmt>(localVarDec.result, localVarDec.nextPos);
+        }
     }
 
     /**
@@ -1009,7 +1017,7 @@ public class Parser {
     }
     //test main
     public static void main(String[] args) {
-        final String input = "{foo++; if (x>2) {bar;} else {baz;}}";
+        final String input = "{int foo = 2, bar = 3;}";
         final Tokenizer tokenizer = new Tokenizer(input);
 
         try {
