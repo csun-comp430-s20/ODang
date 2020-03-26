@@ -17,6 +17,6 @@ public class BlockStmt implements Stmt {
     }
 
     public String toString() {
-        return String.format(getClass().getSimpleName() + " [" + left + "; " + right +";]");
+        return String.format(getClass().getSimpleName() + " [" + left + " " + right +"]");
     }
 }

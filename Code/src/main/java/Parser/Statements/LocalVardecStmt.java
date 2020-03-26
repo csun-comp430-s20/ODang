@@ -1,12 +1,13 @@
 package Parser.Statements;
 
+import Parser.Declarations.Decl;
 import Parser.Types.Type;
 
 public class LocalVardecStmt implements Stmt {
     public final Type type;
-    public final Stmt varDeclarators;
+    public final Decl varDeclarators;
 
-    public LocalVardecStmt(final Type type, final Stmt varDeclarators) {
+    public LocalVardecStmt(final Type type, final Decl varDeclarators) {
         this.type = type;
         this.varDeclarators = varDeclarators;
     }
@@ -21,6 +22,6 @@ public class LocalVardecStmt implements Stmt {
     }
     public String toString() {
         return String.format(this.getClass().getSimpleName() +
-                " (type: " + type + ", vardeclarators: " + varDeclarators + ")");
+                " (" + type + " " + varDeclarators + ")");
     }
 }

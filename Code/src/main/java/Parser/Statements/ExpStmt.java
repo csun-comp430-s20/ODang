@@ -20,6 +20,6 @@ public class ExpStmt implements Stmt {
     }
 
     public String toString() {
-        return String.format(getClass().getSimpleName() + "(exp: " + exp + ")");
+        return String.format(getClass().getSimpleName() + " (" + exp + ");");
     }
 }

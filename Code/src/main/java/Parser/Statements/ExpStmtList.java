@@ -26,7 +26,7 @@ public class ExpStmtList implements Stmt{
         else return false;
     }
     public String toString() {
-        return String.format(this.getClass().getSimpleName() + "( " + list +  " )");
+        return String.format(this.getClass().getSimpleName() + " " + list);
     }
 
 
