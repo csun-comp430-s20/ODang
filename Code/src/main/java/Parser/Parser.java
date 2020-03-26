@@ -100,6 +100,39 @@ public class Parser {
         else return -1;
     }
 
+    /**
+     * attempts to parse a formal parameter list
+     * @param startPos position in the list
+     * @return ParseResult<Decl> containing a list of formal parameters aka FormalParam
+     * @throws ParseException
+     */
+    public ParseResult<FormalParamList> parseFormalParamList (final int startPos) throws ParseException{
+        FormalParamList formList = new FormalParamList();
+        ParseResult<Type> initialType = parseType(startPos);
+        if(readToken(initialType.nextPos) instanceof IdentifierToken) {
+            ParseResult<Exp> initialID = parsePrimary(initialType.nextPos);
+            formList.declList.add(new FormalParam(initialType.result, initialID.result));
+            int curPos = initialID.nextPos;
+            while (curPos < tokens.size()) {
+                try {
+                    //case of separation between arguments
+                    if (readToken(curPos) instanceof CommaToken)
+                        curPos++;
+                    final ParseResult<Type> curType = parseType(curPos);
+                    if (readToken(curType.nextPos) instanceof IdentifierToken){
+                        final ParseResult<Exp> curID = parsePrimary(curType.nextPos);
+                        curPos = curID.nextPos;
+                        formList.declList.add(new FormalParam(curType.result, curID.result));
+                    } else throw new ParseException("Not an identifier.");
+                } catch (final ParseException e) {
+                    break;
+                }
+            }
+            return new ParseResult<FormalParamList>(formList, curPos);
+        } else {
+            throw new ParseException("Not an identifier.");
+        }
+    }
 
     /**
      * attempts to parse a method overload
@@ -916,6 +949,15 @@ public class Parser {
         }
     }
 
+    public Decl parseTest4() throws ParseException {
+        final ParseResult<FormalParamList> toplevel = parseFormalParamList(0);
+        if (toplevel.nextPos == tokens.size()) {
+            return toplevel.result;
+        } else {
+            throw new ParseException("tokens remaining at end");
+        }
+    }
+
     //test main
     public static void main(String[] args) {
         final String input = "{foo; bar; x + 2;}";
@@ -949,6 +991,18 @@ public class Parser {
             final List<Token> tokens3 = tokenizer3.tokenize();
             final Parser parser = new Parser(tokens3);
             final Stmt parsed = parser.parseTest2();
+            System.out.println(parsed);
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
+
+        final String input4 = "String clook, boolean haha, int happy";
+        final Tokenizer tokenizer4 = new Tokenizer(input4);
+
+        try {
+            final List<Token> tokens4 = tokenizer4.tokenize();
+            final Parser parser = new Parser(tokens4);
+            final Decl parsed = parser.parseTest4();
             System.out.println(parsed);
         } catch(Exception e) {
             e.printStackTrace();
