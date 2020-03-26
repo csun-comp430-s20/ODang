@@ -7,6 +7,7 @@ import Tokenizer.Tokens.*;
 import Tokenizer.*;
 import Parser.Types.*;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Stack;
@@ -61,8 +62,8 @@ public class Parser {
                 member = true;
         }
         if (!member) {
-            throw new ParseException("Expected " + tokens.toString() +
-                    "Received" + currentToken.toString());
+            throw new ParseException("Expected " + Arrays.toString(tokens) +
+                    ", received " + currentToken.toString());
         }
     }
 
@@ -98,20 +99,134 @@ public class Parser {
         else return -1;
     }
 
-    //TODO implement later, just need it now to implement other parseStmts
+    public ParseResult<Stmt> parseBlock(final int startPos) throws ParseException {
+        checkTokenIs(startPos, new LeftCurlyToken());
+        final ParseResult<Stmt> blockStmts = parseBlockStmts(startPos + 1);
+        checkTokenIs(blockStmts.nextPos, new RightCurlyToken());
+        return new ParseResult<Stmt>(new Block(blockStmts.result), blockStmts.nextPos + 1);
+    }
+
+    public ParseResult<Stmt> parseBlockStmts(final int startPos) throws ParseException {
+        //empty block
+        if (readToken(startPos) instanceof RightCurlyToken) {
+            return new ParseResult<Stmt>(null, startPos);
+        }
+        else {
+            final ParseResult<Stmt> firstStmt = parseBlockStmt(startPos);
+            Stmt resultBlockStmt = firstStmt.result;
+            final ParseResult<List<Stmt>> rest = parseBlockStmtHelper(firstStmt.nextPos);
+            for (final Stmt otherStmt : rest.result) {
+                resultBlockStmt = new BlockStmt(resultBlockStmt, otherStmt);
+            }
+            return new ParseResult<Stmt>(resultBlockStmt, rest.nextPos);
+        }
+    }
+
+    private ParseResult<List<Stmt>> parseBlockStmtHelper(final int startPos) throws ParseException {
+        final List<Stmt> resultList = new ArrayList<Stmt>();
+        int curPos = startPos;
+
+        while (curPos < tokens.size()) {
+            try {
+                final ParseResult<Stmt> curBlockStmt = parseBlockStmt(curPos);
+                curPos = curBlockStmt.nextPos;
+                resultList.add(curBlockStmt.result);
+                if (readToken(curPos) instanceof RightCurlyToken)
+                    break;
+            } catch (ParseException e) {
+                break;
+            }
+        }
+        return new ParseResult<List<Stmt>>(resultList, curPos);
+    }
+
+    //TODO implement local vardec
+    public ParseResult<Stmt> parseBlockStmt(final int startPos) throws ParseException {
+
+        final ParseResult<Stmt> stmt = parseStmt(startPos);
+        return new ParseResult<Stmt>(stmt.result, stmt.nextPos);
+
+    }
+    //TODO finish implementation, are Declarators gonna be its own interface?
+    public ParseResult<Stmt> parseLocalVardecStmt(final int startPos) throws ParseException {
+
+        return null;
+       // final ParseResult<Type> type = parseType(startPos);
+       // final ParseResult<Stmt> varDeclarators = parseVarDeclarators(type.nextPos);
+       // return new ParseResult<Stmt>(new LocalVardecStmt(
+       //        type.result,
+       //         varDeclarators.result), varDeclarators.nextPos);
+    }
     /**
-     * attempts to parse a block, ie {<block statements>?}
+     * attempts to parse a stmt, ie <stmt without trailing substmt> | <if then else stmt> |
+     * <while stmt> | <for stmt>
      * @param startPos position on the token list
      * @return ParseResult<Stmt>
      * @throws ParseException
      */
-    public ParseResult<Stmt> parseBlock(final int startPos) throws ParseException {
-        return null;
+    //TODO implement
+    public ParseResult<Stmt> parseStmt(final int startPos) throws ParseException {
+        final Token currentToken = readToken(startPos);
+
+        if (currentToken instanceof IfToken) {
+            final ParseResult<Stmt> stmt = parseIfElseStmt(startPos);
+            return new ParseResult<Stmt>(stmt.result, stmt.nextPos);
+        }
+        else if (currentToken instanceof WhileToken) {
+            final ParseResult<Stmt> stmt = parseWhileStmt(startPos);
+            return new ParseResult<Stmt>(stmt.result, stmt.nextPos);
+        }
+        else if (currentToken instanceof ForToken) {
+            final ParseResult<Stmt> stmt = parseForStmt(startPos);
+            return new ParseResult<Stmt>(stmt.result, stmt.nextPos);
+        }
+        //<stmt without trailing substmt>
+        else {
+            final ParseResult<Stmt> stmt = parseNoTrailingSubstmtStmt(startPos);
+            return new ParseResult<Stmt>(stmt.result, stmt.nextPos);
+        }
+    }
+
+    /**
+     * attempts to parse a <stmt withut trailing substmt>
+     * ie: <block> | <empty stmt> | <expr stmt> |
+     *  <break stmt> | <return stmt>
+     * @param startPos position in the token list
+     * @return ParseResult<Stmt>
+     * @throws ParseException
+     */
+    public ParseResult<Stmt> parseNoTrailingSubstmtStmt(final int startPos) throws ParseException {
+       final Token currentToken = readToken(startPos);
+
+       //<block>
+       if (currentToken instanceof LeftCurlyToken) {
+           final ParseResult<Stmt> block = parseBlock(startPos);
+           return new ParseResult<Stmt>(block.result, block.nextPos);
+       }
+       //<empty>
+       else if (currentToken instanceof SemiColonToken) {
+           return new ParseResult<Stmt>(new EmptyStmt(), startPos + 1);
+       }
+       // <return>
+       else if (currentToken instanceof ReturnToken) {
+           final ParseResult<Stmt> returnStmt = parseReturnStmt(startPos);
+           return new ParseResult<Stmt>(returnStmt.result, returnStmt.nextPos);
+       }
+       //<break>
+       else if (currentToken instanceof BreakToken) {
+           final ParseResult<Stmt> breakStmt = parseBreakStmt(startPos);
+           return new ParseResult<Stmt>(breakStmt.result, breakStmt.nextPos);
+       }
+       //<expr stmt>
+       else {
+           final ParseResult<Stmt> exprStmt = parseExpStmt(startPos);
+           return new ParseResult<Stmt>(exprStmt.result, exprStmt.nextPos);
+       }
     }
 
     /**
      * attempts to parse an If Else statement
-     * @param startPos position on the token list
+     * @param startPos position in the token list
      * @return  ParseResult<Stmt>
      * @throws ParseException
      */
@@ -129,11 +244,26 @@ public class Parser {
     }
 
     /**
+     * attempts to parse a while-statement
+     * @param startPos position in the list
+     * @return ParseResult<Stmt> containing a WhileStmt
+     * @throws ParseException
+     */
+    public ParseResult<Stmt> parseWhileStmt(final int startPos) throws ParseException {
+        checkTokenIs(startPos, new WhileToken());
+        checkTokenIs(startPos + 1, new LeftParenToken());
+        final ParseResult<Exp> guard = parseExp(startPos + 2);
+        checkTokenIs(guard.nextPos, new RightParenToken());
+        final ParseResult<Stmt> body = parseBlock(guard.nextPos + 1);
+        return new ParseResult<Stmt>(new WhileStmt(guard.result, body.result), body.nextPos);
+    }
+    /**
      * attempts to parse a ForStmt
      * @param startPos current position in the list
      * @return ParseResult<Stmt> with a ForStmt
      * @throws ParseException
      */
+    //TODO finish
     public ParseResult<Stmt> parseForStmt(final int startPos) throws ParseException {
         checkTokenIs(startPos, new ForToken());
         checkTokenIs(startPos + 1, new LeftParenToken());
@@ -141,7 +271,7 @@ public class Parser {
         checkTokenIs(forInit.nextPos, new SemiColonToken());
         final ParseResult<Exp> conditional = parseExp(forInit.nextPos + 1);
         checkTokenIs(conditional.nextPos, new SemiColonToken());
-        final ParseResult<Stmt> forUpdate = parseStmtExpList(conditional.nextPos + 1);
+        final ParseResult<Stmt> forUpdate = parseExpStmtList(conditional.nextPos + 1);
         checkTokenIs(forUpdate.nextPos, new RightParenToken());
         final ParseResult<Stmt> body = parseBlock(forUpdate.nextPos + 1);
         return new ParseResult<Stmt>(new ForStmt(
@@ -150,8 +280,8 @@ public class Parser {
                 forUpdate.result,
                 body.result), body.nextPos);
     }
-
-    public ParseResult<Stmt> parseForInit(final int startPos) throws ParseException {
+    //TODO implement
+    private ParseResult<Stmt> parseForInit(final int startPos) throws ParseException {
         return null;
     }
 
@@ -164,11 +294,33 @@ public class Parser {
      */
     public ParseResult<Stmt> parseExpStmt (final int startPos) throws ParseException {
         final ParseResult<Exp> stmtExp = parseExp(startPos);
-        return new ParseResult<Stmt>(new ExpStmt(stmtExp.result), stmtExp.nextPos);
+        checkTokenIs(stmtExp.nextPos, new SemiColonToken());
+        return new ParseResult<Stmt>(new ExpStmt(stmtExp.result), stmtExp.nextPos + 1);
     }
 
-    public ParseResult<Stmt> parseStmtExpList(final int startPos) throws ParseException {
-        return null;
+    /**
+     * attempts to parse a list of ExpStmt
+     * @param startPos position in the token list
+     * @return ParseResult<Stmt> containing an ExpStmt
+     * @throws ParseException
+     */
+    public ParseResult<Stmt> parseExpStmtList(final int startPos) throws ParseException {
+
+        ExpStmtList expStmtList = new ExpStmtList();
+        int curPos = startPos;
+
+        while (curPos < tokens.size()) {
+            try {
+                if (readToken(curPos) instanceof CommaToken)
+                    curPos++;
+                final ParseResult<Stmt> curExpStmt = parseExpStmt(curPos);
+                curPos = curExpStmt.nextPos;
+                expStmtList.list.add(curExpStmt.result);
+            } catch (final ParseException e) {
+                break;
+            }
+        }
+        return new ParseResult<Stmt>(expStmtList,curPos);
     }
 
     /**
@@ -182,11 +334,11 @@ public class Parser {
         if (readToken(startPos + 1) instanceof IdentifierToken){
             ParseResult<Exp> identifier = parsePrimary(startPos + 1);
             checkTokenIs(identifier.nextPos, new SemiColonToken());
-            return new ParseResult<Stmt>(new BreakStmt("break", identifier.result, ";"),
+            return new ParseResult<Stmt>(new BreakStmt(identifier.result),
                     identifier.nextPos + 1);
         } else {
             checkTokenIs(startPos + 1, new SemiColonToken());
-            return new ParseResult<Stmt>(new BreakStmt("break", null, ";"),
+            return new ParseResult<Stmt>(new BreakStmt(null),
                     startPos + 2);
         }
     }
@@ -200,12 +352,12 @@ public class Parser {
     public ParseResult<Stmt> parseReturnStmt(final int startPos) throws ParseException{
         checkTokenIs(startPos, new ReturnToken());
         if (readToken(startPos + 1) instanceof SemiColonToken){
-            return new ParseResult<Stmt>(new ReturnStmt("return", null, ";"), startPos + 2);
+            return new ParseResult<Stmt>(new ReturnStmt(null), startPos + 2);
         }
         else {
             ParseResult<Exp> returnExp = parseExp(startPos + 1);
             checkTokenIs(returnExp.nextPos, new SemiColonToken());
-            return new ParseResult<Stmt>(new ReturnStmt("return", returnExp.result, ";"), returnExp.nextPos + 1);
+            return new ParseResult<Stmt>(new ReturnStmt(returnExp.result), returnExp.nextPos + 1);
         }
     }
 
@@ -245,7 +397,7 @@ public class Parser {
         return new ParseResult<Exp>(finalResult, rest.nextPos);
     }
 
-    public ParseResult<List<Pair<String, Exp>>> parseAssignmentExpHelper(int curPos, final Token... operators) {
+    private ParseResult<List<Pair<String, Exp>>> parseAssignmentExpHelper(int curPos, final Token... operators) {
         final List<Pair<String, Exp>> resultList = new ArrayList<Pair<String, Exp>>();
 
         while(curPos < tokens.size()) {
@@ -706,15 +858,24 @@ public class Parser {
         }
     }
 
+    public Stmt parseTest3() throws ParseException {
+        final ParseResult<Stmt> toplevel = parseBlock(0);
+        if (toplevel.nextPos == tokens.size()) {
+            return toplevel.result;
+        } else {
+            throw new ParseException("tokens remaining at end");
+        }
+    }
+
     //test main
     public static void main(String[] args) {
-        final String input = "(foo) bar";
+        final String input = "{foo; bar;}";
         final Tokenizer tokenizer = new Tokenizer(input);
 
         try {
             final List<Token> tokens = tokenizer.tokenize();
             final Parser parser = new Parser(tokens);
-            final Exp parsed = parser.parseTopLevel();
+            final Stmt parsed = parser.parseTest3();
             System.out.println(parsed);
         } catch(Exception e) {
             e.printStackTrace();
