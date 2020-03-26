@@ -4,6 +4,7 @@ import Parser.Declarations.*;
 import Parser.Statements.*;
 import Parser.Expressions.*;
 import Parser.Literals.*;
+import Parser.Types.Void;
 import Tokenizer.Tokens.*;
 import Tokenizer.*;
 import Parser.Types.*;
@@ -196,6 +197,64 @@ public class Parser {
         }
     }
 
+    /**
+     * attempts to parse a <method dec> , ie <method header> <method body>
+     * @param startPos position in the list
+     * @return ParseResult<Decl>
+     * @throws ParseException
+     */
+    public ParseResult<Decl> parseMethodDeclaration(final int startPos) throws ParseException {
+        final ParseResult<Decl> methodHeader = parseMethodHeader(startPos);
+        final ParseResult<Stmt> methodBody = parseMethodBody(methodHeader.nextPos);
+        return new ParseResult<Decl>(new MethodDeclaration(
+                methodHeader.result,
+                methodBody.result),
+                methodBody.nextPos);
+    }
+    /**
+     * attempts to parse a <method header> , ie <result typy> <method declarator>
+     * @param startPos position in the list
+     * @return ParseResult<Decl>
+     * @throws ParseException
+     */
+    public ParseResult<Decl> parseMethodHeader(final int startPos) throws ParseException {
+        ParseResult<Type> resultType;
+        try{
+            resultType = parseType(startPos);
+        } catch (ParseException e) {
+            checkTokenIs(startPos, new VoidToken());
+            resultType = new ParseResult<Type>(new Void(), startPos + 1);
+        }
+        final ParseResult<Decl> methodDeclarator = parseMethodDeclarator(resultType.nextPos);
+        return new ParseResult<Decl>(new MethodHeader(
+                resultType.result,
+                methodDeclarator.result),
+                methodDeclarator.nextPos);
+    }
+    /**
+     * attempts to parse a <method declarator> , ie <identifier> (<formal param list>?)
+     * @param startPos position in the list
+     * @return ParseResult<Decl>
+     * @throws ParseException
+     */
+    public final ParseResult<Decl> parseMethodDeclarator(final int startPos) throws ParseException {
+        final ParseResult<Exp> identifier = parsePrimary(startPos);
+        checkTokenIs(identifier.nextPos, new LeftParenToken());
+        final ParseResult<FormalParamList> paramList = parseFormalParamList(identifier.nextPos + 1);
+        checkTokenIs(paramList.nextPos, new RightParenToken());
+        return new ParseResult<Decl>(new MethodDeclarator(identifier.result, paramList.result), paramList.nextPos + 1);
+    }
+
+    /**
+     * attempts to parse a method body, either <block> or ;
+     * @param startPos position in the list
+     * @return ParseResult<Stmt> containing the method body
+     * @throws ParseException
+     */
+    public final ParseResult<Stmt> parseMethodBody(final int startPos) throws ParseException {
+        final ParseResult<Stmt> body = parseStmt(startPos);
+        return new ParseResult<Stmt>(body.result, body.nextPos);
+    }
     /**
      * attempts to parse a method overload
      * @param startPos position in the list
