@@ -1,5 +1,6 @@
 package Parser;
 
+import Parser.Declarations.*;
 import Parser.Statements.*;
 import Parser.Expressions.*;
 import Parser.Literals.*;
@@ -98,6 +99,36 @@ public class Parser {
             return 3;
         else return -1;
     }
+
+
+    /**
+     * attempts to parse a method overload
+     * @param startPos position in the list
+     * @return ParseResult<Decl> containing the overload declarator and body
+     * @throws ParseException
+     */
+    public ParseResult<Decl> parseMethodOverload(final int startPos) throws ParseException {
+        final ParseResult<Decl> overloadDecl = parseOverloadDeclarator(startPos);
+        if (readToken(overloadDecl.nextPos) instanceof SemiColonToken) {
+            return new ParseResult<Decl>(new MethodOverloadDecl(overloadDecl.result, null), overloadDecl.nextPos + 1);
+        } else {
+            final ParseResult<Stmt> overloadBody = parseBlock(overloadDecl.nextPos);
+            return new ParseResult<Decl>(new MethodOverloadDecl(overloadDecl.result, overloadBody.result), overloadBody.nextPos);
+        }
+    }
+
+    //TODO implement formal param list
+    public ParseResult<Decl> parseOverloadDeclarator(final int startPos) throws ParseException{
+        if (readToken(startPos) instanceof IdentifierToken){
+            final ParseResult<Exp> identifierExp = parsePrimary(startPos);
+            checkTokenIs(identifierExp.nextPos, new StringToken("operator")); //We don't have the token for the keyward operator
+            if (readToken(identifierExp.nextPos + 1) instanceof OperatorToken){
+                return null;
+            } else throw new ParseException("Not an operator token.");
+        }
+        else throw new ParseException("Not an identifier token.");
+    }
+
 
     /**
      * attempts to parse a block
