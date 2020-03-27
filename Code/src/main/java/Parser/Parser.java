@@ -496,13 +496,22 @@ public class Parser {
         }
     }
 
-    //TODO implement formal param list
+    /**
+     * attempts to parse a overload declarator
+     * @param startPos position in the list
+     * @return ParseResult<Decl> containing the identifier, operator, and formal parameter list
+     * @throws ParseException
+     */
     public ParseResult<Decl> parseOverloadDeclarator(final int startPos) throws ParseException{
         if (readToken(startPos) instanceof IdentifierToken){
             final ParseResult<Exp> identifierExp = parsePrimary(startPos);
-            checkTokenIs(identifierExp.nextPos, new StringToken("operator")); //We don't have the token for the keyward operator
+            checkTokenIs(identifierExp.nextPos, new IdentifierToken("operator")); //We don't have the token for the keyward operator
             if (readToken(identifierExp.nextPos + 1) instanceof OperatorToken){
-                return null;
+                final OperatorToken op = (OperatorToken)readToken(identifierExp.nextPos + 1);
+                checkTokenIs(identifierExp.nextPos + 2, new LeftParenToken());
+                ParseResult<FormalParamList> list = parseFormalParamList(identifierExp.nextPos + 3);
+                checkTokenIs(list.nextPos, new RightParenToken());
+                return new ParseResult<Decl>(new OverloadDecl(identifierExp.result, op.name, list.result), list.nextPos + 1);
             } else throw new ParseException("Not an operator token.");
         }
         else throw new ParseException("Not an identifier token.");
@@ -1354,7 +1363,7 @@ public class Parser {
     }
 
     public Decl parseTest4() throws ParseException {
-        final ParseResult<FormalParamList> toplevel = parseFormalParamList(0);
+        final ParseResult<Decl> toplevel = parseOverloadDeclarator(0);
         if (toplevel.nextPos == tokens.size()) {
             return toplevel.result;
         } else {
@@ -1399,7 +1408,7 @@ public class Parser {
             e.printStackTrace();
         }
 
-        final String input4 = "String clook, boolean haha, int happy";
+        final String input4 = "className operator + (String clook, boolean haha, int happy)";
         final Tokenizer tokenizer4 = new Tokenizer(input4);
 
         try {
