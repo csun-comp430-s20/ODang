@@ -114,11 +114,11 @@ public class Parser {
 
         //no <super>
         if (readToken(identifier.nextPos) instanceof LeftCurlyToken) {
-            final ParseResult<Decl> classBody = parseClassBody(identifier.nextPos + 1);
+            final ParseResult<Decl> classBody = parseClassBody(identifier.nextPos);
             return new ParseResult<Decl>(new ClassDecl(
                     identifier.result,
                     classBody.result),
-                    classBody.nextPos + 1);
+                    classBody.nextPos);
         }
         //<super>
         else {
@@ -126,12 +126,12 @@ public class Parser {
             final ParseResult<Type> classType = parseType(identifier.nextPos + 1);
             if (!(classType.result instanceof ClassType))
                 throw new ParseException("Invalid class type: " + classType.result);
-            final ParseResult<Decl> classBody = parseClassBody(classType.nextPos + 1);
+            final ParseResult<Decl> classBody = parseClassBody(classType.nextPos);
             return new ParseResult<Decl>(new SubClassDecl(
                     identifier.result,
                     classType.result,
                     classBody.result),
-                    classBody.nextPos + 1);
+                    classBody.nextPos);
 
         }
     }
@@ -146,8 +146,10 @@ public class Parser {
     public ParseResult<Decl> parseClassBody(final int startPos) throws ParseException {
         checkTokenIs(startPos, new LeftCurlyToken());
         //empty class
-        if (readToken(startPos + 1) instanceof RightCurlyToken)
+        if (readToken(startPos + 1) instanceof RightCurlyToken) {
             return new ParseResult<Decl>(null, startPos + 2);
+
+        }
         else {
             final ParseResult<Decl> classBodyDecs = parseClassBodyDecs(startPos + 1);
             checkTokenIs(classBodyDecs.nextPos, new RightCurlyToken());
@@ -164,7 +166,7 @@ public class Parser {
      */
     public ParseResult<Decl> parseClassBodyDecs(final int startPos) throws ParseException {
         final ParseResult<Decl> firstClassBodyDecl = parseClassBodyDecl(startPos);
-        Decl resultClassBodyDecl =firstClassBodyDecl.result;
+        Decl resultClassBodyDecl = firstClassBodyDecl.result;
 
         final ParseResult<List<Decl>> rest = parseClassBodyDeclHelper(firstClassBodyDecl.nextPos);
         for (final Decl otherDecl : rest.result) {
@@ -255,7 +257,7 @@ public class Parser {
      * @throws ParseException
      */
     public ParseResult<Decl> parseConstructorDeclarator(final int startPos) throws ParseException {
-        final ParseResult<Exp> identifier = parsePrimary(startPos);
+        final ParseResult<Exp> identifier = parseLiteral(startPos);
         checkTokenIs(identifier.nextPos, new LeftParenToken());
         if (readToken(identifier.nextPos + 1) instanceof RightParenToken)
             return new ParseResult<Decl>(new ConstructorDeclarator(
@@ -307,7 +309,8 @@ public class Parser {
 
         final String name = (readToken(startPos) instanceof ThisToken) ? "this" : "super";
         checkTokenIs(startPos + 1, new LeftParenToken());
-        final ParseResult<ArgumentList> argList = parseArgumentList(startPos +1);
+        final ParseResult<ArgumentList> argList = parseArgumentList(startPos + 2);
+        System.out.println(argList.result);
         checkTokenIs(argList.nextPos, new RightParenToken());
         return new ParseResult<Decl>(
                 new ExplicitConstructorInvocation(name, argList.result),
@@ -496,7 +499,6 @@ public class Parser {
         }
     }
 
-    //TODO implement formal param list
     public ParseResult<Decl> parseOverloadDeclarator(final int startPos) throws ParseException{
         if (readToken(startPos) instanceof IdentifierToken){
             final ParseResult<Exp> identifierExp = parsePrimary(startPos);
@@ -617,7 +619,6 @@ public class Parser {
      * @return ParseResult<Stmt>
      * @throws ParseException
      */
-    //TODO implement
     public ParseResult<Stmt> parseStmt(final int startPos) throws ParseException {
         final Token currentToken = readToken(startPos);
 
@@ -1290,6 +1291,7 @@ public class Parser {
                 if (readToken(curPos) instanceof CommaToken)
                     curPos++;
                 final ParseResult<Exp> curArg = parseExp(curPos);
+
                 curPos = curArg.nextPos;
                 argList.expList.add(curArg.result);
             } catch(final ParseException e) {
@@ -1341,6 +1343,14 @@ public class Parser {
             throw new ParseException("tokens remaining at end");
         }
     }
+    public Decl parseTopLevelClass() throws ParseException {
+        final ParseResult<Decl> toplevel = parseClassDecl(0);
+        if (toplevel.nextPos == tokens.size()) {
+            return toplevel.result;
+        } else {
+            throw new ParseException("tokens remaining at end");
+        }
+    }
 
     //Testing out some statements, remove later
     public Stmt parseTest() throws ParseException {
@@ -1380,13 +1390,13 @@ public class Parser {
     }
     //test main
     public static void main(String[] args) {
-        final String input = "if (foo == 2) {foo.method();} else {bar.method();}";
+        final String input = "class Foo extends Bar {Foo(int yo, String boy) {this(bar);}}";
         final Tokenizer tokenizer = new Tokenizer(input);
 
         try {
             final List<Token> tokens = tokenizer.tokenize();
             final Parser parser = new Parser(tokens);
-            final Stmt parsed = parser.parseTopLevelStmt();
+            final Decl parsed = parser.parseTopLevelClass();
             System.out.println(parsed);
         } catch(Exception e) {
             e.printStackTrace();

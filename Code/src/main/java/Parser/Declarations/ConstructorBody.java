@@ -21,7 +21,10 @@ public class ConstructorBody implements Decl {
     }
 
     public String toString() {
-        return String.format(this.getClass().getSimpleName() + " {" + explConstrInvoc +
+        if (explConstrInvoc == null)
+            return String.format(this.getClass().getSimpleName() + " {" + blockStmts + "}");
+        else
+            return String.format(this.getClass().getSimpleName() + " {" + explConstrInvoc +
                 " " + blockStmts + "}");
     }
 }
