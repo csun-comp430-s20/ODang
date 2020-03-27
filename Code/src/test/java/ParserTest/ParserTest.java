@@ -33,6 +33,14 @@ public class ParserTest {
             e.printStackTrace();
         }
     }
+    public static void assertParsesClassFromString(final Decl expected, final String received) {
+        final Tokenizer tokenizer = new Tokenizer(received);
+        try {
+            Assertions.assertEquals(expected, (new Parser(tokenizer.tokenize())).parseTopLevelClass());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 
     public static void assertCorrectStmtToString (final String expected, final String received) {
         final Tokenizer tokenizer = new Tokenizer(received);
@@ -409,7 +417,7 @@ public class ParserTest {
         assertCorrectStmtToString("BreakStmt (IdentifierLiteral<foo>)", "break foo;");
     }
     @Test
-    public void checkParsesForStmt() {
+    public void checkParsesForStmtOneInit() {
         final Stmt expected = new ForStmt(new LocalVardec(
                 new PrimitiveType(new IntType()), new VarDeclaratorList(
                         new VarDeclarator(new IdentifierLiteral("foo"), new IntegerLiteral(0)))),
@@ -418,6 +426,18 @@ public class ParserTest {
                 new ReturnStmt(new IdentifierLiteral("foo")));
 
         assertParsesStmtFromString(expected, "for(int foo = 0; foo < 5; foo++) {return foo;}");
+    }
+    @Test
+    public void checkParsesForStmtTwoInit() {
+        final Stmt expected = new ForStmt(new LocalVardec(
+                new PrimitiveType(new IntType()), new VarDeclaratorList(
+                new VarDeclarator(new IdentifierLiteral("foo"), new IntegerLiteral(0)),
+                new VarDeclarator(new IdentifierLiteral("bar"), new IntegerLiteral(1)))),
+                new BinaryOperatorExp("<", new IdentifierLiteral("foo"), new IntegerLiteral(5)),
+                new StmtExprList(new StmtExpr(new PostIncrDecrExp(new IdentifierLiteral("foo"), "++"))),
+                new ReturnStmt(new IdentifierLiteral("foo")));
+
+        assertParsesStmtFromString(expected, "for(int foo = 0, bar = 1; foo < 5; foo++) {return foo;}");
     }
     @Test
     public void checkParsesWhileStmt() {
@@ -429,6 +449,15 @@ public class ParserTest {
         assertParsesStmtFromString(expected, "while (foo < 5) {foo += 1;}");
     }
     @Test
+    public void checkParsesIfElseStmtEmptyTrueFalseBranches() {
+        final Stmt expected = new IfElseStmt(new BinaryOperatorExp(
+                "==", new IdentifierLiteral("foo"), new IntegerLiteral(2)),
+                null,
+                null);
+        assertParsesStmtFromString(expected, "if (foo == 2) {} else {}");
+
+    }
+    @Test
     public void checkParsesIfElseStmtWithFieldAccess() {
         final Stmt expected = new IfElseStmt(new BinaryOperatorExp(
                 "==", new IdentifierLiteral("foo"), new IntegerLiteral(2)),
@@ -438,8 +467,114 @@ public class ParserTest {
                         new IdentifierLiteral("method2"), new ArgumentList(null)))));
 
         assertParsesStmtFromString(expected, "if (foo == 2) {foo.method();} else {bar.method2();}");
-
     }
 
-    
+    //***DECL TESTS***//
+    @Test
+    public void checkParsesEmptyClassNoSuper() {
+        final Decl expected = new ClassDecl(
+                new IdentifierLiteral("Foo"), null);
+        assertParsesClassFromString(expected, "class Foo{}");
+    }
+    @Test
+    public void checkParsesEmptyClassSuper() {
+        final Decl expected = new SubClassDecl(
+                new IdentifierLiteral("Foo"), new ClassType(
+                        new IdentifierLiteral("Bar")), null);
+        assertParsesClassFromString(expected, "class Foo extends Bar{}");
+    }
+    @Test
+    public void checkParsesClassWithEmptyConstructor() {
+        final Decl expected = new ClassDecl(
+                new IdentifierLiteral("Foo"),
+                new ConstructorDecl(
+                        new ConstructorDeclarator(
+                                new IdentifierLiteral("Foo"), null),
+                        null));
+        assertParsesClassFromString(expected, "class Foo{Foo() {}}");
+    }
+    @Test
+    public void checkParsesClassSuperWithEmptyConstructor() {
+        final Decl expected = new SubClassDecl(
+                new IdentifierLiteral("Foo"),
+                new ClassType(
+                        new IdentifierLiteral("Bar")),
+                new ConstructorDecl(
+                        new ConstructorDeclarator(
+                                new IdentifierLiteral("Foo"), null),
+                        null));
+        assertParsesClassFromString(expected, "class Foo extends Bar {Foo() {}}");
+    }
+    @Test
+    public void checkParsesClassOneParamConstructor() {
+        final Decl expected = new ClassDecl(
+                new IdentifierLiteral("Foo"),
+                new ConstructorDecl(
+                        new ConstructorDeclarator(
+                                new IdentifierLiteral("Foo"), new FormalParamList(
+                                        new FormalParam(
+                                                new PrimitiveType(new IntType()),
+                                                new IdentifierLiteral("x")))), null));
+        assertParsesClassFromString(expected, "class Foo{Foo(int x) {}}");
+    }
+    @Test
+    public void checkParsesClassTwoParamsConstructor() {
+        final Decl expected = new ClassDecl(
+                new IdentifierLiteral("Foo"),
+                new ConstructorDecl(
+                        new ConstructorDeclarator(
+                                new IdentifierLiteral("Foo"), new FormalParamList(
+                                new FormalParam(
+                                        new PrimitiveType(new IntType()),
+                                        new IdentifierLiteral("x")),
+                                new FormalParam(
+                                        new PrimitiveType(new StringType()),
+                                        new IdentifierLiteral("testString"))
+                                )), null));
+        assertParsesClassFromString(expected, "class Foo{Foo(int x, String testString) {}}");
+    }
+    @Test
+    public void checkParsesSubClassOneParamConstructor() {
+        final Decl expected = new SubClassDecl(
+                new IdentifierLiteral("Foo"),
+                new ClassType(new IdentifierLiteral("Bar")),
+                new ConstructorDecl(
+                        new ConstructorDeclarator(
+                                new IdentifierLiteral("Foo"), new FormalParamList(
+                                new FormalParam(
+                                        new PrimitiveType(new IntType()),
+                                        new IdentifierLiteral("x")))), null));
+        assertParsesClassFromString(expected, "class Foo extends Bar{Foo(int x) {}}");
+    }
+    @Test
+    public void checkParsesSubClassTwoParamsConstructor() {
+        final Decl expected = new SubClassDecl(
+                new IdentifierLiteral("Foo"),
+                new ClassType(new IdentifierLiteral("Bar")),
+                new ConstructorDecl(
+                        new ConstructorDeclarator(
+                                new IdentifierLiteral("Foo"), new FormalParamList(
+                                new FormalParam(
+                                        new PrimitiveType(new IntType()),
+                                        new IdentifierLiteral("x")),
+                                new FormalParam(
+                                        new PrimitiveType(new StringType()),
+                                        new IdentifierLiteral("testString")))), null));
+        assertParsesClassFromString(expected, "class Foo extends Bar{Foo(int x, String testString) {}}");
+    }
+    @Test
+    public void checkParsesClassWithFieldDec() {
+        final Decl expected = new ClassDecl(
+                new IdentifierLiteral("Foo"),
+                new FieldDecl(
+                        new PrimitiveType(new IntType()),
+                        new VarDeclaratorList(
+                                new VarDeclarator(
+                                        new IdentifierLiteral("x"),
+                                        new IntegerLiteral(2)
+                                )
+                        )
+                ));
+        assertParsesClassFromString(expected, "class Foo{int x = 2;}");
+    }
 }

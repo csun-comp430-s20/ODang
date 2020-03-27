@@ -1449,7 +1449,7 @@ public class Parser {
     }
     //test main
     public static void main(String[] args) {
-        final String input = "class Foo extends Bar {Foo() {test.foo();} int x = 2;} class Bar{Bar() {test.bar();}}";
+        final String input = "class Foo{int x = 2;}";
         final Tokenizer tokenizer = new Tokenizer(input);
 
         try {
