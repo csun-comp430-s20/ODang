@@ -22,7 +22,7 @@ public class ClassDecl implements Decl {
     }
 
     public String toString() {
-        return String.format(this.getClass().getSimpleName() + " (" + identifier +
-                " " + classBody + ")");
+        return String.format(this.getClass().getSimpleName() + " {" + identifier +
+                " " + classBody + "}");
     }
 }

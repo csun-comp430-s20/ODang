@@ -24,6 +24,6 @@ public class SubClassDecl extends ClassDecl {
 
     public String toString() {
         return String.format(this.getClass().getSuperclass().getSimpleName() +
-                "(" + identifier +  " extends " + classType + " " + classBody + ")");
+                "(" + identifier +  " extends " + classType + " {" + classBody + "})");
     }
 }
