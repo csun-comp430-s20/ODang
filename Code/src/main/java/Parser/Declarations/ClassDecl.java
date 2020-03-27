@@ -1,7 +1,6 @@
 package Parser.Declarations;
 
 import Parser.Expressions.Exp;
-import Parser.Types.Type;
 
 public class ClassDecl implements Decl {
 

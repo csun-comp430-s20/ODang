@@ -86,7 +86,7 @@ public class Parser {
 
     /**
      * assigns a precedence to a binary operator
-     * @param operator
+     * @param operator input operator
      * @return
      */
     private static int checkPrecedence(String operator) {
@@ -102,6 +102,48 @@ public class Parser {
         else return -1;
     }
 
+    /**
+     * attempts to parse a <class decs>
+     *     ie <class dec> | <class decs> <class dec>
+     * @param startPos position in the list
+     * @return ParseResult<Decl>
+     * @throws ParseException
+     */
+    public ParseResult<Decl> parseClassDecs(final int startPos) throws ParseException {
+        final ParseResult<Decl> firstClassDecl = parseClassDecl(startPos);
+        final ClassDecs resultClassDecs = new ClassDecs(firstClassDecl.result);
+
+        final ParseResult<List<Decl>> rest = parseClassDecsHelper(firstClassDecl.nextPos);
+        for (final Decl otherDecl : rest.result) {
+            resultClassDecs.classDecs.add(otherDecl);
+        }
+        return new ParseResult<Decl>(resultClassDecs, rest.nextPos);
+    }
+
+    /**
+     * greedy method for parsing class declarations
+     * @param startPos position in the list
+     * @return ParseResult<List<Stmt>> containing all but the first Decl if any
+     * @throws ParseException
+     */
+    public ParseResult<List<Decl>> parseClassDecsHelper (final int startPos) {
+        final List<Decl> resultList = new ArrayList<Decl>();
+        int curPos = startPos;
+
+        while (curPos < tokens.size()) {
+
+            try{
+                final ParseResult<Decl> curClassDec = parseClassDecl(curPos);
+                curPos = curClassDec.nextPos;
+                resultList.add(curClassDec.result);
+                if (readToken(curPos) instanceof RightCurlyToken)
+                    break;
+            } catch (ParseException e) {
+                break;
+            }
+        }
+        return new ParseResult<List<Decl>>(resultList, curPos);
+    }
     /**
      * attempts to parse a class declaration, ie class <identifier> <super>? <class body>
      * @param startPos position in the list
@@ -176,7 +218,7 @@ public class Parser {
     }
 
     /**
-     * greedy method for parsing declarations
+     * greedy method for parsing class body declarations
      * @param startPos position in the list
      * @return ParseResult<List<Stmt>> containing all but the first Decl if any
      * @throws ParseException
@@ -310,7 +352,6 @@ public class Parser {
         final String name = (readToken(startPos) instanceof ThisToken) ? "this" : "super";
         checkTokenIs(startPos + 1, new LeftParenToken());
         final ParseResult<ArgumentList> argList = parseArgumentList(startPos + 2);
-        System.out.println(argList.result);
         checkTokenIs(argList.nextPos, new RightParenToken());
         return new ParseResult<Decl>(
                 new ExplicitConstructorInvocation(name, argList.result),
@@ -1361,6 +1402,14 @@ public class Parser {
             throw new ParseException("tokens remaining at end");
         }
     }
+    public Decl parseProgram() throws ParseException {
+        final ParseResult<Decl> topLevel = parseClassDecs(0);
+        if (topLevel.nextPos == tokens.size()) {
+            return topLevel.result;
+        } else {
+            throw new ParseException("tokens remaining at end");
+        }
+    }
 
     //Testing out some statements, remove later
     public Stmt parseTest() throws ParseException {
@@ -1400,13 +1449,13 @@ public class Parser {
     }
     //test main
     public static void main(String[] args) {
-        final String input = "class Foo extends Bar {Foo(int yo, String boy) {this(bar);}}";
+        final String input = "class Foo extends Bar {Foo() {test.foo();} int x = 2;} class Bar{Bar() {test.bar();}}";
         final Tokenizer tokenizer = new Tokenizer(input);
 
         try {
             final List<Token> tokens = tokenizer.tokenize();
             final Parser parser = new Parser(tokens);
-            final Decl parsed = parser.parseTopLevelClass();
+            final Decl parsed = parser.parseProgram();
             System.out.println(parsed);
         } catch(Exception e) {
             e.printStackTrace();
