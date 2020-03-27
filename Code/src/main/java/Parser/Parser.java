@@ -633,6 +633,10 @@ public class Parser {
             final ParseResult<Stmt> stmt = parseForStmt(startPos);
             return new ParseResult<Stmt>(stmt.result, stmt.nextPos);
         }
+        else if (currentToken instanceof PrintlnToken) {
+            final ParseResult<Stmt> printStmt = parsePrintStmt(startPos);
+            return new ParseResult<Stmt>(printStmt.result, printStmt.nextPos);
+        }
         //<stmt without trailing substmt>
         else {
             final ParseResult<Stmt> stmt = parseNoTrailingSubstmtStmt(startPos);
@@ -677,6 +681,19 @@ public class Parser {
         }
     }
 
+    /**
+     * attempts to parse a printStmt, TODO currently only supports 1 exp to be printed
+     * @param startPos position in the list
+     * @return ParseResult<Stmt>
+     * @throws ParseException
+     */
+    public ParseResult<Stmt> parsePrintStmt(final int startPos) throws ParseException {
+        checkTokenIs(startPos, new PrintlnToken());
+        checkTokenIs(startPos + 1, new LeftParenToken());
+        final ParseResult<Exp> exp = parseExp(startPos + 2);
+        checkTokenIs(exp.nextPos, new RightParenToken());
+        return new ParseResult<Stmt>(new PrintlnStmt(exp.result), exp.nextPos + 1);
+    }
     /**
      * attempts to parse an If Else statement
      * @param startPos position in the token list
