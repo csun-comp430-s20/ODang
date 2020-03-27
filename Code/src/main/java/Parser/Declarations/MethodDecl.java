@@ -1,18 +1,18 @@
 package Parser.Declarations;
 
 import Parser.Statements.*;
-public class MethodDeclaration implements Decl {
+public class MethodDecl implements Decl {
     public final Decl header;
     public final Stmt body;
 
-    public MethodDeclaration(final Decl header, final Stmt body) {
+    public MethodDecl(final Decl header, final Stmt body) {
         this.header = header;
         this.body = body;
     }
 
     public boolean equals(Object other) {
-        if (other instanceof MethodDeclaration) {
-            MethodDeclaration otherMD = (MethodDeclaration) other;
+        if (other instanceof MethodDecl) {
+            MethodDecl otherMD = (MethodDecl) other;
             return header.equals(otherMD.header) && body.equals(otherMD.body);
         }
         else return false;

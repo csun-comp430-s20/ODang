@@ -41,6 +41,7 @@ public class Parser {
             return String.format("(" + first + ", " + second + ")");
         }
     }
+
     /**
      * Checks the current position in the list, done a lot in this code
      * so wrote a method for it
@@ -99,6 +100,230 @@ public class Parser {
         else if (operator.equals("*") || operator.equals("/"))
             return 3;
         else return -1;
+    }
+
+    /**
+     * attempts to parse a class declaration, ie class <identifier> <super>? <class body>
+     * @param startPos position in the list
+     * @return ParseResult<Decl> containing a parsed class
+     * @throws ParseException
+     */
+    public ParseResult<Decl> parseClassDecl(final int startPos) throws ParseException {
+        checkTokenIs(startPos, new ClassToken());
+        final ParseResult<Exp> identifier = parseExp(startPos + 1);
+
+        //no <super>
+        if (readToken(identifier.nextPos) instanceof LeftCurlyToken) {
+            final ParseResult<Decl> classBody = parseClassBody(identifier.nextPos + 1);
+            return new ParseResult<Decl>(new ClassDecl(
+                    identifier.result,
+                    classBody.result),
+                    classBody.nextPos + 1);
+        }
+        //<super>
+        else {
+            checkTokenIs(identifier.nextPos, new ExtendsToken());
+            final ParseResult<Type> classType = parseType(identifier.nextPos + 1);
+            if (!(classType.result instanceof ClassType))
+                throw new ParseException("Invalid class type: " + classType.result);
+            final ParseResult<Decl> classBody = parseClassBody(classType.nextPos + 1);
+            return new ParseResult<Decl>(new SubClassDecl(
+                    identifier.result,
+                    classType.result,
+                    classBody.result),
+                    classBody.nextPos + 1);
+
+        }
+    }
+
+    /**
+     * attempts to parse a <class body>
+     *     ie { <class body decs>? }
+     * @param startPos position in the list
+     * @return ParseResult<Decl>
+     * @throws ParseException
+     */
+    public ParseResult<Decl> parseClassBody(final int startPos) throws ParseException {
+        checkTokenIs(startPos, new LeftCurlyToken());
+        //empty class
+        if (readToken(startPos + 1) instanceof RightCurlyToken)
+            return new ParseResult<Decl>(null, startPos + 2);
+        else {
+            final ParseResult<Decl> classBodyDecs = parseClassBodyDecs(startPos + 1);
+            checkTokenIs(classBodyDecs.nextPos, new RightCurlyToken());
+            return new ParseResult<Decl>(classBodyDecs.result, classBodyDecs.nextPos + 1);
+        }
+    }
+
+    /**
+     * attempts to parse a <class body decs>
+     *     ie <class body dec> | <class body decs> <class body dec>
+     * @param startPos position in the list
+     * @return ParseResult<Decl>
+     * @throws ParseException
+     */
+    public ParseResult<Decl> parseClassBodyDecs(final int startPos) throws ParseException {
+        final ParseResult<Decl> firstClassBodyDecl = parseClassBodyDecl(startPos);
+        Decl resultClassBodyDecl =firstClassBodyDecl.result;
+
+        final ParseResult<List<Decl>> rest = parseClassBodyDeclHelper(firstClassBodyDecl.nextPos);
+        for (final Decl otherDecl : rest.result) {
+            resultClassBodyDecl = new ClassBodyDecl(resultClassBodyDecl, otherDecl);
+        }
+        return new ParseResult<Decl>(resultClassBodyDecl, rest.nextPos);
+    }
+
+    /**
+     * greedy method for parsing declarations
+     * @param startPos position in the list
+     * @return ParseResult<List<Stmt>> containing all but the first Decl if any
+     * @throws ParseException
+     */
+    public ParseResult<List<Decl>> parseClassBodyDeclHelper(final int startPos) {
+        final List<Decl> resultList = new ArrayList<Decl>();
+        int curPos = startPos;
+
+        while (curPos < tokens.size()) {
+
+            try{
+                final ParseResult<Decl> curClassBodyDecl = parseClassBodyDecl(curPos);
+                curPos = curClassBodyDecl.nextPos;
+                resultList.add(curClassBodyDecl.result);
+                if (readToken(curPos) instanceof RightCurlyToken)
+                    break;
+            } catch (ParseException e) {
+                break;
+            }
+        }
+        return new ParseResult<List<Decl>>(resultList, curPos);
+    }
+
+    /**
+     * attempts to parse a <class body dec>, i.e <class member dec> | <constructor dec>
+     * @param startPos position in the token list
+     * @return ParseResult<Decl>
+     * @throws ParseException
+     */
+    public ParseResult<Decl> parseClassBodyDecl(final int startPos) throws ParseException {
+        try {
+            final ParseResult<Decl> classMemberDecl = parseClassMemberDecl(startPos);
+            return new ParseResult<Decl>(classMemberDecl.result, classMemberDecl.nextPos);
+        } catch (ParseException e) {
+            final ParseResult<Decl> constructorDecl = parseConstructorDecl(startPos);
+            return new ParseResult<Decl>(constructorDecl.result, constructorDecl.nextPos);
+        }
+    }
+
+    /**
+     * attempts to parse a <class member dec>, i.e <field dec> | <method dec>
+     * @param startPos position in the token list
+     * @return ParseResult<Decl>
+     * @throws ParseException
+     */
+    public ParseResult<Decl> parseClassMemberDecl(final int startPos) throws ParseException {
+        //tries to parse as fieldDecl, if it fails tries to parse as methodDecl
+        try {
+            final ParseResult<Decl> fieldDecl = parseFieldDecl(startPos);
+            return new ParseResult<Decl>(fieldDecl.result, fieldDecl.nextPos);
+        } catch(ParseException e) {
+            final ParseResult<Decl> methodDecl = parseMethodDecl(startPos);
+            return new ParseResult<Decl>(methodDecl.result, methodDecl.nextPos);
+        }
+    }
+
+    /**
+     * attempts to parse a <constructor dec>
+     *     ie <constructor declarator> <constructor body>
+     * @param startPos position in the list
+     * @return ParseResult<Decl>
+     * @throws ParseException
+     */
+    public ParseResult<Decl> parseConstructorDecl(final int startPos) throws ParseException {
+        final ParseResult<Decl> constructorDeclarator = parseConstructorDeclarator(startPos);
+        final ParseResult<Decl> constructorBody = parseConstructorBody(constructorDeclarator.nextPos);
+        return new ParseResult<Decl>(new ConstructorDecl(
+                constructorDeclarator.result,
+                constructorBody.result),
+                constructorBody.nextPos);
+    }
+
+    /**
+     * attempts to parse a <constructor declarator>
+     *     ie <identifier> ( <formal param list>? )
+     * @param startPos position in the list
+     * @return ParseResult<Decl>
+     * @throws ParseException
+     */
+    public ParseResult<Decl> parseConstructorDeclarator(final int startPos) throws ParseException {
+        final ParseResult<Exp> identifier = parsePrimary(startPos);
+        checkTokenIs(identifier.nextPos, new LeftParenToken());
+        if (readToken(identifier.nextPos + 1) instanceof RightParenToken)
+            return new ParseResult<Decl>(new ConstructorDeclarator(
+                    identifier.result, null), identifier.nextPos + 2);
+
+        final ParseResult<FormalParamList> paramList = parseFormalParamList(identifier.nextPos + 1);
+        checkTokenIs(paramList.nextPos, new RightParenToken());
+        return new ParseResult<Decl>(new ConstructorDeclarator(
+                identifier.result, paramList.result), paramList.nextPos + 1);
+    }
+
+    /**
+     * attempts to parse a <constructor body>
+     *     ie { <explicit constructor invocation>? <block stmts> }
+     * @param startPos position in the list
+     * @return ParseResult<Decl>
+     * @throws ParseException
+     */
+    public ParseResult<Decl> parseConstructorBody(final int startPos) throws ParseException {
+        checkTokenIs(startPos, new LeftCurlyToken());
+
+        //non-empty <explicit constructor invocation>
+        if (readToken(startPos + 1) instanceof ThisToken ||
+                readToken(startPos + 1) instanceof SuperToken) {
+            final ParseResult<Decl> explicitConstructorInvocation = parseExplicitConstructorInvocation(startPos + 1);
+            final ParseResult<Stmt> blockStmts = parseBlockStmts(explicitConstructorInvocation.nextPos);
+            checkTokenIs(blockStmts.nextPos, new RightCurlyToken());
+            return new ParseResult<Decl>(new ConstructorBody(
+                    explicitConstructorInvocation.result,
+                    blockStmts.result), blockStmts.nextPos + 1);
+        }
+        else {
+            final ParseResult<Stmt> blockStmts = parseBlockStmts(startPos + 1);
+            checkTokenIs(blockStmts.nextPos, new RightCurlyToken());
+            return new ParseResult<Decl>(new ConstructorBody(
+                    null,
+                    blockStmts.result), blockStmts.nextPos + 1);
+        }
+    }
+
+    /**
+     * attempts to parse an <explicit constructor invocation>
+     *     ie this ( <argument list>? ) | super ( <argument list>? )
+     * @param startPos position in the token list
+     * @return ParseResult<Decl>
+     * @throws ParseException
+     */
+    public ParseResult<Decl> parseExplicitConstructorInvocation(final int startPos) throws ParseException {
+
+        final String name = (readToken(startPos) instanceof ThisToken) ? "this" : "super";
+        checkTokenIs(startPos + 1, new LeftParenToken());
+        final ParseResult<ArgumentList> argList = parseArgumentList(startPos +1);
+        checkTokenIs(argList.nextPos, new RightParenToken());
+        return new ParseResult<Decl>(
+                new ExplicitConstructorInvocation(name, argList.result),
+                argList.nextPos + 1);
+    }
+    /**
+     * attempts to parse a field declaration, ie <type> <var declarators> ;
+     * @param startPos position in the token list
+     * @return ParseResult<Decl>
+     * @throws ParseException
+     */
+    public ParseResult<Decl> parseFieldDecl(final int startPos) throws ParseException{
+        final ParseResult<Type> type = parseType(startPos);
+        final ParseResult<Decl> varDeclarators = parseVarDeclarators(type.nextPos);
+        checkTokenIs(varDeclarators.nextPos, new SemiColonToken());
+        return new ParseResult<Decl>(new FieldDecl(type.result, varDeclarators.result), varDeclarators.nextPos + 1);
     }
 
     /**
@@ -203,10 +428,10 @@ public class Parser {
      * @return ParseResult<Decl>
      * @throws ParseException
      */
-    public ParseResult<Decl> parseMethodDeclaration(final int startPos) throws ParseException {
+    public ParseResult<Decl> parseMethodDecl(final int startPos) throws ParseException {
         final ParseResult<Decl> methodHeader = parseMethodHeader(startPos);
         final ParseResult<Stmt> methodBody = parseMethodBody(methodHeader.nextPos);
-        return new ParseResult<Decl>(new MethodDeclaration(
+        return new ParseResult<Decl>(new MethodDecl(
                 methodHeader.result,
                 methodBody.result),
                 methodBody.nextPos);
@@ -320,12 +545,12 @@ public class Parser {
     }
 
     /**
-     * greedy method for parsing statements inside a block"
+     * greedy method for parsing statements inside a block
      * @param startPos position in the list
      * @return ParseResult<List<Stmt>> containing all but the first Stmt in the block if any
      * @throws ParseException
      */
-    private ParseResult<List<Stmt>> parseBlockStmtHelper(final int startPos) throws ParseException {
+    private ParseResult<List<Stmt>> parseBlockStmtHelper(final int startPos) {
         final List<Stmt> resultList = new ArrayList<Stmt>();
         int curPos = startPos;
 
