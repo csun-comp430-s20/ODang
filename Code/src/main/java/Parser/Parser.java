@@ -310,7 +310,6 @@ public class Parser {
         final String name = (readToken(startPos) instanceof ThisToken) ? "this" : "super";
         checkTokenIs(startPos + 1, new LeftParenToken());
         final ParseResult<ArgumentList> argList = parseArgumentList(startPos + 2);
-        System.out.println(argList.result);
         checkTokenIs(argList.nextPos, new RightParenToken());
         return new ParseResult<Decl>(
                 new ExplicitConstructorInvocation(name, argList.result),
