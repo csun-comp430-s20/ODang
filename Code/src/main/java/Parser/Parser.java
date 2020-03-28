@@ -267,11 +267,16 @@ public class Parser {
     public ParseResult<Decl> parseClassMemberDecl(final int startPos) throws ParseException {
         //tries to parse as fieldDecl, if it fails tries to parse as methodDecl
         try {
-            final ParseResult<Decl> fieldDecl = parseFieldDecl(startPos);
-            return new ParseResult<Decl>(fieldDecl.result, fieldDecl.nextPos);
-        } catch(ParseException e) {
-            final ParseResult<Decl> methodDecl = parseMethodDecl(startPos);
-            return new ParseResult<Decl>(methodDecl.result, methodDecl.nextPos);
+           final ParseResult<Decl> overloadDecl = parseMethodOverload(startPos);
+           return new ParseResult<Decl>(overloadDecl.result, overloadDecl.nextPos);
+        } catch (ParseException d) {
+            try {
+                final ParseResult<Decl> fieldDecl = parseFieldDecl(startPos);
+                return new ParseResult<Decl>(fieldDecl.result, fieldDecl.nextPos);
+            } catch (ParseException e) {
+                final ParseResult<Decl> methodDecl = parseMethodDecl(startPos);
+                return new ParseResult<Decl>(methodDecl.result, methodDecl.nextPos);
+            }
         }
     }
 
@@ -532,9 +537,11 @@ public class Parser {
      */
     public ParseResult<Decl> parseMethodOverload(final int startPos) throws ParseException {
         final ParseResult<Decl> overloadDecl = parseOverloadDeclarator(startPos);
+        //no body, just a semicolon after
         if (readToken(overloadDecl.nextPos) instanceof SemiColonToken) {
             return new ParseResult<Decl>(new MethodOverloadDecl(overloadDecl.result, null), overloadDecl.nextPos + 1);
         } else {
+            //body statement
             final ParseResult<Stmt> overloadBody = parseBlock(overloadDecl.nextPos);
             return new ParseResult<Decl>(new MethodOverloadDecl(overloadDecl.result, overloadBody.result), overloadBody.nextPos);
         }
@@ -1440,7 +1447,7 @@ public class Parser {
     }
 
     public Decl parseTest4() throws ParseException {
-        final ParseResult<Decl> toplevel = parseOverloadDeclarator(0);
+        final ParseResult<Decl> toplevel = parseMethodOverload(0);
         if (toplevel.nextPos == tokens.size()) {
             return toplevel.result;
         } else {
@@ -1485,7 +1492,7 @@ public class Parser {
             e.printStackTrace();
         }
 
-        final String input4 = "className operator + (String clook, boolean haha, int happy)";
+        final String input4 = "className operator + (String clook, boolean haha, int happy);";
         final Tokenizer tokenizer4 = new Tokenizer(input4);
 
         try {

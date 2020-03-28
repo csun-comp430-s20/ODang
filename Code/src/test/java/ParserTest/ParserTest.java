@@ -8,6 +8,7 @@ import Parser.Declarations.*;
 import Parser.Statements.*;
 import Tokenizer.*;
 import Tokenizer.Tokens.*;
+//import com.sun.org.apache.xpath.internal.operations.String;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Assertions;
 
@@ -577,6 +578,23 @@ public class ParserTest {
                 ));
         assertParsesClassFromString(expected, "class Foo{int x = 2;}");
     }
+    //Always succeed no matter what, have to debug
+   /* @Test
+    public void checkParsesClassWithMethodDecWithNoBody() {
+        final Decl expected = new ClassDecl(
+                new IdentifierLiteral("Foo"),
+                new MethodDecl(new MethodHeader(
+                        new PrimitiveType(new IntType()),
+                        new MethodDeclarator(
+                                new IdentifierLiteral("func"),
+                                new FormalParamList(
+                                        new FormalParam(
+                                                new PrimitiveType(new StringType()),
+                                                new IdentifierLiteral("c"))))
+
+                        ), null));
+        assertParsesClassFromString(expected, "class Foo{int func(String c);}");
+    }*/
     @Test
     public void checkParsesClassWithTwoVarDecs() {
         final Decl expected = new ClassDecl(
@@ -597,5 +615,42 @@ public class ParserTest {
                 )
         );
         assertParsesClassFromString(expected, "class Foo{int x = 2; int y = 0;}");
+    }
+    @Test
+    public void checkParsesClassWithMethodOverloadWithNoBody() {
+        final Decl expected = new ClassDecl(
+                new IdentifierLiteral("Foo"),
+                new MethodOverloadDecl(
+                        new OverloadDecl(
+                                new IdentifierLiteral("Foo"), "+",
+                                new FormalParamList(
+                                        new FormalParam(
+                                                new PrimitiveType(new IntType()),
+                                                new IdentifierLiteral("x")))),
+                                null
+                ));
+        assertParsesClassFromString(expected, "class Foo{Foo operator + (int x);}");
+    }
+    @Test
+    public void checkParsesClassWithMethodOverloadWithVarDecl() {
+        final Decl expected = new ClassDecl(
+                new IdentifierLiteral("Foo"),
+                new MethodOverloadDecl(
+                        new OverloadDecl(
+                                new IdentifierLiteral("Foo"), "+",
+                                new FormalParamList(
+                                        new FormalParam(
+                                                new PrimitiveType(
+                                                        new IntType()),
+                                                        new IdentifierLiteral("x")))),
+                        new LocalVardec (
+                                new PrimitiveType(
+                                        new IntType()),
+                                        new VarDeclaratorList (
+                                                new VarDeclarator (
+                                                        new IdentifierLiteral("y"),
+                                                        new IntegerLiteral(5))))));
+        assertParsesClassFromString(expected, "class Foo{Foo operator + (int x){int y = 5;}}");
+
     }
 }
