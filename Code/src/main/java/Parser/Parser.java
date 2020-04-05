@@ -207,14 +207,12 @@ public class Parser {
      * @throws ParseException
      */
     public ParseResult<Decl> parseClassBodyDecs(final int startPos) throws ParseException {
-        final ParseResult<Decl> firstClassBodyDecl = parseClassBodyDecl(startPos);
-        Decl resultClassBodyDecl = firstClassBodyDecl.result;
 
-        final ParseResult<List<Decl>> rest = parseClassBodyDeclHelper(firstClassBodyDecl.nextPos);
-        for (final Decl otherDecl : rest.result) {
-            resultClassBodyDecl = new ClassBodyDecl(resultClassBodyDecl, otherDecl);
-        }
-        return new ParseResult<Decl>(resultClassBodyDecl, rest.nextPos);
+        final ParseResult<List<Decl>> classBodyDecs = parseClassBodyDeclHelper(startPos);
+        final ClassBodyDecs resultClassBodyDecs = new ClassBodyDecs();
+        for (Decl decl : classBodyDecs.result)
+            resultClassBodyDecs.classBodyDecs.add(decl);
+        return new ParseResult<Decl>(resultClassBodyDecs, classBodyDecs.nextPos);
     }
 
     /**
