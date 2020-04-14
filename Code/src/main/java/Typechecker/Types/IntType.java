@@ -5,5 +5,8 @@ public class IntType implements Type {
     public boolean equals(final Object other) {
         return other instanceof IntType;
     }
-    //TODO implement hashcode
+    @Override
+    public int hashCode() {
+        return 1;
+    }
 }

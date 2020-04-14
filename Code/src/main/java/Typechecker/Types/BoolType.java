@@ -5,5 +5,8 @@ public class BoolType implements Type {
     public boolean equals(final Object other) {
         return other instanceof BoolType;
     }
-    //TODO implement hashcode
+    @Override
+    public int hashCode() {
+        return 0;
+    }
 }

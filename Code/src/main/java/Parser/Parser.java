@@ -102,6 +102,15 @@ public class Parser {
         else return -1;
     }
 
+    public List<Decl> parseProgram() throws ParseException {
+        final ParseResult<Decl> topLevel = parseClassDecs(0);
+        final ClassDecs program = (ClassDecs)topLevel.result;
+        if (topLevel.nextPos == tokens.size()) {
+            return program.classDecs;
+        } else {
+            throw new ParseException("tokens remaining at end");
+        }
+    }
     /**
      * attempts to parse a <class decs>
      *     ie <class dec> | <class decs> <class dec>
@@ -1405,101 +1414,6 @@ public class Parser {
             return toplevel.result;
         } else {
             throw new ParseException("tokens remaining at end");
-        }
-    }
-    public Decl parseProgram() throws ParseException {
-        final ParseResult<Decl> topLevel = parseClassDecs(0);
-        if (topLevel.nextPos == tokens.size()) {
-            return topLevel.result;
-        } else {
-            throw new ParseException("tokens remaining at end");
-        }
-    }
-
-    //Testing out some statements, remove later
-    public Stmt parseTest() throws ParseException {
-        final ParseResult<Stmt> toplevel = parseReturnStmt(0);
-        if (toplevel.nextPos == tokens.size()) {
-            return toplevel.result;
-        } else {
-            throw new ParseException("tokens remaining at end");
-        }
-    }
-
-    public Stmt parseTest2() throws ParseException {
-        final ParseResult<Stmt> toplevel = parseBreakStmt(0);
-        if (toplevel.nextPos == tokens.size()) {
-            return toplevel.result;
-        } else {
-            throw new ParseException("tokens remaining at end");
-        }
-    }
-
-    public Stmt parseTest3() throws ParseException {
-        final ParseResult<Stmt> toplevel = parseBlock(0);
-        if (toplevel.nextPos == tokens.size()) {
-            return toplevel.result;
-        } else {
-            throw new ParseException("tokens remaining at end");
-        }
-    }
-
-    public Decl parseTest4() throws ParseException {
-        final ParseResult<Decl> toplevel = parseMethodOverload(0);
-        if (toplevel.nextPos == tokens.size()) {
-            return toplevel.result;
-        } else {
-            throw new ParseException("tokens remaining at end");
-        }
-    }
-    //test main
-    public static void main(String[] args) {
-        final String input = "class Foo{int x = 2;}";
-        final Tokenizer tokenizer = new Tokenizer(input);
-
-        try {
-            final List<Token> tokens = tokenizer.tokenize();
-            final Parser parser = new Parser(tokens);
-            final Decl parsed = parser.parseProgram();
-            System.out.println(parsed);
-        } catch(Exception e) {
-            e.printStackTrace();
-        }
-
-        final String input2 = "return 5;";
-        final Tokenizer tokenizer2 = new Tokenizer(input2);
-
-        try {
-            final List<Token> tokens2 = tokenizer2.tokenize();
-            final Parser parser = new Parser(tokens2);
-            final Stmt parsed = parser.parseTest();
-            System.out.println(parsed);
-        } catch(Exception e) {
-            e.printStackTrace();
-        }
-
-        final String input3 = "break;";
-        final Tokenizer tokenizer3 = new Tokenizer(input3);
-
-        try {
-            final List<Token> tokens3 = tokenizer3.tokenize();
-            final Parser parser = new Parser(tokens3);
-            final Stmt parsed = parser.parseTest2();
-            System.out.println(parsed);
-        } catch(Exception e) {
-            e.printStackTrace();
-        }
-
-        final String input4 = "className operator + (String clook, boolean haha, int happy);";
-        final Tokenizer tokenizer4 = new Tokenizer(input4);
-
-        try {
-            final List<Token> tokens4 = tokenizer4.tokenize();
-            final Parser parser = new Parser(tokens4);
-            final Decl parsed = parser.parseTest4();
-            System.out.println(parsed);
-        } catch(Exception e) {
-            e.printStackTrace();
         }
     }
 
