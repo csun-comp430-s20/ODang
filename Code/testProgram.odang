@@ -1,0 +1,6 @@
+class TestClass extends TestClass2 {
+    testClass(int foo, String bar) {
+        foo;
+        bar;
+    }
+}
