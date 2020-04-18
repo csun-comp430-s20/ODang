@@ -9,4 +9,9 @@ public class StringType implements Type {
     public int hashCode() {
         return 2;
     }
+
+    @Override
+    public String toString() {
+        return String.format(this.getClass().getSimpleName());
+    }
 }
