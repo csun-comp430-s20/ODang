@@ -16,9 +16,40 @@ import java.io.FileReader;
 import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
+
+import com.google.common.collect.ImmutableBiMap;
 import com.google.common.collect.ImmutableMap;
 
 public class Typechecker {
+
+    private static class Pair<U, V> {
+        public final U first;
+        public final V second;
+        public Pair(final U first, final V second) {
+            this.first = first;
+            this.second = second;
+        }
+        public String toString() {
+            return String.format("(" + first + ", " + second + ")");
+        }
+    }
+
+    private static ImmutableMap<String, Type> addToGamma(
+            final ImmutableMap<String, Type> gamma, final Pair<String, Type>... pairs) {
+
+        Map<String, Type> newMappings = new HashMap<>();
+        for (final Pair curPair : pairs) {
+            newMappings.put((String)curPair.first, (Type)curPair.second);
+        }
+
+        final ImmutableMap<String, Type> newGamma = ImmutableMap.<String, Type>builder()
+                .putAll(gamma)
+                .putAll(newMappings)
+                .build();
+
+        return newGamma;
+    }
+
 
     public static Type typeof(final ImmutableMap<String, Type> gamma, final Exp e) throws IllTypedException{
         if (e instanceof IntegerLiteral) {
@@ -34,6 +65,14 @@ public class Typechecker {
     }
     public static void main(String[] args) {
 
+        Map<String, Type> test = new HashMap<>();
+        test.put("x", new BoolType());
+
+        ImmutableMap gamma = ImmutableMap.copyOf(test);
+        ImmutableMap newGamma = addToGamma(gamma, new Pair("y", new IntType()));
+
+        System.out.println(gamma);
+        System.out.println(newGamma);
         try {
             File file = new File("testProgram.odang");
             BufferedReader br = new BufferedReader(new FileReader(file));
@@ -47,9 +86,13 @@ public class Typechecker {
             final Parser parser = new Parser(tokenizer.tokenize());
             final List<Decl> parsed = parser.parseProgram();
 
+            System.out.println(parsed);
+
+            System.out.println(typeof(null, new BooleanLiteral(true)));
 
         } catch (Exception e) {
-            System.out.println(e.getMessage());
+            System.out.println(e.getClass().getSimpleName() +
+                    ": " + e.getMessage());
         }
 
     }
