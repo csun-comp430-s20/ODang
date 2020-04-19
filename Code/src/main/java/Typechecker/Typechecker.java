@@ -15,7 +15,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
 
-import com.google.common.collect.ImmutableBiMap;
 import com.google.common.collect.ImmutableMap;
 
 public class Typechecker {
@@ -32,6 +31,12 @@ public class Typechecker {
         }
     }
 
+    /**
+     * creates a copy of an ImmutableMap and adds new mappings
+     * @param gamma current mapping
+     * @param pairs new key-value pairs to add to map
+     * @return copy of gamma with new mappings
+     */
     private static ImmutableMap<String, Type> addToGamma(
             final ImmutableMap<String, Type> gamma, final Pair<String, Type>... pairs) {
 
@@ -48,7 +53,13 @@ public class Typechecker {
         return newGamma;
     }
 
-
+    /**
+     * attempts to typecheck an expression
+     * @param gamma map of bound variables
+     * @param e current expression
+     * @return type of e
+     * @throws IllTypedException
+     */
     public static Type typeof(final ImmutableMap<String, Type> gamma, final Exp e) throws IllTypedException{
         if (e instanceof IntegerLiteral) {
             return new IntType();
