@@ -7,7 +7,7 @@ public class BoolType implements Type {
     }
     @Override
     public int hashCode() {
-        return 0;
+        return 4;
     }
     @Override
     public String toString() {
