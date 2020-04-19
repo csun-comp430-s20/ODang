@@ -6,9 +6,7 @@ import Parser.Parser;
 import Parser.Statements.Stmt;
 import Parser.Literals.*;
 import Tokenizer.Tokenizer;
-import Typechecker.Types.BoolType;
-import Typechecker.Types.IntType;
-import Typechecker.Types.Type;
+import Typechecker.Types.*;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -57,6 +55,15 @@ public class Typechecker {
         }
         else if (e instanceof BooleanLiteral) {
             return new BoolType();
+        }
+        else if (e instanceof StringLiteral) {
+            return new StringType();
+        }
+        else if (e instanceof NullLiteral) {
+            return new NullType();
+        }
+        else if (e instanceof IdentifierLiteral) {
+            return new IdentifierType();
         }
         else {
             assert(false);
