@@ -46,4 +46,36 @@ public class TypecheckerTest {
     public void checkTypechecksNullLiteral() {
         assertTypechecksExp(new NullType(), "null");
     }
+    @Test
+    public void checkTypechecksBinopPlus() {
+        assertTypechecksExp(new IntType(), "1 + 2");
+    }
+    @Test
+    public void checkTypechecksBinopMinus() {
+        assertTypechecksExp(new IntType(), "1 - 2");
+    }
+    @Test
+    public void checkTypechecksBinopMult() {
+        assertTypechecksExp(new IntType(), "1 * 2");
+    }
+    @Test
+    public void checkTypechecksBinopDiv() {
+        assertTypechecksExp(new IntType(), "1 / 2");
+    }
+    @Test
+    public void checkTypechecksBinopLessThan() {
+        assertTypechecksExp(new BoolType(), "1 < 2");
+    }
+    @Test
+    public void checkTypechecksBinopGreaterThan() {
+        assertTypechecksExp(new BoolType(), "1 > 2");
+    }
+    @Test
+    public void checkTypechecksBinopReferenceEqualsIntegers() {
+        assertTypechecksExp(new BoolType(), "1 == 2");
+    }
+    @Test
+    public void checkTypechecksBinopReferenceEqualsBooleans() {
+        assertTypechecksExp(new BoolType(), "true == true");
+    }
 }

@@ -1,5 +1,6 @@
 package Typechecker;
 
+import Parser.Expressions.BinaryOperatorExp;
 import Parser.Expressions.Exp;
 import Parser.Declarations.Decl;
 import Parser.Parser;
@@ -58,10 +59,45 @@ public class Typechecker {
      * @param gamma map of bound variables
      * @param e current expression
      * @return type of e
-     * @throws IllTypedException
+     * @throws IllTypedException unrecognized expression
      */
     public static Type typeof(final ImmutableMap<String, Type> gamma, final Exp e) throws IllTypedException{
-        if (e instanceof IntegerLiteral) {
+
+        if (e instanceof BinaryOperatorExp) {
+            final BinaryOperatorExp asBOP = (BinaryOperatorExp)e;
+            final Type left = typeof(gamma, asBOP.left);
+            final Type right = typeof(gamma, asBOP.right);
+
+            //TODO string concat?
+            if (asBOP.op.matches("[-+*/]")) {
+                if (left instanceof IntType && right instanceof IntType) {
+                    return new IntType();
+                }
+                else {
+                    throw new IllTypedException("Type mismatch: " + left + asBOP.op + right);
+                }
+            }
+            else if (asBOP.op.matches("[<>]")){
+                if (left instanceof IntType && right instanceof IntType) {
+                    return new BoolType();
+                } else {
+                    throw new IllTypedException("Type mismatch: " + left + asBOP.op + right);
+                }
+            }
+            else if (asBOP.op.equals("==")) {
+                if (left.equals(right)) {
+                    return new BoolType();
+                } else {
+                    throw new IllTypedException("Type mismatch: " + left + asBOP.op + right);
+                }
+            }
+            else {
+                assert(false);
+                throw new IllTypedException("Illegal binary operation");
+            }
+        }
+
+        else if (e instanceof IntegerLiteral) {
             return new IntType();
         }
         else if (e instanceof BooleanLiteral) {
@@ -78,7 +114,7 @@ public class Typechecker {
         }
         else {
             assert(false);
-            throw new IllTypedException("unrecognized expression");
+            throw new IllTypedException("unrecognized expression: " + e.toString());
         }
     }
     public static void main(String[] args) {
