@@ -2,6 +2,9 @@ package TypecheckerTest;
 
 import Parser.*;
 import Parser.Expressions.*;
+import Parser.Literals.BooleanLiteral;
+import Parser.Literals.IntegerLiteral;
+import Parser.Literals.StringLiteral;
 import Tokenizer.*;
 import Typechecker.Types.*;
 import Typechecker.*;
@@ -27,55 +30,184 @@ public class TypecheckerTest {
     }
 
     @Test
-    public void checkTypechecksStringLiteral() {
+    public void checkTypeOfStringLiteral() {
         assertTypechecksExp(new StringType(), "\"hello world\"");
     }
     @Test
-    public void checkTypechecksIntegerLiteral() {
+    public void checkTypeOfIntegerLiteral() {
         assertTypechecksExp(new IntType(), "1");
     }
     @Test
-    public void checkTypechecksBooleanLiteral() {
+    public void checkTypeOfBooleanLiteral() {
         assertTypechecksExp(new BoolType(), "true");
     }
     @Test
-    public void checkTypechecksIdentifierLiteral() {
+    public void checkTypeOfIdentifierLiteral() {
         assertTypechecksExp(new IdentifierType(), "foo");
     }
     @Test
-    public void checkTypechecksNullLiteral() {
+    public void checkTypeOfNullLiteral() {
         assertTypechecksExp(new NullType(), "null");
     }
     @Test
-    public void checkTypechecksBinopPlus() {
+    public void checkTypeOfBinopPlus() {
         assertTypechecksExp(new IntType(), "1 + 2");
     }
     @Test
-    public void checkTypechecksBinopMinus() {
+    public void checkThrowsExceptionTypeMismatchBinopPlus() {
+        final BinaryOperatorExp BOPExp = new BinaryOperatorExp("+",
+                new IntegerLiteral(1),
+                new BooleanLiteral(false));
+        Assertions.assertThrows(IllTypedException.class, () -> Typechecker.typeof(null, BOPExp));
+    }
+    @Test
+    public void checkTypeOfBinopMinus() {
         assertTypechecksExp(new IntType(), "1 - 2");
     }
     @Test
-    public void checkTypechecksBinopMult() {
+    public void checkThrowsExceptionTypeMismatchBinopMinus() {
+        final BinaryOperatorExp BOPExp = new BinaryOperatorExp("-",
+                new IntegerLiteral(1),
+                new BooleanLiteral(false));
+        Assertions.assertThrows(IllTypedException.class, () -> Typechecker.typeof(null, BOPExp));
+    }
+    @Test
+    public void checkTypeOfBinopMult() {
         assertTypechecksExp(new IntType(), "1 * 2");
     }
     @Test
-    public void checkTypechecksBinopDiv() {
+    public void checkThrowsExceptionTypeMismatchBinopMult() {
+        final BinaryOperatorExp BOPExp = new BinaryOperatorExp("*",
+                new IntegerLiteral(1),
+                new BooleanLiteral(false));
+        Assertions.assertThrows(IllTypedException.class, () -> Typechecker.typeof(null, BOPExp));
+    }
+    @Test
+    public void checkTypeOfBinopDiv() {
         assertTypechecksExp(new IntType(), "1 / 2");
     }
     @Test
-    public void checkTypechecksBinopLessThan() {
+    public void checkThrowsExceptionTypeMismatchBinopDiv() {
+        final BinaryOperatorExp BOPExp = new BinaryOperatorExp("/",
+                new IntegerLiteral(1),
+                new BooleanLiteral(false));
+        Assertions.assertThrows(IllTypedException.class, () -> Typechecker.typeof(null, BOPExp));
+    }
+    @Test
+    public void checkTypeOfBinopLessThan() {
         assertTypechecksExp(new BoolType(), "1 < 2");
     }
     @Test
-    public void checkTypechecksBinopGreaterThan() {
+    public void checkThrowsExceptionTypeMismatchBinopLessThan() {
+        final BinaryOperatorExp BOPExp = new BinaryOperatorExp("<",
+                new IntegerLiteral(1),
+                new BooleanLiteral(false));
+        Assertions.assertThrows(IllTypedException.class, () -> Typechecker.typeof(null, BOPExp));
+    }
+    @Test
+    public void checkTypeOfBinopGreaterThan() {
         assertTypechecksExp(new BoolType(), "1 > 2");
     }
     @Test
-    public void checkTypechecksBinopReferenceEqualsIntegers() {
+    public void checkThrowsExceptionTypeMismatchBinopGreaterThan() {
+        final BinaryOperatorExp BOPExp = new BinaryOperatorExp(">",
+                new IntegerLiteral(1),
+                new BooleanLiteral(false));
+        Assertions.assertThrows(IllTypedException.class, () -> Typechecker.typeof(null, BOPExp));
+    }
+    @Test
+    public void checkTypeOfBinopReferenceEqualsIntegers() {
         assertTypechecksExp(new BoolType(), "1 == 2");
     }
     @Test
-    public void checkTypechecksBinopReferenceEqualsBooleans() {
+    public void checkThrowsExceptionTypeMismatchBinopReferenceEquals() {
+        final BinaryOperatorExp BOPExp = new BinaryOperatorExp("==",
+                new IntegerLiteral(1),
+                new BooleanLiteral(false));
+        Assertions.assertThrows(IllTypedException.class, () -> Typechecker.typeof(null, BOPExp));
+    }
+    @Test
+    public void checkTypeOfBinopReferenceEqualsBooleans() {
         assertTypechecksExp(new BoolType(), "true == true");
+    }
+    @Test
+    public void checkTypeOfPreIncrExp() {
+        assertTypechecksExp(new IntType(), "++2");
+    }
+    @Test
+    public void checkThrowsExceptionTypeMismatchPreIncrExpBool() {
+        final PreIncrDecrExp PreIncrExp = new PreIncrDecrExp(
+                new BooleanLiteral(true),
+                "++"
+        );
+        Assertions.assertThrows(IllTypedException.class, () -> Typechecker.typeof(null, PreIncrExp));
+    }
+    @Test
+    public void checkThrowsExceptionTypeMismatchPreIncrExpStr() {
+        final PreIncrDecrExp PreIncrExp = new PreIncrDecrExp(
+                new StringLiteral("foo"),
+                "++"
+        );
+        Assertions.assertThrows(IllTypedException.class, () -> Typechecker.typeof(null, PreIncrExp));
+    }
+    @Test
+    public void checkTypeOfPreDecrExp() {
+        assertTypechecksExp(new IntType(), "--2");
+    }
+    @Test
+    public void checkThrowsExceptionTypeMismatchPreDecrExpBool() {
+        final PreIncrDecrExp PreDecrExp = new PreIncrDecrExp(
+                new BooleanLiteral(true),
+                "--"
+        );
+        Assertions.assertThrows(IllTypedException.class, () -> Typechecker.typeof(null, PreDecrExp));
+    }
+    @Test
+    public void checkThrowsExceptionTypeMismatchPreDecrExpStr() {
+        final PreIncrDecrExp PreDecrExp = new PreIncrDecrExp(
+                new StringLiteral("foo"),
+                "--"
+        );
+        Assertions.assertThrows(IllTypedException.class, () -> Typechecker.typeof(null, PreDecrExp));
+    }
+    @Test
+    public void checkTypeOfPostIncrExp() {
+        assertTypechecksExp(new IntType(), "2++");
+    }
+    @Test
+    public void checkThrowsExceptionTypeMismatchPostIncrExpBool() {
+        final PostIncrDecrExp PostIncrExp = new PostIncrDecrExp(
+                new BooleanLiteral(true),
+                "++"
+        );
+        Assertions.assertThrows(IllTypedException.class, () -> Typechecker.typeof(null, PostIncrExp));
+    }
+    @Test
+    public void checkThrowsExceptionTypeMismatchPostIncrExpStr() {
+        final PostIncrDecrExp PostIncrExp = new PostIncrDecrExp(
+                new StringLiteral("foo"),
+                "++"
+        );
+        Assertions.assertThrows(IllTypedException.class, () -> Typechecker.typeof(null, PostIncrExp));
+    }
+    @Test
+    public void checkTypeOfPostDecrExp() {
+        assertTypechecksExp(new IntType(), "2--");
+    }
+    @Test
+    public void checkThrowsExceptionTypeMismatchPostDecrExpBool() {
+        final PostIncrDecrExp PostDecrExp = new PostIncrDecrExp(
+                new BooleanLiteral(true),
+                "--"
+        );
+        Assertions.assertThrows(IllTypedException.class, () -> Typechecker.typeof(null, PostDecrExp));
+    }
+    @Test
+    public void checkThrowsExceptionTypeMismatchPostDecrExpStr() {
+        final PostIncrDecrExp PostDecrExp = new PostIncrDecrExp(
+                new StringLiteral("foo"),
+                "--"
+        );
+        Assertions.assertThrows(IllTypedException.class, () -> Typechecker.typeof(null, PostDecrExp));
     }
 }

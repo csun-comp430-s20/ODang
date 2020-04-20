@@ -1,7 +1,6 @@
 package Typechecker;
 
-import Parser.Expressions.BinaryOperatorExp;
-import Parser.Expressions.Exp;
+import Parser.Expressions.*;
 import Parser.Declarations.Decl;
 import Parser.Parser;
 import Parser.Statements.Stmt;
@@ -95,6 +94,24 @@ public class Typechecker {
                 assert(false);
                 throw new IllTypedException("Illegal binary operation");
             }
+        }
+
+        else if (e instanceof PreIncrDecrExp) {
+            final PreIncrDecrExp asPre = (PreIncrDecrExp)e;
+            final Type expType = typeof(gamma, asPre.prefixExp);
+            if (expType instanceof IntType)
+                return expType;
+            else
+                throw new IllTypedException("Cannot apply ++/-- on type " + expType);
+        }
+
+        else if (e instanceof PostIncrDecrExp) {
+            final PostIncrDecrExp asPost = (PostIncrDecrExp)e;
+            final Type expType = typeof(gamma, asPost.postfixExp);
+            if (expType instanceof IntType)
+                return expType;
+            else
+                throw new IllTypedException("Cannot apply ++/-- on type " + expType);
         }
 
         else if (e instanceof IntegerLiteral) {
