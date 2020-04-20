@@ -120,6 +120,10 @@ public class TypecheckerTest {
         assertTypechecksExp(new BoolType(), "1 == 2");
     }
     @Test
+    public void checkTypeOfBinopReferenceEqualsBooleans() {
+        assertTypechecksExp(new BoolType(), "true == true");
+    }
+    @Test
     public void checkThrowsExceptionTypeMismatchBinopReferenceEquals() {
         final BinaryOperatorExp BOPExp = new BinaryOperatorExp("==",
                 new IntegerLiteral(1),
@@ -127,8 +131,19 @@ public class TypecheckerTest {
         Assertions.assertThrows(IllTypedException.class, () -> Typechecker.typeof(null, BOPExp));
     }
     @Test
-    public void checkTypeOfBinopReferenceEqualsBooleans() {
-        assertTypechecksExp(new BoolType(), "true == true");
+    public void checkTypeOfBinopNotEqualsIntegers() {
+        assertTypechecksExp(new BoolType(), "1 != 2");
+    }
+    @Test
+    public void checkTypeOfBinopNotEqualsBools() {
+        assertTypechecksExp(new BoolType(), "true != true");
+    }
+    @Test
+    public void checkThrowsExceptionTypeMismatchBinopNotEquals() {
+        final BinaryOperatorExp BOPExp = new BinaryOperatorExp("!=",
+                new IntegerLiteral(1),
+                new BooleanLiteral(false));
+        Assertions.assertThrows(IllTypedException.class, () -> Typechecker.typeof(null, BOPExp));
     }
     @Test
     public void checkTypeOfPreIncrExp() {

@@ -73,21 +73,24 @@ public class Typechecker {
                     return new IntType();
                 }
                 else {
-                    throw new IllTypedException("Type mismatch: " + left + asBOP.op + right);
+                    throw new IllTypedException("Operator " + asBOP.op +
+                            " cannot be applied to " + left +", " + right);
                 }
             }
             else if (asBOP.op.matches("[<>]")){
                 if (left instanceof IntType && right instanceof IntType) {
                     return new BoolType();
                 } else {
-                    throw new IllTypedException("Type mismatch: " + left + asBOP.op + right);
+                    throw new IllTypedException("Operator " + asBOP.op +
+                            " cannot be applied to " + left +", " + right);
                 }
             }
-            else if (asBOP.op.equals("==")) {
+            else if (asBOP.op.equals("!=") || asBOP.op.equals("==")) {
                 if (left.equals(right)) {
                     return new BoolType();
                 } else {
-                    throw new IllTypedException("Type mismatch: " + left + asBOP.op + right);
+                    throw new IllTypedException("Operator " + asBOP.op +
+                            " cannot be applied to " + left +", " + right);
                 }
             }
             else {
