@@ -39,7 +39,6 @@ public class TypecheckerTest {
             System.out.println(e.getClass() + ": " + e.getMessage());
         }
     }
-
     @Test
     public void checkTypeOfStringLiteral() {
         assertTypechecksExp( null, new StringType(), "\"hello world\"");
@@ -259,5 +258,41 @@ public class TypecheckerTest {
                 "--"
         );
         Assertions.assertThrows(IllTypedException.class, () -> Typechecker.typeof(null, PostDecrExp));
+    }
+    @Test
+    public void checkTypeOfAssignmentExpIdentifierInteger() {
+        final BinaryOperatorExp BOPExp = new BinaryOperatorExp("=",
+                new IdentifierLiteral("foo"),
+                new IntegerLiteral(2));
+
+        final Map<String, Type> mutable = new HashMap<String, Type>();
+        mutable.put("foo", new IntType());
+        final ImmutableMap<String, Type> gamma = ImmutableMap.copyOf(mutable);
+
+        assertTypechecksExp(gamma, new IntType(), "foo = 2");
+    }
+    @Test
+    public void checkTypeOfAssignmentExpIdentifierBoolean() {
+        final BinaryOperatorExp BOPExp = new BinaryOperatorExp("=",
+                new IdentifierLiteral("foo"),
+                new BooleanLiteral(true));
+
+        final Map<String, Type> mutable = new HashMap<String, Type>();
+        mutable.put("foo", new BoolType());
+        final ImmutableMap<String, Type> gamma = ImmutableMap.copyOf(mutable);
+
+        assertTypechecksExp(gamma, new BoolType(), "foo = true");
+    }
+    @Test
+    public void checkTypeOfAssignmentExpIdentifierString() {
+        final BinaryOperatorExp BOPExp = new BinaryOperatorExp("=",
+                new IdentifierLiteral("foo"),
+                new StringLiteral("testString"));
+
+        final Map<String, Type> mutable = new HashMap<String, Type>();
+        mutable.put("foo", new StringType());
+        final ImmutableMap<String, Type> gamma = ImmutableMap.copyOf(mutable);
+
+        assertTypechecksExp(gamma, new StringType(), "foo = \"testString\"");
     }
 }
