@@ -63,13 +63,25 @@ public class Typechecker {
      */
     public static Type typeof(final ImmutableMap<String, Type> gamma, final Exp e) throws IllTypedException{
 
+        //TODO assignment expr are also binaryOpExp
         if (e instanceof BinaryOperatorExp) {
             final BinaryOperatorExp asBOP = (BinaryOperatorExp)e;
             final Type left = typeof(gamma, asBOP.left);
             final Type right = typeof(gamma, asBOP.right);
 
-            //TODO string concat?
-            if (asBOP.op.matches("[-+*/]")) {
+            //assignment
+            if (asBOP.op.equals("=") ||
+                    asBOP.op.equals("-=") ||
+                    asBOP.op.equals("+=")) {
+
+                if (left.equals(right)) {
+                    return left;
+                }
+                else throw new IllTypedException("Type mismatch: type " + right +
+                        "cannot be assigned to type " + left);
+            }
+            else if (asBOP.op.equals("+") || asBOP.op.equals("-") ||
+                    asBOP.op.equals("*") || asBOP.op.equals("/")) {
                 if (left instanceof IntType && right instanceof IntType) {
                     return new IntType();
                 }
@@ -78,7 +90,7 @@ public class Typechecker {
                             " cannot be applied to " + left +", " + right);
                 }
             }
-            else if (asBOP.op.matches("[<>]")){
+            else if (asBOP.op.equals("<") || asBOP.op.equals(">")){
                 if (left instanceof IntType && right instanceof IntType) {
                     return new BoolType();
                 } else {
