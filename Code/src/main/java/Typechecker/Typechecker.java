@@ -112,14 +112,21 @@ public class Typechecker {
         }
 
         else if (e instanceof PostIncrDecrExp) {
-            final PostIncrDecrExp asPost = (PostIncrDecrExp)e;
+            final PostIncrDecrExp asPost = (PostIncrDecrExp) e;
             final Type expType = typeof(gamma, asPost.postfixExp);
             if (expType instanceof IntType)
                 return expType;
             else
                 throw new IllTypedException("Cannot apply ++/-- on type " + expType);
         }
-
+        else if (e instanceof NegateUnaryExp) {
+            final NegateUnaryExp asNeg = (NegateUnaryExp) e;
+            final Type expType = typeof(gamma, asNeg.exp);
+            if (expType instanceof BoolType)
+                return expType;
+            else
+                throw new IllTypedException("Cannot negate a non-boolean type " + expType);
+        }
         else if (e instanceof IntegerLiteral) {
             return new IntType();
         }
