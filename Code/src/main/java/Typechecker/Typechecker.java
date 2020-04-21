@@ -31,6 +31,7 @@ public class Typechecker {
         }
     }
 
+
     /**
      * creates a copy of an ImmutableMap and adds new mappings
      * @param gamma current mapping
@@ -139,8 +140,14 @@ public class Typechecker {
         else if (e instanceof NullLiteral) {
             return new NullType();
         }
+        //have to check if the variable is in scope
         else if (e instanceof IdentifierLiteral) {
-            return new IdentifierType();
+            IdentifierLiteral asID = (IdentifierLiteral)e;
+            if (gamma.containsKey(asID.name)) {
+                return gamma.get(asID.name);
+            } else {
+                throw new IllTypedException("Variable not in scope: " + asID.name);
+            }
         }
         else {
             assert(false);
@@ -150,11 +157,16 @@ public class Typechecker {
     public static void main(String[] args) {
 
         Map<String, Type> test = new HashMap<>();
-        test.put("x", new BoolType());
+        test.put("foo", new BoolType());
 
         ImmutableMap gamma = ImmutableMap.copyOf(test);
         ImmutableMap newGamma = addToGamma(gamma, new Pair("y", new IntType()));
 
+        try{
+            System.out.println(typeof(null, new IdentifierLiteral("foo")));
+        } catch (IllTypedException e) {
+            e.printStackTrace();
+        }
         System.out.println(gamma);
         System.out.println(newGamma);
         try {

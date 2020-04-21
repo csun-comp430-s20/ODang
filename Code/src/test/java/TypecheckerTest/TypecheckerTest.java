@@ -3,6 +3,7 @@ package TypecheckerTest;
 import Parser.*;
 import Parser.Expressions.*;
 import Parser.Literals.BooleanLiteral;
+import Parser.Literals.IdentifierLiteral;
 import Parser.Literals.IntegerLiteral;
 import Parser.Literals.StringLiteral;
 import Tokenizer.*;
@@ -12,17 +13,27 @@ import Parser.Declarations.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
+
+import com.google.common.collect.ImmutableMap;
 import org.junit.jupiter.api.*;
 
 public class TypecheckerTest {
 
-    public static void assertTypechecksExp(final Type expected, final String received) {
+    public static void assertTypechecksExp(ImmutableMap<String, Type> gamma,
+                                           final Type expected, final String received) {
 
+        //in case of no bound vars, needs an empty map rather than a null
+        if (gamma == null) {
+            final Map<String, Type> mutable = new HashMap<>();
+            gamma = ImmutableMap.copyOf(mutable);
+        }
         try {
             final Parser parser = new Parser(new Tokenizer(received).tokenize());
             final Exp parsedExp = (parser.parseExp(0)).getResult();
 
-            Assertions.assertEquals(expected, Typechecker.typeof(null, parsedExp));
+            Assertions.assertEquals(expected, Typechecker.typeof(gamma, parsedExp));
         }
         catch (Exception e) {
             System.out.println(e.getClass() + ": " + e.getMessage());
@@ -31,27 +42,51 @@ public class TypecheckerTest {
 
     @Test
     public void checkTypeOfStringLiteral() {
-        assertTypechecksExp(new StringType(), "\"hello world\"");
+        assertTypechecksExp( null, new StringType(), "\"hello world\"");
     }
     @Test
     public void checkTypeOfIntegerLiteral() {
-        assertTypechecksExp(new IntType(), "1");
+        assertTypechecksExp(null, new IntType(), "1");
     }
     @Test
     public void checkTypeOfBooleanLiteral() {
-        assertTypechecksExp(new BoolType(), "true");
+        assertTypechecksExp( null, new BoolType(), "true");
     }
     @Test
-    public void checkTypeOfIdentifierLiteral() {
-        assertTypechecksExp(new IdentifierType(), "foo");
+    public void checkTypeOfIdentifierLiteralInt() {
+        final Map<String, Type> mutable = new HashMap<String, Type>();
+        mutable.put("foo", new IntType());
+        final ImmutableMap<String, Type> gamma = ImmutableMap.copyOf(mutable);
+        assertTypechecksExp(gamma, new IntType(), "foo");
+    }
+    @Test
+    public void checkTypeOfIdentifierLiteralBool() {
+        final Map<String, Type> mutable = new HashMap<String, Type>();
+        mutable.put("foo", new BoolType());
+        final ImmutableMap<String, Type> gamma = ImmutableMap.copyOf(mutable);
+        assertTypechecksExp(gamma, new BoolType(), "foo");
+    }
+    @Test
+    public void checkTypeOfIdentifierLiteralString() {
+        final Map<String, Type> mutable = new HashMap<String, Type>();
+        mutable.put("foo", new StringType());
+        final ImmutableMap<String, Type> gamma = ImmutableMap.copyOf(mutable);
+        assertTypechecksExp(gamma, new StringType(), "foo");
+    }
+    @Test
+    public void checkThrowsExceptionVarNotInScope() {
+        final Map<String, Type> mutable = new HashMap<String, Type>();
+        final ImmutableMap<String, Type> gamma = ImmutableMap.copyOf(mutable);
+        Assertions.assertThrows(IllTypedException.class,
+                () -> Typechecker.typeof(gamma, new IdentifierLiteral("foo")));
     }
     @Test
     public void checkTypeOfNullLiteral() {
-        assertTypechecksExp(new NullType(), "null");
+        assertTypechecksExp(null, new NullType(), "null");
     }
     @Test
     public void checkTypeOfBinopPlus() {
-        assertTypechecksExp(new IntType(), "1 + 2");
+        assertTypechecksExp(null, new IntType(), "1 + 2");
     }
     @Test
     public void checkThrowsExceptionTypeMismatchBinopPlus() {
@@ -62,7 +97,7 @@ public class TypecheckerTest {
     }
     @Test
     public void checkTypeOfBinopMinus() {
-        assertTypechecksExp(new IntType(), "1 - 2");
+        assertTypechecksExp(null, new IntType(), "1 - 2");
     }
     @Test
     public void checkThrowsExceptionTypeMismatchBinopMinus() {
@@ -73,7 +108,7 @@ public class TypecheckerTest {
     }
     @Test
     public void checkTypeOfBinopMult() {
-        assertTypechecksExp(new IntType(), "1 * 2");
+        assertTypechecksExp(null, new IntType(), "1 * 2");
     }
     @Test
     public void checkThrowsExceptionTypeMismatchBinopMult() {
@@ -84,7 +119,7 @@ public class TypecheckerTest {
     }
     @Test
     public void checkTypeOfBinopDiv() {
-        assertTypechecksExp(new IntType(), "1 / 2");
+        assertTypechecksExp(null, new IntType(), "1 / 2");
     }
     @Test
     public void checkThrowsExceptionTypeMismatchBinopDiv() {
@@ -95,7 +130,7 @@ public class TypecheckerTest {
     }
     @Test
     public void checkTypeOfBinopLessThan() {
-        assertTypechecksExp(new BoolType(), "1 < 2");
+        assertTypechecksExp(null, new BoolType(), "1 < 2");
     }
     @Test
     public void checkThrowsExceptionTypeMismatchBinopLessThan() {
@@ -106,7 +141,7 @@ public class TypecheckerTest {
     }
     @Test
     public void checkTypeOfBinopGreaterThan() {
-        assertTypechecksExp(new BoolType(), "1 > 2");
+        assertTypechecksExp(null, new BoolType(), "1 > 2");
     }
     @Test
     public void checkThrowsExceptionTypeMismatchBinopGreaterThan() {
@@ -117,11 +152,11 @@ public class TypecheckerTest {
     }
     @Test
     public void checkTypeOfBinopReferenceEqualsIntegers() {
-        assertTypechecksExp(new BoolType(), "1 == 2");
+        assertTypechecksExp(null, new BoolType(), "1 == 2");
     }
     @Test
     public void checkTypeOfBinopReferenceEqualsBooleans() {
-        assertTypechecksExp(new BoolType(), "true == true");
+        assertTypechecksExp(null, new BoolType(), "true == true");
     }
     @Test
     public void checkThrowsExceptionTypeMismatchBinopReferenceEquals() {
@@ -132,11 +167,11 @@ public class TypecheckerTest {
     }
     @Test
     public void checkTypeOfBinopNotEqualsIntegers() {
-        assertTypechecksExp(new BoolType(), "1 != 2");
+        assertTypechecksExp(null, new BoolType(), "1 != 2");
     }
     @Test
     public void checkTypeOfBinopNotEqualsBools() {
-        assertTypechecksExp(new BoolType(), "true != true");
+        assertTypechecksExp(null, new BoolType(), "true != true");
     }
     @Test
     public void checkThrowsExceptionTypeMismatchBinopNotEquals() {
@@ -147,7 +182,7 @@ public class TypecheckerTest {
     }
     @Test
     public void checkTypeOfPreIncrExp() {
-        assertTypechecksExp(new IntType(), "++2");
+        assertTypechecksExp(null, new IntType(), "++2");
     }
     @Test
     public void checkThrowsExceptionTypeMismatchPreIncrExpBool() {
@@ -167,7 +202,7 @@ public class TypecheckerTest {
     }
     @Test
     public void checkTypeOfPreDecrExp() {
-        assertTypechecksExp(new IntType(), "--2");
+        assertTypechecksExp(null, new IntType(), "--2");
     }
     @Test
     public void checkThrowsExceptionTypeMismatchPreDecrExpBool() {
@@ -187,7 +222,7 @@ public class TypecheckerTest {
     }
     @Test
     public void checkTypeOfPostIncrExp() {
-        assertTypechecksExp(new IntType(), "2++");
+        assertTypechecksExp(null, new IntType(), "2++");
     }
     @Test
     public void checkThrowsExceptionTypeMismatchPostIncrExpBool() {
@@ -207,7 +242,7 @@ public class TypecheckerTest {
     }
     @Test
     public void checkTypeOfPostDecrExp() {
-        assertTypechecksExp(new IntType(), "2--");
+        assertTypechecksExp(null, new IntType(), "2--");
     }
     @Test
     public void checkThrowsExceptionTypeMismatchPostDecrExpBool() {

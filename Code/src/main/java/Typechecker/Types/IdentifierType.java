@@ -1,5 +1,5 @@
 package Typechecker.Types;
-
+@Deprecated
 public class IdentifierType implements Type {
     @Override
     public boolean equals(final Object other) {
