@@ -86,7 +86,10 @@ public class Typechecker {
                 }
             }
             else if (asBOP.op.equals("!=") || asBOP.op.equals("==")) {
-                if (left.equals(right)) {
+                if (left instanceof IntType && right instanceof IntType) {
+                    return new BoolType();
+                }
+                if (left instanceof BoolType && right instanceof BoolType) {
                     return new BoolType();
                 } else {
                     throw new IllTypedException("Operator " + asBOP.op +
