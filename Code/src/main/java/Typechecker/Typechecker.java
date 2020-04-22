@@ -3,7 +3,7 @@ package Typechecker;
 import Parser.Expressions.*;
 import Parser.Declarations.Decl;
 import Parser.Parser;
-import Parser.Statements.Stmt;
+import Parser.Statements.*;
 import Parser.Literals.*;
 import Tokenizer.Tokenizer;
 import Typechecker.Types.*;
@@ -52,6 +52,22 @@ public class Typechecker {
                 .build();
 
         return newGamma;
+    }
+
+    public ImmutableMap<String, Type> typecheckStmt(final ImmutableMap<String, Type> gamma, final boolean breakOk,
+                                                     final Stmt s) throws IllTypedException {
+        if (s instanceof BreakStmt) {
+            if (breakOk) {
+                return gamma;
+            } else {
+                throw new IllTypedException("break outside of a loop");
+            }
+        } else if (s instanceof ReturnStmt || s instanceof EmptyStmt || s instanceof PrintlnStmt) {
+            return gamma;
+        } else {
+            assert(false);
+            throw new IllTypedException("Unrecognized statement");
+        }
     }
 
     /**
