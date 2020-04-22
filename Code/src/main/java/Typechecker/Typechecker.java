@@ -1,5 +1,6 @@
 package Typechecker;
 
+import Parser.Declarations.*;
 import Parser.Expressions.*;
 import Parser.Declarations.Decl;
 import Parser.Parser;
@@ -19,6 +20,27 @@ import com.google.common.collect.ImmutableMap;
 
 public class Typechecker {
 
+    public final Map<String, ClassDecl> classes;
+
+    /**
+     * constructor to initialize a typechecker
+     * initializes a Map: ClassName -> ClassDecl to keep track of all classes
+     * @param program a list of class declarations
+     * @throws IllTypedException
+     */
+    public Typechecker(final ClassDecs program) throws IllTypedException {
+        classes = new HashMap<String, ClassDecl>();
+        for (final Decl curClass : program.classDecs) {
+            final ClassDecl curClassDecl = (ClassDecl) curClass;
+            final IdentifierLiteral className = (IdentifierLiteral)curClassDecl.identifier;
+
+            if (classes.containsKey(className.name)) {
+                throw new IllTypedException("Duplicate class name: " + className.name);
+            }
+            classes.put(className.name, curClassDecl);
+        }
+    }
+
     private static class Pair<U, V> {
         public final U first;
         public final V second;
@@ -30,7 +52,6 @@ public class Typechecker {
             return String.format("(" + first + ", " + second + ")");
         }
     }
-
 
     /**
      * creates a copy of an ImmutableMap and adds new mappings
@@ -79,7 +100,6 @@ public class Typechecker {
      */
     public static Type typeof(final ImmutableMap<String, Type> gamma, final Exp e) throws IllTypedException{
 
-        //TODO assignment expr are also binaryOpExp
         if (e instanceof BinaryOperatorExp) {
             final BinaryOperatorExp asBOP = (BinaryOperatorExp)e;
             final Type left = typeof(gamma, asBOP.left);
