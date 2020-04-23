@@ -101,6 +101,29 @@ public class Typechecker {
             }
             return gamma;
         }
+
+        else if (d instanceof ClassBodyDecs) {
+            final ClassBodyDecs classBodyDecs = (ClassBodyDecs)d;
+            for (final Decl classBody: classBodyDecs.classBodyDecs) {
+                typecheckDecl(gamma, classBody);
+            }
+            return gamma;
+        }
+
+        else if (d instanceof ConstructorDecl) {
+            final ConstructorDecl constructorDecl = (ConstructorDecl)d;
+            final ConstructorDeclarator constructorDeclarator = (ConstructorDeclarator) constructorDecl.constructorDeclarator;
+            final String identifier = constructorDeclarator.identifier.getClass().getSimpleName();
+
+            if (classes.containsKey(identifier)) {
+                typecheckDecl(gamma, constructorDecl.constructorBody);
+                return gamma;
+            }
+            else {
+                throw new IllTypedException("Constructor naming mismatch for class: " + identifier);
+            }
+        }
+
         else {
             assert(false);
             throw new IllTypedException("Unrecognized declaration: " + d.toString());

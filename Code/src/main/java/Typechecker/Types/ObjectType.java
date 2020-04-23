@@ -12,7 +12,7 @@ public class ObjectType implements Type {
     }
     @Override
     public int hashCode() {
-        return 5;
+        return className.hashCode();
     }
     @Override
     public String toString() {
