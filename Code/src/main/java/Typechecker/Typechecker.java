@@ -75,6 +75,14 @@ public class Typechecker {
         return newGamma;
     }
 
+    /**
+     * attempts to typecheck an expression
+     * @param gamma map of bound variables
+     * @param breakOk bool to allow break stmt
+     * @param s current statement
+     * @return new gamma map of bound variables
+     * @throws IllTypedException unrecognized expression
+     */
     public ImmutableMap<String, Type> typecheckStmt(final ImmutableMap<String, Type> gamma, final boolean breakOk,
                                                      final Stmt s) throws IllTypedException {
         if (s instanceof BreakStmt) {
@@ -83,6 +91,18 @@ public class Typechecker {
             } else {
                 throw new IllTypedException("break outside of a loop");
             }
+        } else if (s instanceof ForStmt) {
+            final ForStmt asFor = (ForStmt)s;
+            final ImmutableMap<String, Type> newGamma = typecheckStmt(gamma, breakOk,asFor.forInit);
+            final Type guardType = typeof(newGamma, asFor.conditional);
+            if (guardType instanceof BoolType) {
+                typecheckStmt(newGamma, breakOk, asFor.forUpdate);
+                // have to deal with body being a Stmt and not a List<Stmt>
+                //typecheckStmts(newGamma, true, asFor.body);
+            } else {
+                throw new IllTypedException("Guard in for stmt must be boolean");
+            }
+            return gamma;
         } else if (s instanceof ReturnStmt || s instanceof EmptyStmt || s instanceof PrintlnStmt) {
             return gamma;
         } else {
