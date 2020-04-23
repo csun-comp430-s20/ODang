@@ -20,6 +20,7 @@ import com.google.common.collect.ImmutableMap;
 
 public class Typechecker {
 
+    public final ClassDecs program;
     public final Map<String, ClassDecl> classes;
 
     /**
@@ -29,6 +30,7 @@ public class Typechecker {
      * @throws IllTypedException
      */
     public Typechecker(final ClassDecs program) throws IllTypedException {
+        this.program = program;
         classes = new HashMap<String, ClassDecl>();
         for (final Decl curClass : program.classDecs) {
             final ClassDecl curClassDecl = (ClassDecl) curClass;
@@ -41,7 +43,16 @@ public class Typechecker {
         }
     }
 
-    private static class Pair<U, V> {
+    /**
+     * private empty constructor, used for unit testing purposes
+     */
+    private Typechecker() {
+        this.program = null;
+        this.classes = new HashMap<String, ClassDecl>();
+
+    }
+
+    private class Pair<U, V> {
         public final U first;
         public final V second;
         public Pair(final U first, final V second) {
@@ -75,8 +86,28 @@ public class Typechecker {
         return newGamma;
     }
 
+    public ImmutableMap<String, Type> typecheckDecl(final ImmutableMap<String, Type> gamma,
+                                                    final Decl d) throws IllTypedException {
+
+        if (d instanceof ClassDecl) {
+            if (d instanceof SubClassDecl) {
+                final SubClassDecl subClass = (SubClassDecl)d;
+                typecheckDecl(gamma, subClass.classBody);
+            }
+            //not a subclass, no need to keep track of super
+            else {
+                final ClassDecl classDecl = (ClassDecl)d;
+                typecheckDecl(gamma, classDecl.classBody);
+            }
+            return gamma;
+        }
+        else {
+            assert(false);
+            throw new IllTypedException("Unrecognized declaration: " + d.toString());
+        }
+    }
     /**
-     * attempts to typecheck an expression
+     * attempts to typecheck a statement
      * @param gamma map of bound variables
      * @param breakOk bool to allow break stmt
      * @param s current statement
@@ -118,7 +149,7 @@ public class Typechecker {
      * @return type of e
      * @throws IllTypedException unrecognized expression
      */
-    public static Type typeof(final ImmutableMap<String, Type> gamma, final Exp e) throws IllTypedException{
+    public Type typeof(final ImmutableMap<String, Type> gamma, final Exp e) throws IllTypedException{
 
         if (e instanceof BinaryOperatorExp) {
             final BinaryOperatorExp asBOP = (BinaryOperatorExp)e;
@@ -129,6 +160,11 @@ public class Typechecker {
             if (asBOP.op.equals("=") ||
                     asBOP.op.equals("-=") ||
                     asBOP.op.equals("+=")) {
+
+                final IdentifierLiteral asID = (IdentifierLiteral)asBOP.left;
+
+                if (!gamma.containsKey(asID.name))
+                    throw new IllTypedException("Variable not in scope: " + asID.name);
 
                 if (left.equals(right)) {
                     return left;
@@ -196,6 +232,7 @@ public class Typechecker {
             else
                 throw new IllTypedException("Cannot negate a non-boolean type " + expType);
         }
+
         else if (e instanceof IntegerLiteral) {
             return new IntType();
         }
@@ -227,16 +264,6 @@ public class Typechecker {
         Map<String, Type> test = new HashMap<>();
         test.put("foo", new BoolType());
 
-        ImmutableMap gamma = ImmutableMap.copyOf(test);
-        ImmutableMap newGamma = addToGamma(gamma, new Pair("y", new IntType()));
-
-        try{
-            System.out.println(typeof(null, new IdentifierLiteral("foo")));
-        } catch (IllTypedException e) {
-            e.printStackTrace();
-        }
-        System.out.println(gamma);
-        System.out.println(newGamma);
         try {
             File file = new File("testProgram.odang");
             BufferedReader br = new BufferedReader(new FileReader(file));
@@ -251,8 +278,6 @@ public class Typechecker {
             final List<Decl> parsed = parser.parseProgram();
 
             System.out.println(parsed);
-
-            System.out.println(typeof(null, new BooleanLiteral(true)));
 
         } catch (Exception e) {
             System.out.println(e.getClass().getSimpleName() +
