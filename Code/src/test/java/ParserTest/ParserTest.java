@@ -469,6 +469,14 @@ public class ParserTest {
 
         assertParsesStmtFromString(expected, "if (foo == 2) {foo.method();} else {bar.method2();}");
     }
+    @Test
+    public void checkParsesBlockStmts() {
+        final Stmt expected = new BlockStmt(new BlockStmt(new StmtExpr(new BinaryOperatorExp("=",
+                new IdentifierLiteral("x"), new IntegerLiteral(2))),
+                new StmtExpr(new BinaryOperatorExp("=", new IdentifierLiteral("y"), new IntegerLiteral(5)))),
+                new ReturnStmt(new IdentifierLiteral("x")));
+        assertParsesStmtFromString(expected, "{x = 2; y = 5; return x;}");
+    }
 
     //***DECL TESTS***//
     @Test

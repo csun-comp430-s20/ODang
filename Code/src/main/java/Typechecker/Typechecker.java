@@ -129,6 +129,19 @@ public class Typechecker {
             throw new IllTypedException("Unrecognized declaration: " + d.toString());
         }
     }
+
+    public ImmutableMap<String, Type> typecheckStmts(ImmutableMap<String, Type> gamma,  final boolean breakOk,
+                                                     final Stmt s) throws IllTypedException {
+        if (s instanceof BlockStmt) {
+            final BlockStmt asBlock = (BlockStmt)s;
+            gamma = typecheckStmts(gamma, breakOk, asBlock.left);
+            gamma = typecheckStmts(gamma, breakOk, asBlock.right);
+        }
+        else
+            gamma = typecheckStmt(gamma, breakOk, s);
+        return gamma;
+    }
+
     /**
      * attempts to typecheck a statement
      * @param gamma map of bound variables
@@ -145,21 +158,24 @@ public class Typechecker {
             } else {
                 throw new IllTypedException("break outside of a loop");
             }
-        } else if (s instanceof ForStmt) {
+        }
+        else if (s instanceof ForStmt) {
             final ForStmt asFor = (ForStmt)s;
             final ImmutableMap<String, Type> newGamma = typecheckStmt(gamma, breakOk,asFor.forInit);
             final Type guardType = typeof(newGamma, asFor.conditional);
             if (guardType instanceof BoolType) {
                 typecheckStmt(newGamma, breakOk, asFor.forUpdate);
                 // have to deal with body being a Stmt and not a List<Stmt>
-                //typecheckStmts(newGamma, true, asFor.body);
+                typecheckStmt(newGamma, true, asFor.body);
             } else {
                 throw new IllTypedException("Guard in for stmt must be boolean");
             }
             return gamma;
-        } else if (s instanceof ReturnStmt || s instanceof EmptyStmt || s instanceof PrintlnStmt) {
+        }
+        else if (s instanceof ReturnStmt || s instanceof EmptyStmt || s instanceof PrintlnStmt) {
             return gamma;
-        } else {
+        }
+        else {
             assert(false);
             throw new IllTypedException("Unrecognized statement");
         }
