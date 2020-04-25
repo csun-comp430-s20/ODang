@@ -166,9 +166,30 @@ public class Typechecker {
             if (guardType instanceof BoolType) {
                 typecheckStmt(newGamma, breakOk, asFor.forUpdate);
                 // have to deal with body being a Stmt and not a List<Stmt>
-                typecheckStmt(newGamma, true, asFor.body);
+                typecheckStmts(newGamma, true, asFor.body);
             } else {
                 throw new IllTypedException("Guard in for stmt must be boolean");
+            }
+            return gamma;
+        }
+        else if (s instanceof WhileStmt) {
+            final WhileStmt asWhile = (WhileStmt)s;
+            final Type guardType = typeof(gamma, asWhile.guard);
+            if (guardType instanceof BoolType) {
+                typecheckStmts(gamma, breakOk, asWhile.body);
+            } else {
+                throw new IllTypedException("Guard in while stmt must be boolean");
+            }
+            return gamma;
+        }
+        else if (s instanceof IfElseStmt) {
+            final IfElseStmt asIf = (IfElseStmt)s;
+            final Type guardType = typeof(gamma, asIf.guard);
+            if (guardType instanceof BoolType) {
+                typecheckStmts(gamma, breakOk, asIf.trueBranch);
+                typecheckStmts(gamma, breakOk, asIf.falseBranch);
+            } else {
+                throw new IllTypedException("Guard in ifelse stmt must be boolean");
             }
             return gamma;
         }
