@@ -64,6 +64,13 @@ public class Typechecker {
         }
     }
 
+    public ClassDecl getClass(final String className) throws IllTypedException {
+        final ClassDecl result = classes.get(className);
+        if (result == null)
+            throw new IllTypedException("No such class defined: " + className);
+        else return result;
+    }
+
     /**
      * creates a copy of an ImmutableMap and adds new mappings
      * @param gamma current mapping
@@ -128,6 +135,22 @@ public class Typechecker {
             assert(false);
             throw new IllTypedException("Unrecognized declaration: " + d.toString());
         }
+    }
+
+    public Type typeOfField(final String onClass, final String fieldName) throws IllTypedException {
+        if (onClass == null) {
+            throw new IllTypedException("No instance variable defined: " + fieldName);
+        }
+        else {
+            final ClassDecl classDecl = getClass(onClass);
+            final ClassBodyDecs bodyDecs = (ClassBodyDecs)classDecl.classBody;
+
+            for (final Decl bodyDecl : bodyDecs.classBodyDecs) {
+                
+            }
+        }
+
+        return null;
     }
 
     public ImmutableMap<String, Type> typecheckStmts(ImmutableMap<String, Type> gamma,  final boolean breakOk,
