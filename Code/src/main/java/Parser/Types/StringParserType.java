@@ -1,9 +1,8 @@
 package Parser.Types;
 
-public class BooleanType implements Type{
-
+public class StringParserType implements ParserType {
     public boolean equals(Object other) {
-        return (other instanceof BooleanType);
+        return (other instanceof StringParserType);
     }
     public String toString() {
         return String.format(this.getClass().getSimpleName());

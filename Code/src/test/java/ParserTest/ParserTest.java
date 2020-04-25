@@ -281,28 +281,28 @@ public class ParserTest {
     @Test
     public void checkParsesCastExpInt() {
         final Exp expected = new CastExp(
-                new PrimitiveType(
-                        new IntType()), new IdentifierLiteral("foo"));
+                new PrimitiveParserType(
+                        new IntParserType()), new IdentifierLiteral("foo"));
         assertParsesExpFromString(expected, "(int) foo");
     }
     @Test
     public void checkParsesCastExpString() {
         final Exp expected = new CastExp(
-                new PrimitiveType(
-                        new StringType()), new IdentifierLiteral("foo"));
+                new PrimitiveParserType(
+                        new StringParserType()), new IdentifierLiteral("foo"));
         assertParsesExpFromString(expected, "(String) foo");
     }
     @Test
     public void checkParsesCastExpBoolean() {
         final Exp expected = new CastExp(
-                new PrimitiveType(
-                        new BooleanType()), new IdentifierLiteral("foo"));
+                new PrimitiveParserType(
+                        new BooleanParserType()), new IdentifierLiteral("foo"));
         assertParsesExpFromString(expected, "(boolean) foo");
     }
     @Test
     public void checkParsesCastExpClass() {
         final Exp expected = new CastExp(
-                new ClassType(
+                new ClassParserType(
                         new IdentifierLiteral("Foo")), new IdentifierLiteral("bar"));
         assertParsesExpFromString(expected, "(Foo) bar");
     }
@@ -420,7 +420,7 @@ public class ParserTest {
     @Test
     public void checkParsesForStmtOneInit() {
         final Stmt expected = new ForStmt(new LocalVardec(
-                new PrimitiveType(new IntType()), new VarDeclaratorList(
+                new PrimitiveParserType(new IntParserType()), new VarDeclaratorList(
                 new VarDeclarator(new IdentifierLiteral("foo"), new IntegerLiteral(0)))),
                 new BinaryOperatorExp("<", new IdentifierLiteral("foo"), new IntegerLiteral(5)),
                 new StmtExprList(new StmtExpr(new PostIncrDecrExp(new IdentifierLiteral("foo"), "++"))),
@@ -431,7 +431,7 @@ public class ParserTest {
     @Test
     public void checkParsesForStmtTwoInit() {
         final Stmt expected = new ForStmt(new LocalVardec(
-                new PrimitiveType(new IntType()), new VarDeclaratorList(
+                new PrimitiveParserType(new IntParserType()), new VarDeclaratorList(
                 new VarDeclarator(new IdentifierLiteral("foo"), new IntegerLiteral(0)),
                 new VarDeclarator(new IdentifierLiteral("bar"), new IntegerLiteral(1)))),
                 new BinaryOperatorExp("<", new IdentifierLiteral("foo"), new IntegerLiteral(5)),
@@ -488,7 +488,7 @@ public class ParserTest {
     @Test
     public void checkParsesEmptyClassSuper() {
         final Decl expected = new SubClassDecl(
-                new IdentifierLiteral("Foo"), new ClassType(
+                new IdentifierLiteral("Foo"), new ClassParserType(
                 new IdentifierLiteral("Bar")), null);
         assertParsesClassFromString(expected, "class Foo extends Bar{}");
     }
@@ -507,7 +507,7 @@ public class ParserTest {
     public void checkParsesClassSuperWithEmptyConstructor() {
         final Decl expected = new SubClassDecl(
                 new IdentifierLiteral("Foo"),
-                new ClassType(
+                new ClassParserType(
                         new IdentifierLiteral("Bar")),
                 new ClassBodyDecs(
                         new ConstructorDecl(
@@ -525,7 +525,7 @@ public class ParserTest {
                         new ConstructorDeclarator(
                                 new IdentifierLiteral("Foo"), new FormalParamList(
                                 new FormalParam(
-                                        new PrimitiveType(new IntType()),
+                                        new PrimitiveParserType(new IntParserType()),
                                         new IdentifierLiteral("x")))), null)));
         assertParsesClassFromString(expected, "class Foo{Foo(int x) {}}");
     }
@@ -538,10 +538,10 @@ public class ParserTest {
                         new ConstructorDeclarator(
                                 new IdentifierLiteral("Foo"), new FormalParamList(
                                 new FormalParam(
-                                        new PrimitiveType(new IntType()),
+                                        new PrimitiveParserType(new IntParserType()),
                                         new IdentifierLiteral("x")),
                                 new FormalParam(
-                                        new PrimitiveType(new StringType()),
+                                        new PrimitiveParserType(new StringParserType()),
                                         new IdentifierLiteral("testString"))
                         )), null)));
         assertParsesClassFromString(expected, "class Foo{Foo(int x, String testString) {}}");
@@ -550,13 +550,13 @@ public class ParserTest {
     public void checkParsesSubClassOneParamConstructor() {
         final Decl expected = new SubClassDecl(
                 new IdentifierLiteral("Foo"),
-                new ClassType(new IdentifierLiteral("Bar")),
+                new ClassParserType(new IdentifierLiteral("Bar")),
                 new ClassBodyDecs(
                         new ConstructorDecl(
                         new ConstructorDeclarator(
                                 new IdentifierLiteral("Foo"), new FormalParamList(
                                 new FormalParam(
-                                        new PrimitiveType(new IntType()),
+                                        new PrimitiveParserType(new IntParserType()),
                                         new IdentifierLiteral("x")))), null)));
         assertParsesClassFromString(expected, "class Foo extends Bar{Foo(int x) {}}");
     }
@@ -564,16 +564,16 @@ public class ParserTest {
     public void checkParsesSubClassTwoParamsConstructor() {
         final Decl expected = new SubClassDecl(
                 new IdentifierLiteral("Foo"),
-                new ClassType(new IdentifierLiteral("Bar")),
+                new ClassParserType(new IdentifierLiteral("Bar")),
                 new ClassBodyDecs(
                         new ConstructorDecl(
                         new ConstructorDeclarator(
                                 new IdentifierLiteral("Foo"), new FormalParamList(
                                 new FormalParam(
-                                        new PrimitiveType(new IntType()),
+                                        new PrimitiveParserType(new IntParserType()),
                                         new IdentifierLiteral("x")),
                                 new FormalParam(
-                                        new PrimitiveType(new StringType()),
+                                        new PrimitiveParserType(new StringParserType()),
                                         new IdentifierLiteral("testString")))),
                                 new ConstructorBody(null, null))));
         assertParsesClassFromString(expected, "class Foo extends Bar{Foo(int x, String testString) {}}");
@@ -584,7 +584,7 @@ public class ParserTest {
                 new IdentifierLiteral("Foo"),
                 new ClassBodyDecs(
                         new FieldDecl(
-                        new PrimitiveType(new IntType()),
+                        new PrimitiveParserType(new IntParserType()),
                         new VarDeclaratorList(
                                 new VarDeclarator(
                                         new IdentifierLiteral("x"),
@@ -617,13 +617,13 @@ public class ParserTest {
                 new IdentifierLiteral("Foo"),
                 new ClassBodyDecs(
                                 new FieldDecl(
-                                        new PrimitiveType(new IntType()),
+                                        new PrimitiveParserType(new IntParserType()),
                                         new VarDeclaratorList(
                                                 new VarDeclarator(
                                                         new IdentifierLiteral("x"),
                                                         new IntegerLiteral(2)))),
                                 new FieldDecl(
-                                        new PrimitiveType(new IntType()),
+                                        new PrimitiveParserType(new IntParserType()),
                                         new VarDeclaratorList(
                                                 new VarDeclarator(
                                                         new IdentifierLiteral("y"),
@@ -642,7 +642,7 @@ public class ParserTest {
                                 new IdentifierLiteral("Foo"), "+",
                                 new FormalParamList(
                                         new FormalParam(
-                                                new PrimitiveType(new IntType()),
+                                                new PrimitiveParserType(new IntParserType()),
                                                 new IdentifierLiteral("x")))),
                         null
                 )));
@@ -658,12 +658,12 @@ public class ParserTest {
                                 new IdentifierLiteral("Foo"), "+",
                                 new FormalParamList(
                                         new FormalParam(
-                                                new PrimitiveType(
-                                                        new IntType()),
+                                                new PrimitiveParserType(
+                                                        new IntParserType()),
                                                 new IdentifierLiteral("x")))),
                         new LocalVardec (
-                                new PrimitiveType(
-                                        new IntType()),
+                                new PrimitiveParserType(
+                                        new IntParserType()),
                                 new VarDeclaratorList (
                                         new VarDeclarator (
                                                 new IdentifierLiteral("y"),

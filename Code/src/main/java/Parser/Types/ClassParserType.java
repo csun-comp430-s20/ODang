@@ -2,15 +2,15 @@ package Parser.Types;
 
 import Parser.Expressions.*;
 
-public class ClassType implements Type {
+public class ClassParserType implements ParserType {
     public final Exp className;
 
-    public ClassType(final Exp className) {
+    public ClassParserType(final Exp className) {
         this.className = className;
     }
     public boolean equals(Object other) {
-       if (other instanceof ClassType) {
-           ClassType otherClass = (ClassType) other;
+       if (other instanceof ClassParserType) {
+           ClassParserType otherClass = (ClassParserType) other;
            return className.equals(otherClass.className);
        }
        else return false;

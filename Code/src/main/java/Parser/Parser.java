@@ -6,7 +6,6 @@ import Parser.Expressions.*;
 import Parser.Literals.*;
 import Parser.Types.Void;
 import Tokenizer.Tokens.*;
-import Tokenizer.*;
 import Parser.Types.*;
 
 import java.util.Arrays;
@@ -177,8 +176,8 @@ public class Parser {
         //<super>
         else {
             checkTokenIs(identifier.nextPos, new ExtendsToken());
-            final ParseResult<Type> classType = parseType(identifier.nextPos + 1);
-            if (!(classType.result instanceof ClassType))
+            final ParseResult<ParserType> classType = parseType(identifier.nextPos + 1);
+            if (!(classType.result instanceof ClassParserType))
                 throw new ParseException("Invalid class type: " + classType.result);
             final ParseResult<Decl> classBody = parseClassBody(classType.nextPos);
             return new ParseResult<Decl>(new SubClassDecl(
@@ -379,7 +378,7 @@ public class Parser {
      * @throws ParseException
      */
     private ParseResult<Decl> parseFieldDecl(final int startPos) throws ParseException{
-        final ParseResult<Type> type = parseType(startPos);
+        final ParseResult<ParserType> type = parseType(startPos);
         final ParseResult<Decl> varDeclarators = parseVarDeclarators(type.nextPos);
         checkTokenIs(varDeclarators.nextPos, new SemiColonToken());
         return new ParseResult<Decl>(new FieldDecl(type.result, varDeclarators.result), varDeclarators.nextPos + 1);
@@ -455,7 +454,7 @@ public class Parser {
      */
     private ParseResult<FormalParamList> parseFormalParamList (final int startPos) throws ParseException{
         FormalParamList formList = new FormalParamList();
-        ParseResult<Type> initialType = parseType(startPos);
+        ParseResult<ParserType> initialType = parseType(startPos);
         if(readToken(initialType.nextPos) instanceof IdentifierToken) {
             ParseResult<Exp> initialID = parsePrimary(initialType.nextPos);
             formList.declList.add(new FormalParam(initialType.result, initialID.result));
@@ -465,7 +464,7 @@ public class Parser {
                     //case of separation between arguments
                     if (readToken(curPos) instanceof CommaToken)
                         curPos++;
-                    final ParseResult<Type> curType = parseType(curPos);
+                    final ParseResult<ParserType> curType = parseType(curPos);
                     if (readToken(curType.nextPos) instanceof IdentifierToken){
                         final ParseResult<Exp> curID = parsePrimary(curType.nextPos);
                         curPos = curID.nextPos;
@@ -502,12 +501,12 @@ public class Parser {
      * @throws ParseException
      */
     private ParseResult<Decl> parseMethodHeader(final int startPos) throws ParseException {
-        ParseResult<Type> resultType;
+        ParseResult<ParserType> resultType;
         try{
             resultType = parseType(startPos);
         } catch (ParseException e) {
             checkTokenIs(startPos, new VoidToken());
-            resultType = new ParseResult<Type>(new Void(), startPos + 1);
+            resultType = new ParseResult<ParserType>(new Void(), startPos + 1);
         }
         final ParseResult<Decl> methodDeclarator = parseMethodDeclarator(resultType.nextPos);
         return new ParseResult<Decl>(new MethodHeader(
@@ -676,7 +675,7 @@ public class Parser {
      * @throws ParseException
      */
     private ParseResult<Stmt> parseLocalVardec(final int startPos) throws ParseException {
-        final ParseResult<Type> type = parseType(startPos);
+        final ParseResult<ParserType> type = parseType(startPos);
         final ParseResult<Decl> varDeclarators = parseVarDeclarators(type.nextPos);
         return new ParseResult<Stmt>(new LocalVardec(type.result, varDeclarators.result), varDeclarators.nextPos);
     }
@@ -1149,7 +1148,7 @@ public class Parser {
      */
     private ParseResult<Exp> parseCastExp(final int startPos) throws ParseException {
         checkTokenIs(startPos, new LeftParenToken());
-        ParseResult<Type> castType = parseType(startPos + 1);
+        ParseResult<ParserType> castType = parseType(startPos + 1);
         checkTokenIs(castType.nextPos, new RightParenToken());
         ParseResult<Exp> unaryExp = parseUnaryExp(castType.nextPos + 1);
         return new ParseResult<Exp>(new CastExp(castType.result, unaryExp.result), unaryExp.nextPos);
@@ -1160,24 +1159,24 @@ public class Parser {
      * @return ParseResult<Type>
      * @throws ParseException
      */
-    public ParseResult<Type> parseType(final int startPos) throws ParseException {
+    public ParseResult<ParserType> parseType(final int startPos) throws ParseException {
         final Token currentToken = readToken(startPos);
         //boolean
         if (currentToken instanceof BooleanTypeToken) {
-            return new ParseResult<Type>(new PrimitiveType(new BooleanType()), startPos + 1);
+            return new ParseResult<ParserType>(new PrimitiveParserType(new BooleanParserType()), startPos + 1);
         }
         //int
         else if (currentToken instanceof IntTypeToken) {
-            return new ParseResult<Type>(new PrimitiveType(new IntType()), startPos + 1);
+            return new ParseResult<ParserType>(new PrimitiveParserType(new IntParserType()), startPos + 1);
         }
         //<primitive type>:str
         else if (currentToken instanceof StringTypeToken) {
-            return new ParseResult<Type>(new PrimitiveType(new StringType()), startPos + 1);
+            return new ParseResult<ParserType>(new PrimitiveParserType(new StringParserType()), startPos + 1);
         }
         //<class type>: <identifier>
         else if (currentToken instanceof IdentifierToken){
             IdentifierToken identifierToken = (IdentifierToken) currentToken;
-            return new ParseResult<Type>(new ClassType(new IdentifierLiteral(identifierToken.name)), startPos + 1);
+            return new ParseResult<ParserType>(new ClassParserType(new IdentifierLiteral(identifierToken.name)), startPos + 1);
         }
         else
             throw new ParseException("Not a valid type to parse: " + currentToken);

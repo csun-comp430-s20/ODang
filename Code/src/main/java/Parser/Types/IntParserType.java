@@ -1,8 +1,8 @@
 package Parser.Types;
 
-public class StringType implements Type {
+public class IntParserType implements ParserType {
     public boolean equals(Object other) {
-        return (other instanceof StringType);
+        return (other instanceof IntParserType);
     }
     public String toString() {
         return String.format(this.getClass().getSimpleName());

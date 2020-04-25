@@ -1,15 +1,15 @@
 package Parser.Declarations;
 
 import Parser.Expressions.Exp;
-import Parser.Types.Type;
+import Parser.Types.ParserType;
 
 public class SubClassDecl extends ClassDecl {
 
-    public final Type classType;
+    public final ParserType classParserType;
 
-    public SubClassDecl(final Exp identifier, final Type classType, final Decl classBody) {
+    public SubClassDecl(final Exp identifier, final ParserType classParserType, final Decl classBody) {
         super(identifier, classBody);
-        this.classType = classType;
+        this.classParserType = classParserType;
     }
 
     public boolean equals(Object other) {
@@ -17,13 +17,13 @@ public class SubClassDecl extends ClassDecl {
             SubClassDecl otherSCL = (SubClassDecl) other;
             return identifier.equals(otherSCL.identifier) &&
                     classBody.equals(otherSCL.classBody) &&
-                    classType.equals(otherSCL.classType);
+                    classParserType.equals(otherSCL.classParserType);
         }
         else return false;
     }
 
     public String toString() {
         return String.format(this.getClass().getSuperclass().getSimpleName() +
-                "(" + identifier +  " extends " + classType + " {" + classBody + "})");
+                "(" + identifier +  " extends " + classParserType + " {" + classBody + "})");
     }
 }

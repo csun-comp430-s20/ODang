@@ -6,6 +6,9 @@ import Parser.Declarations.Decl;
 import Parser.Parser;
 import Parser.Statements.*;
 import Parser.Literals.*;
+import Parser.Types.*;
+
+import Parser.Types.Void;
 import Tokenizer.Tokenizer;
 import Typechecker.Types.*;
 
@@ -16,12 +19,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
 
+import Typechecker.Types.IntType;
 import com.google.common.collect.ImmutableMap;
 
 public class Typechecker {
 
-    public final ClassDecs program;
+    public final List<Decl> program;
     public final Map<String, ClassDecl> classes;
+    public final Map<String, ClassDecl> subClasses;
 
     /**
      * constructor to initialize a typechecker
@@ -29,10 +34,12 @@ public class Typechecker {
      * @param program a list of class declarations
      * @throws IllTypedException
      */
-    public Typechecker(final ClassDecs program) throws IllTypedException {
+    public Typechecker(final List<Decl> program) throws IllTypedException {
         this.program = program;
         classes = new HashMap<String, ClassDecl>();
-        for (final Decl curClass : program.classDecs) {
+        subClasses = new HashMap<String, ClassDecl>();
+
+        for (final Decl curClass : program) {
             final ClassDecl curClassDecl = (ClassDecl) curClass;
             final IdentifierLiteral className = (IdentifierLiteral)curClassDecl.identifier;
 
@@ -47,6 +54,7 @@ public class Typechecker {
      * private empty constructor, used for unit testing purposes
      */
     private Typechecker() {
+        this.subClasses = null;
         this.program = null;
         this.classes = new HashMap<String, ClassDecl>();
 
@@ -64,6 +72,36 @@ public class Typechecker {
         }
     }
 
+    /**
+     * converts a Parser.Types.Type to a Typechecker.Type
+     * @param type a Parser.Types.Type
+     * @return a Typechecker.Type
+     * @throws IllTypedException if invalid type to convert
+     */
+    public static Type convertParserType(ParserType type) throws IllTypedException {
+        if (type instanceof ClassParserType) {
+            final ClassParserType classType = (ClassParserType) type;
+            final IdentifierLiteral className = (IdentifierLiteral)classType.className ;
+            return new ObjectType(className.name);
+        }
+        else if (type instanceof PrimitiveParserType) {
+            final PrimitiveParserType prType = (PrimitiveParserType)type;
+
+            if (prType.parserType instanceof BooleanParserType)
+                return new BoolType();
+            else if (prType.parserType instanceof IntParserType)
+                return new IntType();
+            else if (prType.parserType instanceof StringParserType)
+                return new StringType();
+            else
+                throw new IllTypedException("Not a valid primitive type to convert: " + type);
+        }
+        else if (type instanceof Void)
+            return new NullType();
+
+        else throw new IllTypedException("Not a valid Parser.Type to convert: " + type);
+    }
+
     public ClassDecl getClass(final String className) throws IllTypedException {
         final ClassDecl result = classes.get(className);
         if (result == null)
@@ -71,6 +109,15 @@ public class Typechecker {
         else return result;
     }
 
+    /**
+     * creates an empty gamma
+     * @return empty immutable map
+     */
+    private static ImmutableMap<String, Type> createEmptyGamma() {
+        final Map<String, Type> mutableGamma = new HashMap<>();
+        final ImmutableMap<String, Type> gamma = ImmutableMap.copyOf(mutableGamma);
+        return gamma;
+    }
     /**
      * creates a copy of an ImmutableMap and adds new mappings
      * @param gamma current mapping
@@ -93,23 +140,24 @@ public class Typechecker {
         return newGamma;
     }
 
-    public ImmutableMap<String, Type> typecheckDecl(final ImmutableMap<String, Type> gamma,
-                                                    final Decl d) throws IllTypedException {
+    public void typecheckProgram() throws IllTypedException {
 
-        if (d instanceof ClassDecl) {
-            if (d instanceof SubClassDecl) {
-                final SubClassDecl subClass = (SubClassDecl)d;
-                typecheckDecl(gamma, subClass.classBody);
-            }
-            //not a subclass, no need to keep track of super
-            else {
-                final ClassDecl classDecl = (ClassDecl)d;
-                typecheckDecl(gamma, classDecl.classBody);
-            }
-            return gamma;
+        for (final Decl classDecl : program) {
+            typecheckClass((ClassDecl)classDecl);
         }
+    }
+    public void typecheckClass(ClassDecl classDecl) throws IllTypedException {
 
-        else if (d instanceof ClassBodyDecs) {
+        if (classDecl instanceof SubClassDecl)
+            classDecl = (SubClassDecl) classDecl;
+
+        typecheckDecl(createEmptyGamma(), classDecl.classBody);
+
+    }
+
+    public ImmutableMap<String, Type> typecheckDecl(final ImmutableMap<String, Type> gamma, final Decl d) throws IllTypedException {
+
+         if (d instanceof ClassBodyDecs) {
             final ClassBodyDecs classBodyDecs = (ClassBodyDecs)d;
             for (final Decl classBody: classBodyDecs.classBodyDecs) {
                 typecheckDecl(gamma, classBody);
@@ -120,16 +168,35 @@ public class Typechecker {
         else if (d instanceof ConstructorDecl) {
             final ConstructorDecl constructorDecl = (ConstructorDecl)d;
             final ConstructorDeclarator constructorDeclarator = (ConstructorDeclarator) constructorDecl.constructorDeclarator;
-            final String identifier = constructorDeclarator.identifier.getClass().getSimpleName();
+            final IdentifierLiteral identifier = (IdentifierLiteral)constructorDeclarator.identifier;
 
-            if (classes.containsKey(identifier)) {
+            if (classes.containsKey(identifier.name)) {
                 typecheckDecl(gamma, constructorDecl.constructorBody);
                 return gamma;
             }
+
             else {
-                throw new IllTypedException("Constructor naming mismatch for class: " + identifier);
+                throw new IllTypedException("Constructor naming mismatch for class: " + identifier.name);
             }
         }
+
+        else if (d instanceof FieldDecl) {
+            final FieldDecl fieldDecl = (FieldDecl)d;
+            final Type declaredType = convertParserType(fieldDecl.parserType);
+
+            Map<String, Type> newGamma = new HashMap<>(gamma);
+
+            final VarDeclaratorList varList = (VarDeclaratorList) fieldDecl.varDeclarators;
+            for (final Decl decl : varList.varDeclList) {
+                final VarDeclarator varDec = (VarDeclarator)decl;
+                newGamma.put(((IdentifierLiteral)varDec.identifier).name, declaredType);
+
+                if (!(varDec.exp == null)){
+                    typeof(gamma, varDec.exp);
+                }
+            }
+            return ImmutableMap.copyOf(newGamma);
+         }
 
         else {
             assert(false);
@@ -359,12 +426,14 @@ public class Typechecker {
             final Tokenizer tokenizer = new Tokenizer(tokenizerInput);
             final Parser parser = new Parser(tokenizer.tokenize());
             final List<Decl> parsed = parser.parseProgram();
+            final Typechecker typechecker = new Typechecker(parsed);
+            typechecker.typecheckProgram();
 
             System.out.println(parsed);
 
+
         } catch (Exception e) {
-            System.out.println(e.getClass().getSimpleName() +
-                    ": " + e.getMessage());
+            e.printStackTrace();
         }
 
     }
