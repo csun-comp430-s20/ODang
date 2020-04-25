@@ -180,7 +180,7 @@ public class Parser {
             if (!(classType.result instanceof ClassParserType))
                 throw new ParseException("Invalid class type: " + classType.result);
             final ParseResult<Decl> classBody = parseClassBody(classType.nextPos);
-            return new ParseResult<Decl>(new SubClassDecl(
+            return new ParseResult<Decl>(new ClassDecl(
                     identifier.result,
                     classType.result,
                     classBody.result),

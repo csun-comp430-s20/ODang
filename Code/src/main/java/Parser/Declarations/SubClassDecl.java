@@ -3,6 +3,7 @@ package Parser.Declarations;
 import Parser.Expressions.Exp;
 import Parser.Types.ParserType;
 
+@Deprecated
 public class SubClassDecl extends ClassDecl {
 
     public final ParserType classParserType;

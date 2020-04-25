@@ -97,7 +97,7 @@ public class Typechecker {
                 throw new IllTypedException("Not a valid primitive type to convert: " + type);
         }
         else if (type instanceof Void)
-            return new NullType();
+            return new VoidType();
 
         else throw new IllTypedException("Not a valid Parser.Type to convert: " + type);
     }
@@ -141,18 +141,26 @@ public class Typechecker {
     }
 
     public void typecheckProgram() throws IllTypedException {
-
         for (final Decl classDecl : program) {
-            typecheckClass((ClassDecl)classDecl);
+            typecheckClass(createEmptyGamma(), (ClassDecl)classDecl);
         }
     }
-    public void typecheckClass(ClassDecl classDecl) throws IllTypedException {
+    public void typecheckClass(final ImmutableMap<String, Type> gamma, final ClassDecl classDecl) throws IllTypedException {
 
-        if (classDecl instanceof SubClassDecl)
-            classDecl = (SubClassDecl) classDecl;
+        if (classDecl.extendsClass == null)
+            typecheckDecl(createEmptyGamma(), classDecl.classBody);
 
-        typecheckDecl(createEmptyGamma(), classDecl.classBody);
-
+        else {
+            final ClassParserType type = (ClassParserType) classDecl.extendsClass;
+            final ClassDecl superClass = getClass(((IdentifierLiteral)type.className).name);
+            final Map<String, Type> superClassMapping = new HashMap<String, Type>(typecheckDecl(gamma, superClass.classBody));
+            final ImmutableMap<String, Type> newGamma =
+                    ImmutableMap.<String, Type>builder()
+                    .putAll(gamma)
+                    .putAll(superClassMapping)
+                    .build();
+            typecheckDecl(newGamma, classDecl.classBody);
+        }
     }
 
     public ImmutableMap<String, Type> typecheckDecl(final ImmutableMap<String, Type> gamma, final Decl d) throws IllTypedException {
@@ -184,6 +192,7 @@ public class Typechecker {
             final FieldDecl fieldDecl = (FieldDecl)d;
             final Type declaredType = convertParserType(fieldDecl.parserType);
 
+            //need a mutable map here to ensure that all new variables are added to the same gamma
             Map<String, Type> newGamma = new HashMap<>(gamma);
 
             final VarDeclaratorList varList = (VarDeclaratorList) fieldDecl.varDeclarators;
@@ -196,6 +205,13 @@ public class Typechecker {
                 }
             }
             return ImmutableMap.copyOf(newGamma);
+         }
+
+        else if (d instanceof MethodDecl) {
+            final MethodDecl methodDecl = (MethodDecl)d;
+            final MethodHeader methodHeader = (MethodHeader)methodDecl.header;
+            final Type resultType = convertParserType(methodHeader.resultParserType);
+            return null;
          }
 
         else {

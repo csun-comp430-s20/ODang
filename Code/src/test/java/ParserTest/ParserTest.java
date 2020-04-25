@@ -487,7 +487,7 @@ public class ParserTest {
     }
     @Test
     public void checkParsesEmptyClassSuper() {
-        final Decl expected = new SubClassDecl(
+        final Decl expected = new ClassDecl(
                 new IdentifierLiteral("Foo"), new ClassParserType(
                 new IdentifierLiteral("Bar")), null);
         assertParsesClassFromString(expected, "class Foo extends Bar{}");
@@ -505,7 +505,7 @@ public class ParserTest {
     }
     @Test
     public void checkParsesClassSuperWithEmptyConstructor() {
-        final Decl expected = new SubClassDecl(
+        final Decl expected = new ClassDecl(
                 new IdentifierLiteral("Foo"),
                 new ClassParserType(
                         new IdentifierLiteral("Bar")),
@@ -548,7 +548,7 @@ public class ParserTest {
     }
     @Test
     public void checkParsesSubClassOneParamConstructor() {
-        final Decl expected = new SubClassDecl(
+        final Decl expected = new ClassDecl(
                 new IdentifierLiteral("Foo"),
                 new ClassParserType(new IdentifierLiteral("Bar")),
                 new ClassBodyDecs(
@@ -562,7 +562,7 @@ public class ParserTest {
     }
     @Test
     public void checkParsesSubClassTwoParamsConstructor() {
-        final Decl expected = new SubClassDecl(
+        final Decl expected = new ClassDecl(
                 new IdentifierLiteral("Foo"),
                 new ClassParserType(new IdentifierLiteral("Bar")),
                 new ClassBodyDecs(
