@@ -27,6 +27,7 @@ public class Typechecker {
     public final List<Decl> program;
     public final Map<String, ClassDecl> classes;
     public final Map<String, ClassDecl> subClasses;
+    public final TypeEnvironment env;
 
     /**
      * constructor to initialize a typechecker
@@ -36,6 +37,7 @@ public class Typechecker {
      */
     public Typechecker(final List<Decl> program) throws IllTypedException {
         this.program = program;
+        this.env = new TypeEnvironment(null, null, null);
         classes = new HashMap<String, ClassDecl>();
         subClasses = new HashMap<String, ClassDecl>();
 
@@ -54,13 +56,14 @@ public class Typechecker {
      * private empty constructor, used for unit testing purposes
      */
     private Typechecker() {
+        this.env = null;
         this.subClasses = null;
         this.program = null;
         this.classes = new HashMap<String, ClassDecl>();
 
     }
 
-    private class Pair<U, V> {
+    public static class Pair<U, V> {
         public final U first;
         public final V second;
         public Pair(final U first, final V second) {
@@ -82,7 +85,7 @@ public class Typechecker {
         if (type instanceof ClassParserType) {
             final ClassParserType classType = (ClassParserType) type;
             final IdentifierLiteral className = (IdentifierLiteral)classType.className ;
-            return new ObjectType(className.name);
+            return new ClassType(className.name);
         }
         else if (type instanceof PrimitiveParserType) {
             final PrimitiveParserType prType = (PrimitiveParserType)type;
@@ -207,10 +210,12 @@ public class Typechecker {
             return ImmutableMap.copyOf(newGamma);
          }
 
+        //TODO MOVE
         else if (d instanceof MethodDecl) {
             final MethodDecl methodDecl = (MethodDecl)d;
             final MethodHeader methodHeader = (MethodHeader)methodDecl.header;
             final Type resultType = convertParserType(methodHeader.resultParserType);
+
             return null;
          }
 
