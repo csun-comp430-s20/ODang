@@ -241,6 +241,20 @@ public class Typechecker {
         return null;
     }
 
+    public void typecheckFunction(final FunctionDefinition function) throws IllTypedException {
+        final Map<String, Type> gamma = new HashMap<String, Type>();
+        for (final FormalParameter formalParam: function.formalParams) {
+            if (!gamma.containsKey(formalParam.theVariable)) {
+                gamma.put(formalParam.theVariable, formalParam.theType);
+            } else {
+                throw new IllTypedException("Duplicate formal parameter name");
+            }
+        }
+
+        //final Map<String, Type> finalGamma = typecheckStmts(gamma, false, function.body);
+
+    }
+
     public ImmutableMap<String, Type> typecheckStmts(ImmutableMap<String, Type> gamma,  final boolean breakOk,
                                                      final Stmt s) throws IllTypedException {
         if (s instanceof BlockStmt) {
@@ -386,7 +400,6 @@ public class Typechecker {
             else
                 throw new IllTypedException("Cannot apply ++/-- on type " + expType);
         }
-
         else if (e instanceof PostIncrDecrExp) {
             final PostIncrDecrExp asPost = (PostIncrDecrExp) e;
             final Type expType = typeof(gamma, asPost.postfixExp);
@@ -403,7 +416,6 @@ public class Typechecker {
             else
                 throw new IllTypedException("Cannot negate a non-boolean type " + expType);
         }
-
         else if (e instanceof IntegerLiteral) {
             return new IntType();
         }
