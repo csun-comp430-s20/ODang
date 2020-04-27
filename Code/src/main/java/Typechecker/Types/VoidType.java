@@ -1,5 +1,6 @@
 package Typechecker.Types;
 
+@Deprecated
 public class VoidType implements Type {
     @Override
     public boolean equals(final Object other) {

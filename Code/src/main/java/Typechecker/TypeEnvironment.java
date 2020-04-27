@@ -2,103 +2,84 @@ package Typechecker;
 
 import Parser.Declarations.*;
 import Parser.Literals.*;
-import Typechecker.Types.ClassType;
-import Typechecker.Types.Type;
-import Typechecker.Typechecker.Pair;
+import Typechecker.Types.*;
+import com.google.common.collect.ImmutableMap;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public class TypeEnvironment {
+    public final ImmutableMap<FunctionName,FunctionDefinition> functions;
+    public final ImmutableMap<String, Type> variables;
+    public final String thisClass;
 
-    private final Map<String, Type> variables;
-    private final Map<Pair<String, FormalParamList>, Type> methods;
-    private final String thisClass;
-
-    public TypeEnvironment(final Map<String, Type> variables,
-                           final Map<Pair<String, FormalParamList>, Type> methods,
+    public TypeEnvironment(final ImmutableMap<FunctionName, FunctionDefinition> functions,
+                           final ImmutableMap<String, Type> variables,
                            final String thisClass) {
-        this.variables = variables;
-        this.methods = methods;
+
+        this.functions = (functions == null) ?
+                ImmutableMap.copyOf(new HashMap<FunctionName, FunctionDefinition>()) : functions;
+        this.variables = (variables == null) ?
+                ImmutableMap.copyOf(new HashMap<String, Type>()) : variables;
         this.thisClass = thisClass;
     }
 
     public Type thisType() throws IllTypedException {
-        if(thisClass == null) {
+        if (thisClass == null)
             throw new IllTypedException("this used outside of class");
-        } else {
+        else {
             return new ClassType(thisClass);
         }
     }
 
     public Type lookupVariable(final String variable) throws IllTypedException {
         final Type result = variables.get(variable);
-
         if (result == null)
-            throw new IllTypedException("no such variable: " + variable);
+            throw new IllTypedException("No such variable defined: " + variable);
         else
             return result;
     }
-    public Type getMethodType(final String methodName, final FormalParamList params) throws IllTypedException {
-        if (methods.containsKey(new Pair(methodName, params))) {
-            return methods.get(new Pair(methodName, params));
-        }
-        else
-            throw new IllTypedException("No such method defined in class: " + methodName);
-    }
-    public void checkParamsOk(final FormalParamList paramDefinition,
-                              final List<Decl> methodCallParams) throws IllTypedException {
 
-        if (paramDefinition.declList.size() == methodCallParams.size()) {
-            for (int i = 0; i < methodCallParams.size(); i++) {
-                final FormalParam formalParamDef = (FormalParam) paramDefinition.declList.get(i);
-                final FormalParam methodCallParam = (FormalParam) methodCallParams.get(i);
-                if (formalParamDef.paramParserType.equals(methodCallParam.paramParserType)) {
-                    continue;
-                }
-                else {
-                    throw new IllTypedException("Type mismatch in method call \n " +
-                            "Expected: " + formalParamDef.paramParserType + "\n" +
-                            "Received: " + methodCallParam.paramParserType);
-                }
-            }
-        }
-        else {
-            throw new IllTypedException("No method defined with with this param length");
-        }
-    }
-    public TypeEnvironment addMethod(final Type returnType,
-                                     final String methodName,
-                                     final FormalParamList params) throws IllTypedException {
-        if (!methods.containsKey(new Pair(methodName, params))) {
-            TypeEnvironment newTypeEnvironment = new TypeEnvironment(variables, methods, thisClass);
-            newTypeEnvironment.methods.put(new Pair(methodName, params), returnType);
-            return newTypeEnvironment;
-        }
+    public FunctionDefinition lookupFunction(final FunctionName functionName) throws IllTypedException {
+        final FunctionDefinition result = functions.get(functionName);
+        if (result == null)
+            throw new IllTypedException("No such function defined: " + functionName);
         else
-            throw new IllTypedException("Duplicate method definition: " + methodName);
+            return result;
+    }
+    public TypeEnvironment addFunction(final FunctionName functionName,
+                                       final FunctionDefinition functionDefinition) {
+        final Map<FunctionName, FunctionDefinition> newFunctions = new HashMap<>(functions);
+        newFunctions.put(functionName, functionDefinition);
+        return new TypeEnvironment(ImmutableMap.copyOf(newFunctions), variables, thisClass);
     }
 
-    public TypeEnvironment addVariable(final String variable, final Type type) throws IllTypedException {
-        if (!variables.containsKey(variable)) {
-            final Map<String, Type> newVariables = new HashMap<>(variables);
-            newVariables.put(variable, type);
-            return new TypeEnvironment(newVariables, methods, thisClass);
-        }
-        else
-            throw new IllTypedException("Redefinition of variable: " + variable);
+    public TypeEnvironment addVariable(final String variable, final Type type) {
+        final Map<String, Type> newVariables = new HashMap<>(variables);
+        newVariables.put(variable, type);
+        return new TypeEnvironment(functions, ImmutableMap.copyOf(newVariables), thisClass);
     }
 
     public TypeEnvironment addVariable(final FieldDecl fieldDecl) throws IllTypedException {
+        final VarDeclaratorList varDeclarators = (VarDeclaratorList) fieldDecl.varDeclarators;
         final Type type = Typechecker.convertParserType(fieldDecl.parserType);
-        final VarDeclaratorList vardecs = (VarDeclaratorList)fieldDecl.varDeclarators;
-        TypeEnvironment newTypeEnvironment = new TypeEnvironment(variables, methods, thisClass);
-        for (final Decl decl : vardecs.varDeclList) {
-            final VarDeclarator vardec = (VarDeclarator)decl;
-            if (!variables.containsKey(((IdentifierLiteral)vardec.identifier).name))
-                newTypeEnvironment.variables.put(((IdentifierLiteral)vardec.identifier).name, type);
+
+        final Map<String, Type> newVariables = new HashMap<>(variables);
+
+        for (final Decl decl : varDeclarators.varDeclList) {
+            final VarDeclarator varDec = (VarDeclarator) decl;
+            final IdentifierLiteral identifier = (IdentifierLiteral) varDec.identifier;
+            newVariables.put(identifier.name, type);
         }
-        return newTypeEnvironment;
+
+        final ImmutableMap<String, Type> finalVariables = ImmutableMap
+                .<String, Type>builder()
+                .putAll(variables)
+                .putAll(newVariables)
+                .build();
+
+        return new TypeEnvironment(functions, finalVariables, thisClass);
     }
+
 }

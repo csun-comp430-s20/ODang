@@ -28,7 +28,6 @@ public class Typechecker {
     //public final List<FunctionDefinition> functions;
     public final List<Decl> program;
     public final Map<String, ClassDecl> classes;
-    public final Map<String, ClassDecl> subClasses;
     public final TypeEnvironment env;
 
 
@@ -42,7 +41,6 @@ public class Typechecker {
         this.program = program;
         this.env = new TypeEnvironment(null, null, null);
         classes = new HashMap<String, ClassDecl>();
-        subClasses = new HashMap<String, ClassDecl>();
 
         for (final Decl curClass : program) {
             final ClassDecl curClassDecl = (ClassDecl) curClass;
@@ -70,7 +68,6 @@ public class Typechecker {
      */
     private Typechecker() {
         this.env = null;
-        this.subClasses = null;
         this.program = null;
         this.classes = new HashMap<String, ClassDecl>();
 
@@ -135,6 +132,10 @@ public class Typechecker {
         final ImmutableMap<String, Type> gamma = ImmutableMap.copyOf(mutableGamma);
         return gamma;
     }
+
+    private static TypeEnvironment createEmptyTypeEnvironment() {
+        return new TypeEnvironment(null, null, null);
+    }
     /**
      * creates a copy of an ImmutableMap and adds new mappings
      * @param gamma current mapping
@@ -162,22 +163,35 @@ public class Typechecker {
             typecheckClass(createEmptyGamma(), (ClassDecl)classDecl);
         }
     }
-    public void typecheckClass(final ImmutableMap<String, Type> gamma, final ClassDecl classDecl) throws IllTypedException {
 
+    /**
+     * typechecks a class. will return a gamma with all defined variables and declarations in the class
+     * for typecheckProgram() this will not be used, but is neccessary for typechecking subclasses
+     * @param gamma map of variables
+     * @param classDecl class that is being typechecked
+     * @return
+     * @throws IllTypedException
+     */
+    public ImmutableMap<String, Type> typecheckClass(final ImmutableMap<String, Type> gamma, final ClassDecl classDecl) throws IllTypedException {
+        Map<String, Type> newGamma = new HashMap<>();
         if (classDecl.extendsClass == null)
-            typecheckDecl(createEmptyGamma(), classDecl.classBody);
+            newGamma = typecheckDecl(createEmptyGamma(), classDecl.classBody);
 
+
+        //if classDecl has a superclass, add methods and variables from superclass to gamma
         else {
             final ClassParserType type = (ClassParserType) classDecl.extendsClass;
             final ClassDecl superClass = getClass(((IdentifierLiteral)type.className).name);
-            final Map<String, Type> superClassMapping = new HashMap<String, Type>(typecheckDecl(gamma, superClass.classBody));
-            final ImmutableMap<String, Type> newGamma =
+            final Map<String, Type> superClassMapping = new HashMap<String, Type>(typecheckClass(gamma, superClass));
+            final ImmutableMap<String, Type> finalGamma =
                     ImmutableMap.<String, Type>builder()
                     .putAll(gamma)
                     .putAll(superClassMapping)
                     .build();
-            typecheckDecl(newGamma, classDecl.classBody);
+            typecheckDecl(finalGamma, classDecl.classBody);
         }
+
+        return ImmutableMap.copyOf(newGamma);
     }
 
     public ImmutableMap<String, Type> typecheckDecl(final ImmutableMap<String, Type> gamma, final Decl d) throws IllTypedException {
