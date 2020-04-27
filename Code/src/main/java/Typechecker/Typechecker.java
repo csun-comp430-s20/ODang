@@ -24,10 +24,13 @@ import com.google.common.collect.ImmutableMap;
 
 public class Typechecker {
 
+    private final Map<FunctionName, FunctionDefinition> functionDefinitions ;
+    //public final List<FunctionDefinition> functions;
     public final List<Decl> program;
     public final Map<String, ClassDecl> classes;
     public final Map<String, ClassDecl> subClasses;
     public final TypeEnvironment env;
+
 
     /**
      * constructor to initialize a typechecker
@@ -35,7 +38,7 @@ public class Typechecker {
      * @param program a list of class declarations
      * @throws IllTypedException
      */
-    public Typechecker(final List<Decl> program) throws IllTypedException {
+    public Typechecker(final List<Decl> program, final List<FunctionDefinition> functions) throws IllTypedException {
         this.program = program;
         this.env = new TypeEnvironment(null, null, null);
         classes = new HashMap<String, ClassDecl>();
@@ -50,6 +53,16 @@ public class Typechecker {
             }
             classes.put(className.name, curClassDecl);
         }
+
+        functionDefinitions = new HashMap<FunctionName, FunctionDefinition>();
+        for (final FunctionDefinition function: functions) {
+            if (!functionDefinitions.containsKey(function.name)) {
+                functionDefinitions.put(function.name, function);
+            } else {
+                throw new IllTypedException("Duplicate function name: " + function.name);
+            }
+        }
+
     }
 
     /**
@@ -61,6 +74,7 @@ public class Typechecker {
         this.program = null;
         this.classes = new HashMap<String, ClassDecl>();
 
+        this.functionDefinitions = null;
     }
 
     public static class Pair<U, V> {
@@ -241,6 +255,12 @@ public class Typechecker {
         return null;
     }
 
+    /**
+     * attempts to typecheck a function
+     * @param function the function definition to typecheck
+     * @return void
+     * @throws IllTypedException unrecognized expression
+     */
     public void typecheckFunction(final FunctionDefinition function) throws IllTypedException {
         final Map<String, Type> gamma = new HashMap<String, Type>();
         for (final FormalParameter formalParam: function.formalParams) {
@@ -250,11 +270,22 @@ public class Typechecker {
                 throw new IllTypedException("Duplicate formal parameter name");
             }
         }
-
-        //final Map<String, Type> finalGamma = typecheckStmts(gamma, false, function.body);
-
+        final ImmutableMap<String, Type> igamma = ImmutableMap.copyOf(gamma);
+        final ImmutableMap<String, Type> finalGamma = typecheckStmts(igamma, false, function.body);
+        final Type actualReturnType = typeof(finalGamma, function.returnExp);
+        if (!actualReturnType.equals(function.returnType)) {
+            throw new IllTypedException("return type mismatch");
+        }
     }
 
+    /**
+     * attempts to typecheck multiple statements
+     * @param gamma map of bound variables
+     * @param breakOk bool to allow break stmt
+     * @param s current statement that holds multiple statements
+     * @return new gamma map of bound variables
+     * @throws IllTypedException unrecognized expression
+     */
     public ImmutableMap<String, Type> typecheckStmts(ImmutableMap<String, Type> gamma,  final boolean breakOk,
                                                      final Stmt s) throws IllTypedException {
         if (s instanceof BlockStmt) {
@@ -459,7 +490,7 @@ public class Typechecker {
             final Tokenizer tokenizer = new Tokenizer(tokenizerInput);
             final Parser parser = new Parser(tokenizer.tokenize());
             final List<Decl> parsed = parser.parseProgram();
-            final Typechecker typechecker = new Typechecker(parsed);
+            final Typechecker typechecker = new Typechecker(parsed, null);
             typechecker.typecheckProgram();
 
             System.out.println(parsed);
