@@ -20,11 +20,10 @@ import java.util.Map;
 import java.util.HashMap;
 
 import Typechecker.Types.IntType;
-import com.google.common.collect.ImmutableMap;
 
 public class Typechecker {
 
-    private final Map<FunctionName, FunctionDefinition> functionDefinitions ;
+    private final Map<FunctionName, FunctionDefinition> functionDefinitions;
     //public final List<FunctionDefinition> functions;
     public final List<Decl> program;
     public final Map<String, ClassDecl> classes;
@@ -123,85 +122,52 @@ public class Typechecker {
         else return result;
     }
 
-    /**
-     * creates an empty gamma
-     * @return empty immutable map
-     */
-    private static ImmutableMap<String, Type> createEmptyGamma() {
-        final Map<String, Type> mutableGamma = new HashMap<>();
-        final ImmutableMap<String, Type> gamma = ImmutableMap.copyOf(mutableGamma);
-        return gamma;
-    }
-
-    private static TypeEnvironment createEmptyTypeEnvironment() {
+    public static TypeEnvironment createEmptyTypeEnvironment() {
         return new TypeEnvironment(null, null, null);
-    }
-    /**
-     * creates a copy of an ImmutableMap and adds new mappings
-     * @param gamma current mapping
-     * @param pairs new key-value pairs to add to map
-     * @return copy of gamma with new mappings
-     */
-    private static ImmutableMap<String, Type> addToGamma(
-            final ImmutableMap<String, Type> gamma, final Pair<String, Type>... pairs) {
-
-        Map<String, Type> newMappings = new HashMap<>();
-        for (final Pair curPair : pairs) {
-            newMappings.put((String)curPair.first, (Type)curPair.second);
-        }
-
-        final ImmutableMap<String, Type> newGamma = ImmutableMap.<String, Type>builder()
-                .putAll(gamma)
-                .putAll(newMappings)
-                .build();
-
-        return newGamma;
     }
 
     public void typecheckProgram() throws IllTypedException {
         for (final Decl classDecl : program) {
-            typecheckClass(createEmptyGamma(), (ClassDecl)classDecl);
+            typecheckClass(createEmptyTypeEnvironment(), (ClassDecl)classDecl);
         }
     }
 
     /**
-     * typechecks a class. will return a gamma with all defined variables and declarations in the class
+     * typechecks a class. will return a env with all defined variables and declarations in the class
      * for typecheckProgram() this will not be used, but is neccessary for typechecking subclasses
-     * @param gamma map of variables
+     * @param env TypeEnvironment keeping track of variables and functions in the class
      * @param classDecl class that is being typechecked
-     * @return
+     * @return TypeEnvironment containing all mappings of functions and variables
      * @throws IllTypedException
      */
-    public ImmutableMap<String, Type> typecheckClass(final ImmutableMap<String, Type> gamma, final ClassDecl classDecl) throws IllTypedException {
-        Map<String, Type> newGamma = new HashMap<>();
+    public TypeEnvironment typecheckClass(final TypeEnvironment env, final ClassDecl classDecl) throws IllTypedException {
+
+        final IdentifierLiteral classIdentifier = (IdentifierLiteral) classDecl.identifier;
+        TypeEnvironment newEnv = new TypeEnvironment(null, null, classIdentifier.name);
         if (classDecl.extendsClass == null)
-            newGamma = typecheckDecl(createEmptyGamma(), classDecl.classBody);
+            newEnv = typecheckDecl(newEnv, classDecl.classBody);
 
-
-        //if classDecl has a superclass, add methods and variables from superclass to gamma
+        //if classDecl has a superclass, add methods and variables from superclass to env
         else {
             final ClassParserType type = (ClassParserType) classDecl.extendsClass;
             final ClassDecl superClass = getClass(((IdentifierLiteral)type.className).name);
-            final Map<String, Type> superClassMapping = new HashMap<String, Type>(typecheckClass(gamma, superClass));
-            final ImmutableMap<String, Type> finalGamma =
-                    ImmutableMap.<String, Type>builder()
-                    .putAll(gamma)
-                    .putAll(superClassMapping)
-                    .build();
-            typecheckDecl(finalGamma, classDecl.classBody);
+            final TypeEnvironment superClassEnv = typecheckClass(new TypeEnvironment(
+                    null, null, ((IdentifierLiteral)superClass.identifier).name), superClass);
+
+            newEnv = typecheckClass(superClassEnv, classDecl);
         }
 
-        return ImmutableMap.copyOf(newGamma);
+        return newEnv;
     }
 
-    public ImmutableMap<String, Type> typecheckDecl(final ImmutableMap<String, Type> gamma, final Decl d) throws IllTypedException {
+    public TypeEnvironment typecheckDecl(TypeEnvironment env, final Decl d) throws IllTypedException {
 
          if (d instanceof ClassBodyDecs) {
             final ClassBodyDecs classBodyDecs = (ClassBodyDecs)d;
             for (final Decl classBody: classBodyDecs.classBodyDecs) {
-                typecheckDecl(gamma, classBody);
+                env = typecheckDecl(env, classBody);
             }
-            return gamma;
+            return env;
         }
 
         else if (d instanceof ConstructorDecl) {
@@ -210,8 +176,7 @@ public class Typechecker {
             final IdentifierLiteral identifier = (IdentifierLiteral)constructorDeclarator.identifier;
 
             if (classes.containsKey(identifier.name)) {
-                typecheckDecl(gamma, constructorDecl.constructorBody);
-                return gamma;
+                return typecheckDecl(env, constructorDecl.constructorBody);
             }
 
             else {
@@ -220,22 +185,25 @@ public class Typechecker {
         }
 
         else if (d instanceof FieldDecl) {
+            TypeEnvironment newEnv = env;
             final FieldDecl fieldDecl = (FieldDecl)d;
             final Type declaredType = convertParserType(fieldDecl.parserType);
-
-            //need a mutable map here to ensure that all new variables are added to the same gamma
-            Map<String, Type> newGamma = new HashMap<>(gamma);
-
             final VarDeclaratorList varList = (VarDeclaratorList) fieldDecl.varDeclarators;
             for (final Decl decl : varList.varDeclList) {
                 final VarDeclarator varDec = (VarDeclarator)decl;
-                newGamma.put(((IdentifierLiteral)varDec.identifier).name, declaredType);
-
+                final String identifierName = ((IdentifierLiteral)varDec.identifier).name;
                 if (!(varDec.exp == null)){
-                    typeof(gamma, varDec.exp);
+                    newEnv = env.addVariable(identifierName, declaredType);
+                } else {
+                    final Type actualType = typeof(env, varDec.exp);
+                    if (actualType.equals(declaredType))
+                        newEnv = env.addVariable(identifierName, declaredType);
+                    else
+                        throw new IllTypedException("Expression of type: " + actualType + 
+                                "cannot be assigned to a variable with type: " + declaredType);
                 }
             }
-            return ImmutableMap.copyOf(newGamma);
+            return newEnv;
          }
 
         //TODO MOVE
@@ -252,22 +220,7 @@ public class Typechecker {
             throw new IllTypedException("Unrecognized declaration: " + d.toString());
         }
     }
-
-    public Type typeOfField(final String onClass, final String fieldName) throws IllTypedException {
-        if (onClass == null) {
-            throw new IllTypedException("No instance variable defined: " + fieldName);
-        }
-        else {
-            final ClassDecl classDecl = getClass(onClass);
-            final ClassBodyDecs bodyDecs = (ClassBodyDecs)classDecl.classBody;
-
-            for (final Decl bodyDecl : bodyDecs.classBodyDecs) {
-                
-            }
-        }
-
-        return null;
-    }
+    
 
     /**
      * attempts to typecheck a function
@@ -275,18 +228,16 @@ public class Typechecker {
      * @return void
      * @throws IllTypedException unrecognized expression
      */
-    public void typecheckFunction(final FunctionDefinition function) throws IllTypedException {
-        final Map<String, Type> gamma = new HashMap<String, Type>();
+    public void typecheckFunction(TypeEnvironment env, final FunctionDefinition function) throws IllTypedException {
         for (final FormalParameter formalParam: function.formalParams) {
-            if (!gamma.containsKey(formalParam.theVariable)) {
-                gamma.put(formalParam.theVariable, formalParam.theType);
+            if (!env.containsVariable(formalParam.theVariable)) {
+                env = env.addVariable(formalParam.theVariable, formalParam.theType);
             } else {
                 throw new IllTypedException("Duplicate formal parameter name");
             }
         }
-        final ImmutableMap<String, Type> igamma = ImmutableMap.copyOf(gamma);
-        final ImmutableMap<String, Type> finalGamma = typecheckStmts(igamma, false, function.body);
-        final Type actualReturnType = typeof(finalGamma, function.returnExp);
+        final TypeEnvironment finalEnv = typecheckStmts(env, false, function.body);
+        final Type actualReturnType = typeof(finalEnv, function.returnExp);
         if (!actualReturnType.equals(function.returnType)) {
             throw new IllTypedException("return type mismatch");
         }
@@ -294,77 +245,77 @@ public class Typechecker {
 
     /**
      * attempts to typecheck multiple statements
-     * @param gamma map of bound variables
+     * @param env map of bound variables
      * @param breakOk bool to allow break stmt
      * @param s current statement that holds multiple statements
      * @return new gamma map of bound variables
      * @throws IllTypedException unrecognized expression
      */
-    public ImmutableMap<String, Type> typecheckStmts(ImmutableMap<String, Type> gamma,  final boolean breakOk,
+    public TypeEnvironment typecheckStmts(TypeEnvironment env,  final boolean breakOk,
                                                      final Stmt s) throws IllTypedException {
         if (s instanceof BlockStmt) {
             final BlockStmt asBlock = (BlockStmt)s;
-            gamma = typecheckStmts(gamma, breakOk, asBlock.left);
-            gamma = typecheckStmts(gamma, breakOk, asBlock.right);
+            env = typecheckStmts(env, breakOk, asBlock.left);
+            env = typecheckStmts(env, breakOk, asBlock.right);
         }
         else
-            gamma = typecheckStmt(gamma, breakOk, s);
-        return gamma;
+            env = typecheckStmt(env, breakOk, s);
+        return env;
     }
 
     /**
      * attempts to typecheck a statement
-     * @param gamma map of bound variables
+     * @param env TypeEnvironment of bound variables
      * @param breakOk bool to allow break stmt
      * @param s current statement
      * @return new gamma map of bound variables
      * @throws IllTypedException unrecognized expression
      */
-    public ImmutableMap<String, Type> typecheckStmt(final ImmutableMap<String, Type> gamma, final boolean breakOk,
+    public TypeEnvironment typecheckStmt(final TypeEnvironment env, final boolean breakOk,
                                                      final Stmt s) throws IllTypedException {
         if (s instanceof BreakStmt) {
             if (breakOk) {
-                return gamma;
+                return env;
             } else {
                 throw new IllTypedException("break outside of a loop");
             }
         }
         else if (s instanceof ForStmt) {
             final ForStmt asFor = (ForStmt)s;
-            final ImmutableMap<String, Type> newGamma = typecheckStmt(gamma, breakOk,asFor.forInit);
-            final Type guardType = typeof(newGamma, asFor.conditional);
+            final TypeEnvironment newEnv = typecheckStmt(env, breakOk,asFor.forInit);
+            final Type guardType = typeof(newEnv, asFor.conditional);
             if (guardType instanceof BoolType) {
-                typecheckStmt(newGamma, breakOk, asFor.forUpdate);
+                typecheckStmt(newEnv, breakOk, asFor.forUpdate);
                 // have to deal with body being a Stmt and not a List<Stmt>
-                typecheckStmts(newGamma, true, asFor.body);
+                typecheckStmts(newEnv, true, asFor.body);
             } else {
                 throw new IllTypedException("Guard in for stmt must be boolean");
             }
-            return gamma;
+            return env;
         }
         else if (s instanceof WhileStmt) {
             final WhileStmt asWhile = (WhileStmt)s;
-            final Type guardType = typeof(gamma, asWhile.guard);
+            final Type guardType = typeof(env, asWhile.guard);
             if (guardType instanceof BoolType) {
-                typecheckStmts(gamma, breakOk, asWhile.body);
+                typecheckStmts(env, breakOk, asWhile.body);
             } else {
                 throw new IllTypedException("Guard in while stmt must be boolean");
             }
-            return gamma;
+            return env;
         }
         else if (s instanceof IfElseStmt) {
             final IfElseStmt asIf = (IfElseStmt)s;
-            final Type guardType = typeof(gamma, asIf.guard);
+            final Type guardType = typeof(env, asIf.guard);
             if (guardType instanceof BoolType) {
-                typecheckStmts(gamma, breakOk, asIf.trueBranch);
-                typecheckStmts(gamma, breakOk, asIf.falseBranch);
+                typecheckStmts(env, breakOk, asIf.trueBranch);
+                typecheckStmts(env, breakOk, asIf.falseBranch);
             } else {
                 throw new IllTypedException("Guard in ifelse stmt must be boolean");
             }
-            return gamma;
+            return env;
         }
         else if (s instanceof ReturnStmt || s instanceof EmptyStmt || s instanceof PrintlnStmt) {
-            return gamma;
+            return env;
         }
         else {
             assert(false);
@@ -374,17 +325,17 @@ public class Typechecker {
 
     /**
      * attempts to typecheck an expression
-     * @param gamma map of bound variables
+     * @param env TypeEnvironment with bound variables
      * @param e current expression
      * @return type of e
      * @throws IllTypedException unrecognized expression
      */
-    public Type typeof(final ImmutableMap<String, Type> gamma, final Exp e) throws IllTypedException{
+    public Type typeof(final TypeEnvironment env, final Exp e) throws IllTypedException{
 
         if (e instanceof BinaryOperatorExp) {
             final BinaryOperatorExp asBOP = (BinaryOperatorExp)e;
-            final Type left = typeof(gamma, asBOP.left);
-            final Type right = typeof(gamma, asBOP.right);
+            final Type left = typeof(env, asBOP.left);
+            final Type right = typeof(env, asBOP.right);
 
             //assignment
             if (asBOP.op.equals("=") ||
@@ -393,7 +344,7 @@ public class Typechecker {
 
                 final IdentifierLiteral asID = (IdentifierLiteral)asBOP.left;
 
-                if (!gamma.containsKey(asID.name))
+                if (!env.containsVariable(asID.name))
                     throw new IllTypedException("Variable not in scope: " + asID.name);
 
                 if (left.equals(right)) {
@@ -439,7 +390,7 @@ public class Typechecker {
 
         else if (e instanceof PreIncrDecrExp) {
             final PreIncrDecrExp asPre = (PreIncrDecrExp)e;
-            final Type expType = typeof(gamma, asPre.prefixExp);
+            final Type expType = typeof(env, asPre.prefixExp);
             if (expType instanceof IntType)
                 return expType;
             else
@@ -447,7 +398,7 @@ public class Typechecker {
         }
         else if (e instanceof PostIncrDecrExp) {
             final PostIncrDecrExp asPost = (PostIncrDecrExp) e;
-            final Type expType = typeof(gamma, asPost.postfixExp);
+            final Type expType = typeof(env, asPost.postfixExp);
             if (expType instanceof IntType)
                 return expType;
             else
@@ -455,7 +406,7 @@ public class Typechecker {
         }
         else if (e instanceof NegateUnaryExp) {
             final NegateUnaryExp asNeg = (NegateUnaryExp) e;
-            final Type expType = typeof(gamma, asNeg.exp);
+            final Type expType = typeof(env, asNeg.exp);
             if (expType instanceof BoolType)
                 return expType;
             else
@@ -476,8 +427,8 @@ public class Typechecker {
         //have to check if the variable is in scope
         else if (e instanceof IdentifierLiteral) {
             IdentifierLiteral asID = (IdentifierLiteral)e;
-            if (gamma.containsKey(asID.name)) {
-                return gamma.get(asID.name);
+            if (env.containsVariable(asID.name)) {
+                return env.lookupVariable(asID.name);
             } else {
                 throw new IllTypedException("Variable not in scope: " + asID.name);
             }

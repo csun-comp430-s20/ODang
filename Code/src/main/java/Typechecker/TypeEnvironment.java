@@ -61,25 +61,21 @@ public class TypeEnvironment {
         return new TypeEnvironment(functions, ImmutableMap.copyOf(newVariables), thisClass);
     }
 
-    public TypeEnvironment addVariable(final FieldDecl fieldDecl) throws IllTypedException {
-        final VarDeclaratorList varDeclarators = (VarDeclaratorList) fieldDecl.varDeclarators;
-        final Type type = Typechecker.convertParserType(fieldDecl.parserType);
-
-        final Map<String, Type> newVariables = new HashMap<>(variables);
-
-        for (final Decl decl : varDeclarators.varDeclList) {
-            final VarDeclarator varDec = (VarDeclarator) decl;
-            final IdentifierLiteral identifier = (IdentifierLiteral) varDec.identifier;
-            newVariables.put(identifier.name, type);
-        }
-
-        final ImmutableMap<String, Type> finalVariables = ImmutableMap
-                .<String, Type>builder()
-                .putAll(variables)
-                .putAll(newVariables)
-                .build();
-
-        return new TypeEnvironment(functions, finalVariables, thisClass);
+    public boolean containsVariable(final String name) {
+        return variables.containsKey(name);
     }
+
+    public boolean containsFunction(final FunctionName name) {
+        return functions.containsKey(name);
+    }
+
+    public boolean variablesIsEmpty() {
+        return variables.isEmpty();
+    }
+
+    public boolean functionsIsEmpty() {
+        return functions.isEmpty();
+    }
+
 
 }

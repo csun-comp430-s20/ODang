@@ -20,30 +20,29 @@ import org.junit.jupiter.api.*;
 
 public class TypecheckerTest {
 
-    public static Type typeof(final ImmutableMap<String, Type> gamma, final Exp e)
+    public static Type typeof(final TypeEnvironment env, final Exp e)
             throws IllTypedException, NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
 
         //using reflection to access private constructor, dont use this outside of testing
         final Constructor<Typechecker> constructor = Typechecker.class.getDeclaredConstructor();
         constructor.setAccessible(true);
-        return (constructor.newInstance().typeof(gamma, e));
+        return (constructor.newInstance().typeof(env, e));
     }
 
-    public static void assertTypechecksExp(ImmutableMap<String, Type> gamma,
+    public static void assertTypechecksExp(TypeEnvironment env,
                                            final Type expected, final String received) {
 
         //in case of no bound vars, needs an empty map rather than a null
-        if (gamma == null) {
-            final Map<String, Type> mutable = new HashMap<>();
-            gamma = ImmutableMap.copyOf(mutable);
+        if (env == null) {
+            env = Typechecker.createEmptyTypeEnvironment();
         }
         try {
             final Parser parser = new Parser(new Tokenizer(received).tokenize());
             final Exp parsedExp = (parser.parseExp(0)).getResult();
-            Assertions.assertEquals(expected, typeof(gamma, parsedExp));
+            Assertions.assertEquals(expected, typeof(env, parsedExp));
         }
         catch (Exception e) {
-            System.out.println(e.getClass() + ": " + e.getMessage());
+            e.printStackTrace();
         }
     }
     @Test
@@ -60,31 +59,27 @@ public class TypecheckerTest {
     }
     @Test
     public void checkTypeOfIdentifierLiteralInt() {
-        final Map<String, Type> mutable = new HashMap<String, Type>();
-        mutable.put("foo", new IntType());
-        final ImmutableMap<String, Type> gamma = ImmutableMap.copyOf(mutable);
-        assertTypechecksExp(gamma, new IntType(), "foo");
+        TypeEnvironment env = new TypeEnvironment(null, null, null);
+        TypeEnvironment newEnv = env.addVariable("foo", new IntType());
+        assertTypechecksExp(newEnv, new IntType(), "foo");
     }
     @Test
     public void checkTypeOfIdentifierLiteralBool() {
-        final Map<String, Type> mutable = new HashMap<String, Type>();
-        mutable.put("foo", new BoolType());
-        final ImmutableMap<String, Type> gamma = ImmutableMap.copyOf(mutable);
-        assertTypechecksExp(gamma, new BoolType(), "foo");
+        TypeEnvironment env = new TypeEnvironment(null, null, null);
+        TypeEnvironment newEnv = env.addVariable("foo", new BoolType());
+        assertTypechecksExp(newEnv, new BoolType(), "foo");
     }
     @Test
     public void checkTypeOfIdentifierLiteralString() {
-        final Map<String, Type> mutable = new HashMap<String, Type>();
-        mutable.put("foo", new StringType());
-        final ImmutableMap<String, Type> gamma = ImmutableMap.copyOf(mutable);
-        assertTypechecksExp(gamma, new StringType(), "foo");
+        TypeEnvironment env = new TypeEnvironment(null, null, null);
+        TypeEnvironment newEnv = env.addVariable("foo", new StringType());
+        assertTypechecksExp(newEnv, new StringType(), "foo");
     }
     @Test
     public void checkThrowsExceptionVarNotInScope() {
-        final Map<String, Type> mutable = new HashMap<String, Type>();
-        final ImmutableMap<String, Type> gamma = ImmutableMap.copyOf(mutable);
+        TypeEnvironment env = new TypeEnvironment(null, null, null);
         Assertions.assertThrows(IllTypedException.class,
-                () -> typeof(gamma, new IdentifierLiteral("foo")));
+                () -> typeof(env, new IdentifierLiteral("foo")));
     }
     @Test
     public void checkTypeOfNullLiteral() {
@@ -268,38 +263,23 @@ public class TypecheckerTest {
     }
     @Test
     public void checkTypeOfAssignmentExpIdentifierInteger() {
-        final BinaryOperatorExp BOPExp = new BinaryOperatorExp("=",
-                new IdentifierLiteral("foo"),
-                new IntegerLiteral(2));
+        TypeEnvironment env = new TypeEnvironment(null, null, null);
+        TypeEnvironment newEnv = env.addVariable("foo", new IntType());
 
-        final Map<String, Type> mutable = new HashMap<String, Type>();
-        mutable.put("foo", new IntType());
-        final ImmutableMap<String, Type> gamma = ImmutableMap.copyOf(mutable);
-
-        assertTypechecksExp(gamma, new IntType(), "foo = 2");
+        assertTypechecksExp(newEnv, new IntType(), "foo = 2");
     }
     @Test
     public void checkTypeOfAssignmentExpIdentifierBoolean() {
-        final BinaryOperatorExp BOPExp = new BinaryOperatorExp("=",
-                new IdentifierLiteral("foo"),
-                new BooleanLiteral(true));
+        TypeEnvironment env = new TypeEnvironment(null, null, null);
+        TypeEnvironment newEnv = env.addVariable("foo", new BoolType());
 
-        final Map<String, Type> mutable = new HashMap<String, Type>();
-        mutable.put("foo", new BoolType());
-        final ImmutableMap<String, Type> gamma = ImmutableMap.copyOf(mutable);
-
-        assertTypechecksExp(gamma, new BoolType(), "foo = true");
+        assertTypechecksExp(newEnv, new BoolType(), "foo = true");
     }
     @Test
     public void checkTypeOfAssignmentExpIdentifierString() {
-        final BinaryOperatorExp BOPExp = new BinaryOperatorExp("=",
-                new IdentifierLiteral("foo"),
-                new StringLiteral("testString"));
+        TypeEnvironment env = new TypeEnvironment(null, null, null);
+        TypeEnvironment newEnv = env.addVariable("foo", new StringType());
 
-        final Map<String, Type> mutable = new HashMap<String, Type>();
-        mutable.put("foo", new StringType());
-        final ImmutableMap<String, Type> gamma = ImmutableMap.copyOf(mutable);
-
-        assertTypechecksExp(gamma, new StringType(), "foo = \"testString\"");
+        assertTypechecksExp(newEnv, new StringType(), "foo = \"testString\"");
     }
 }
