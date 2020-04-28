@@ -1,12 +1,9 @@
 package Typechecker;
 
-import Parser.Declarations.*;
-import Parser.Literals.*;
 import Typechecker.Types.*;
 import com.google.common.collect.ImmutableMap;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 public class TypeEnvironment {
@@ -77,5 +74,12 @@ public class TypeEnvironment {
         return functions.isEmpty();
     }
 
+    public ImmutableMap<String, Type> getVariables() {
+        return variables;
+    }
+
+    public ImmutableMap<FunctionName, FunctionDefinition> getFunctions() {
+        return functions;
+    }
 
 }

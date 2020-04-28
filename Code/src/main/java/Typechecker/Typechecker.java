@@ -148,7 +148,7 @@ public class Typechecker {
     public TypeEnvironment typecheckClass(final TypeEnvironment env, final ClassDecl classDecl) throws IllTypedException {
 
         final IdentifierLiteral classIdentifier = (IdentifierLiteral) classDecl.identifier;
-        TypeEnvironment newEnv = new TypeEnvironment(null, null, classIdentifier.name);
+        TypeEnvironment newEnv = new TypeEnvironment(env.getFunctions(), env.getVariables(), classIdentifier.name);
         if (classDecl.extendsClass == null)
             newEnv = typecheckDecl(newEnv, classDecl.classBody);
 
@@ -211,7 +211,6 @@ public class Typechecker {
             return newEnv;
          }
 
-        //TODO MOVE
         else if (d instanceof MethodDecl) {
             final MethodDecl methodDecl = (MethodDecl)d;
             final MethodHeader methodHeader = (MethodHeader)methodDecl.header;
