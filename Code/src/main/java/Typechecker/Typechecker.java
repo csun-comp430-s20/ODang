@@ -216,6 +216,7 @@ public class Typechecker {
             final MethodHeader methodHeader = (MethodHeader)methodDecl.header;
             final Type resultType = convertParserType(methodHeader.resultParserType);
 
+
             return null;
          }
 
@@ -259,8 +260,10 @@ public class Typechecker {
                                                      final Stmt s) throws IllTypedException {
         if (s instanceof BlockStmt) {
             final BlockStmt asBlock = (BlockStmt)s;
-            env = typecheckStmts(env, breakOk, asBlock.left);
-            env = typecheckStmts(env, breakOk, asBlock.right);
+
+            for (final Stmt stmt : asBlock.block)
+                env = typecheckStmts(env, breakOk, asBlock);
+
         }
         else
             env = typecheckStmt(env, breakOk, s);
