@@ -24,7 +24,7 @@ import Typechecker.Types.IntType;
 public class Typechecker {
 
     private final Map<FunctionName, FunctionDefinition> functionDefinitions;
-    //public final List<FunctionDefinition> functions;
+    public final List<FunctionDefinition> programFunctions;
     public final List<Decl> program;
     public final Map<String, ClassDecl> classes;
     public final TypeEnvironment env;
@@ -36,7 +36,7 @@ public class Typechecker {
      * @param program a list of class declarations
      * @throws IllTypedException
      */
-    public Typechecker(final List<Decl> program, final List<FunctionDefinition> functions) throws IllTypedException {
+    public Typechecker(final List<Decl> program, final List<FunctionDefinition> programFunctions) throws IllTypedException {
         this.program = program;
         this.env = new TypeEnvironment(null, null, null);
         classes = new HashMap<String, ClassDecl>();
@@ -52,7 +52,8 @@ public class Typechecker {
         }
 
         functionDefinitions = new HashMap<FunctionName, FunctionDefinition>();
-        for (final FunctionDefinition function: functions) {
+        this.programFunctions = programFunctions;
+        for (final FunctionDefinition function: programFunctions) {
             if (!functionDefinitions.containsKey(function.name)) {
                 functionDefinitions.put(function.name, function);
             } else {
@@ -69,7 +70,7 @@ public class Typechecker {
         this.env = null;
         this.program = null;
         this.classes = new HashMap<String, ClassDecl>();
-
+        this.programFunctions = null;
         this.functionDefinitions = null;
     }
 
@@ -129,6 +130,10 @@ public class Typechecker {
     public void typecheckProgram() throws IllTypedException {
         for (final Decl classDecl : program) {
             typecheckClass(createEmptyTypeEnvironment(), (ClassDecl)classDecl);
+        }
+
+        for (final FunctionDefinition function: programFunctions) {
+            typecheckFunction(createEmptyTypeEnvironment(), function);
         }
     }
 
