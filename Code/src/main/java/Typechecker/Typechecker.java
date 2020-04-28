@@ -262,7 +262,7 @@ public class Typechecker {
             final BlockStmt asBlock = (BlockStmt)s;
 
             for (final Stmt stmt : asBlock.block)
-                env = typecheckStmts(env, breakOk, asBlock);
+                env = typecheckStmts(env, breakOk, stmt);
 
         }
         else
