@@ -15,6 +15,7 @@ import Typechecker.Types.*;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
@@ -212,12 +213,38 @@ public class Typechecker {
          }
 
         else if (d instanceof MethodDecl) {
+
+            //have to cast all values to their respective classes, a bit messy
             final MethodDecl methodDecl = (MethodDecl)d;
             final MethodHeader methodHeader = (MethodHeader)methodDecl.header;
             final Type resultType = convertParserType(methodHeader.resultParserType);
 
+            final MethodDeclarator methodDeclarator = (MethodDeclarator)methodHeader.methodDeclarator;
+            final IdentifierLiteral identifier = (IdentifierLiteral)methodDeclarator.identifier;
 
-            return null;
+            //converting a Parser.FormalParamList to a List of Typechecker.FormalParameter
+            final FormalParamList parsedParamList = (FormalParamList)methodDeclarator.paramList;
+
+            final List<FormalParameter> formalParams = new ArrayList<>();
+            for (final Decl parsedFormalParam : parsedParamList.declList) {
+                final FormalParam formalParam = (FormalParam) parsedFormalParam;
+                final Type paramType = convertParserType(formalParam.paramParserType);
+                final IdentifierLiteral paramName = (IdentifierLiteral)formalParam.paramIdentifier;
+                formalParams.add(new FormalParameter(paramType, paramName.name));
+            }
+
+            final FunctionName functionName = new FunctionName(identifier.name);
+            //TODO what is the returnExp? put as null for now
+            final FunctionDefinition funcDef = new FunctionDefinition(
+                    resultType,
+                    functionName,
+                    formalParams,
+                    methodDecl.body,
+                    null);
+
+
+
+            return env.addFunction(functionName, funcDef);
          }
 
         else {
