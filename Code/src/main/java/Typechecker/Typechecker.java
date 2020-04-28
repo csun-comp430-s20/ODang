@@ -338,53 +338,61 @@ public class Typechecker {
             final Type right = typeof(env, asBOP.right);
 
             //assignment
-            if (asBOP.op.equals("=") ||
-                    asBOP.op.equals("-=") ||
-                    asBOP.op.equals("+=")) {
-
-                final IdentifierLiteral asID = (IdentifierLiteral)asBOP.left;
-
-                if (!env.containsVariable(asID.name))
-                    throw new IllTypedException("Variable not in scope: " + asID.name);
-
-                if (left.equals(right)) {
-                    return left;
-                }
-                else throw new IllTypedException("Type mismatch: type " + right +
-                        "cannot be assigned to type " + left);
-            }
-            else if (asBOP.op.equals("+") || asBOP.op.equals("-") ||
-                    asBOP.op.equals("*") || asBOP.op.equals("/")) {
-                if (left instanceof IntType && right instanceof IntType) {
-                    return new IntType();
-                }
-                else {
-                    throw new IllTypedException("Operator " + asBOP.op +
-                            " cannot be applied to " + left +", " + right);
-                }
-            }
-            else if (asBOP.op.equals("<") || asBOP.op.equals(">")){
-                if (left instanceof IntType && right instanceof IntType) {
-                    return new BoolType();
-                } else {
-                    throw new IllTypedException("Operator " + asBOP.op +
-                            " cannot be applied to " + left +", " + right);
-                }
-            }
-            else if (asBOP.op.equals("!=") || asBOP.op.equals("==")) {
-                if (left instanceof IntType && right instanceof IntType) {
-                    return new BoolType();
-                }
-                if (left instanceof BoolType && right instanceof BoolType) {
-                    return new BoolType();
-                } else {
-                    throw new IllTypedException("Operator " + asBOP.op +
-                            " cannot be applied to " + left +", " + right);
-                }
-            }
-            else {
-                assert(false);
-                throw new IllTypedException("Illegal binary operation");
+            switch(asBOP.op)
+            {
+                case "=":
+                case "-=":
+                case "+=":
+                    final IdentifierLiteral asID = (IdentifierLiteral) asBOP.left;
+            
+                    if(!env.containsVariable(asID.name))
+                        throw new IllTypedException("Variable not in scope: " + asID.name);
+            
+                    if(left.equals(right))
+                    {
+                        return left;
+                    }
+                    else
+                        throw new IllTypedException("Type mismatch: type " + right + "cannot be assigned to type " + left);
+                case "+":
+                case "-":
+                case "*":
+                case "/":
+                    if(left instanceof IntType && right instanceof IntType)
+                    {
+                        return new IntType();
+                    }
+                    else
+                    {
+                        throw new IllTypedException("Operator " + asBOP.op + " cannot be applied to " + left + ", " + right);
+                    }
+                case "<":
+                case ">":
+                    if(left instanceof IntType && right instanceof IntType)
+                    {
+                        return new BoolType();
+                    }
+                    else
+                    {
+                        throw new IllTypedException("Operator " + asBOP.op + " cannot be applied to " + left + ", " + right);
+                    }
+                case "!=":
+                case "==":
+                    if(left instanceof IntType && right instanceof IntType)
+                    {
+                        return new BoolType();
+                    }
+                    if(left instanceof BoolType && right instanceof BoolType)
+                    {
+                        return new BoolType();
+                    }
+                    else
+                    {
+                        throw new IllTypedException("Operator " + asBOP.op + " cannot be applied to " + left + ", " + right);
+                    }
+                default:
+                    assert (false);
+                    throw new IllTypedException("Illegal binary operation");
             }
         }
 
