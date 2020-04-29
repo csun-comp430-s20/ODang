@@ -5,22 +5,22 @@ import Parser.Statements.*;
 
 public class FunctionDefinition {
     public final Type returnType;
-    public final FunctionName name;
+    public final String name;
     public final List<FormalParameter> formalParams;
     public final Stmt body;
     // simplification: return can only be at the end of the function,
     // and we must always return a value.  There is no void.
-    public final Exp returnExp;
+    public final ReturnStmt returnStmt;
 
     public FunctionDefinition(final Type returnType,
-                                        final FunctionName name,
+                                        final String name,
                                         final List<FormalParameter> formalParams,
                                         final Stmt body,
-                                        final Exp returnExp) {
+                                        final ReturnStmt returnStmt) {
         this.returnType = returnType;
         this.name = name;
         this.formalParams = formalParams;
         this.body = body;
-        this.returnExp = returnExp;
+        this.returnStmt = returnStmt;
     }
 }

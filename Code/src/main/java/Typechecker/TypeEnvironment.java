@@ -7,16 +7,16 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class TypeEnvironment {
-    public final ImmutableMap<FunctionName,FunctionDefinition> functions;
+    public final ImmutableMap<String,FunctionDefinition> functions;
     public final ImmutableMap<String, Type> variables;
     public final String thisClass;
 
-    public TypeEnvironment(final ImmutableMap<FunctionName, FunctionDefinition> functions,
+    public TypeEnvironment(final ImmutableMap<String, FunctionDefinition> functions,
                            final ImmutableMap<String, Type> variables,
                            final String thisClass) {
 
         this.functions = (functions == null) ?
-                ImmutableMap.copyOf(new HashMap<FunctionName, FunctionDefinition>()) : functions;
+                ImmutableMap.copyOf(new HashMap<String, FunctionDefinition>()) : functions;
         this.variables = (variables == null) ?
                 ImmutableMap.copyOf(new HashMap<String, Type>()) : variables;
         this.thisClass = thisClass;
@@ -38,16 +38,16 @@ public class TypeEnvironment {
             return result;
     }
 
-    public FunctionDefinition lookupFunction(final FunctionName functionName) throws IllTypedException {
+    public FunctionDefinition lookupFunction(final String functionName) throws IllTypedException {
         final FunctionDefinition result = functions.get(functionName);
         if (result == null)
             throw new IllTypedException("No such function defined: " + functionName);
         else
             return result;
     }
-    public TypeEnvironment addFunction(final FunctionName functionName,
+    public TypeEnvironment addFunction(final String functionName,
                                        final FunctionDefinition functionDefinition) {
-        final Map<FunctionName, FunctionDefinition> newFunctions = new HashMap<>(functions);
+        final Map<String, FunctionDefinition> newFunctions = new HashMap<>(functions);
         newFunctions.put(functionName, functionDefinition);
         return new TypeEnvironment(ImmutableMap.copyOf(newFunctions), variables, thisClass);
     }
@@ -62,7 +62,7 @@ public class TypeEnvironment {
         return variables.containsKey(name);
     }
 
-    public boolean containsFunction(final FunctionName name) {
+    public boolean containsFunction(final String name) {
         return functions.containsKey(name);
     }
 
@@ -78,7 +78,7 @@ public class TypeEnvironment {
         return variables;
     }
 
-    public ImmutableMap<FunctionName, FunctionDefinition> getFunctions() {
+    public ImmutableMap<String, FunctionDefinition> getFunctions() {
         return functions;
     }
 

@@ -1,5 +1,5 @@
 package Typechecker.Types;
-
+@Deprecated
 public class FunctionName {
     public final String name;
 

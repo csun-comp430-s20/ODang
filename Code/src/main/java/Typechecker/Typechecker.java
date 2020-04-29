@@ -24,7 +24,7 @@ import Typechecker.Types.IntType;
 
 public class Typechecker {
 
-    private final Map<FunctionName, FunctionDefinition> functionDefinitions;
+    private final Map<String, FunctionDefinition> functionDefinitions;
     public final List<FunctionDefinition> programFunctions;
     public final List<Decl> program;
     public final Map<String, ClassDecl> classes;
@@ -52,7 +52,7 @@ public class Typechecker {
             classes.put(className.name, curClassDecl);
         }
 
-        functionDefinitions = new HashMap<FunctionName, FunctionDefinition>();
+        functionDefinitions = new HashMap<String, FunctionDefinition>();
         this.programFunctions = programFunctions;
         for (final FunctionDefinition function: programFunctions) {
             if (!functionDefinitions.containsKey(function.name)) {
@@ -233,7 +233,7 @@ public class Typechecker {
                 formalParams.add(new FormalParameter(paramType, paramName.name));
             }
 
-            final FunctionName functionName = new FunctionName(identifier.name);
+            final String functionName = new String(identifier.name);
             //TODO what is the returnExp? put as null for now
             final FunctionDefinition funcDef = new FunctionDefinition(
                     resultType,
@@ -269,7 +269,7 @@ public class Typechecker {
             }
         }
         final TypeEnvironment finalEnv = typecheckStmts(env, false, function.body);
-        final Type actualReturnType = typeof(finalEnv, function.returnExp);
+        final Type actualReturnType = typeof(finalEnv, function.returnStmt.exp);
         if (!actualReturnType.equals(function.returnType)) {
             throw new IllTypedException("return type mismatch");
         }
@@ -453,6 +453,25 @@ public class Typechecker {
                 return expType;
             else
                 throw new IllTypedException("Cannot negate a non-boolean type " + expType);
+        }
+        else if (e instanceof FieldAccessExp) {
+            final FieldAccessExp asField = (FieldAccessExp)e;
+            //TODO need to consider multiple dots, i.e. foo.apple.cow()
+            if (classes.containsKey(asField.left.toString())) {
+                final Type leftType = typeof(env, asField.left);
+                if (functionDefinitions.containsKey(asField.right.toString())) {
+                    final Type rightType = typeof(env, asField.right);
+                    return rightType;
+                }
+            }
+            if (asField.left instanceof ThisExp){
+                //TODO in case of this.___
+            }
+            if (asField.left instanceof SuperExp){
+                //TODO in case of super.___
+            }
+
+            return null;
         }
         else if (e instanceof IntegerLiteral) {
             return new IntType();
