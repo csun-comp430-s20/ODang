@@ -35,7 +35,7 @@ public class Typechecker {
      * @param program a list of class declarations
      * @throws IllTypedException
      */
-    public Typechecker(final List<Decl> program, final List<FunctionDefinition> programFunctions) throws IllTypedException {
+    public Typechecker(final List<Decl> program) throws IllTypedException {
         this.program = program;
         this.env = new TypeEnvironment(null, null, null);
         classes = new HashMap<String, ClassDecl>();
@@ -104,6 +104,21 @@ public class Typechecker {
         else throw new IllTypedException("Not a valid Parser.Type to convert: " + type);
     }
 
+    final static List<FormalParameter> convertFormalParamList(final FormalParamList list) throws IllTypedException {
+        if (list.declList.isEmpty())
+            return new ArrayList<>();
+        else {
+            final List<FormalParameter> formalParameterList = new ArrayList<>();
+            for (final Decl decl : list.declList) {
+                final FormalParam parserParam = (FormalParam)decl;
+                final Type paramType = convertParserType(parserParam.paramParserType);
+                final String paramName = ((IdentifierLiteral)parserParam.paramIdentifier).name;
+                formalParameterList.add(new FormalParameter(paramType, paramName));
+            }
+            return formalParameterList;
+        }
+    }
+
     public ClassDecl getClass(final String className) throws IllTypedException {
         final ClassDecl result = classes.get(className);
         if (result == null)
@@ -133,6 +148,43 @@ public class Typechecker {
     public TypeEnvironment typecheckClass(final TypeEnvironment env, final ClassDecl classDecl) {
         return null;
     }
+
+
+    public TypeEnvironment typecheckMethod(final TypeEnvironment env, final MethodDecl methodDecl) throws IllTypedException {
+
+        final MethodHeader mh = (MethodHeader)methodDecl.header;
+        final Type resultType = convertParserType(mh.resultParserType);
+        final MethodDeclarator md = (MethodDeclarator)mh.methodDeclarator;
+        final String methodName = ((IdentifierLiteral)md.identifier).name;
+
+        final BlockStmt body = (BlockStmt)methodDecl.body;
+
+        final Stmt hopefullyReturnStmt = body.block.get(body.block.size());
+
+        final TypeEnvironment newEnv = typecheckStmts(env, false, body);
+
+        if (!(hopefullyReturnStmt instanceof ReturnStmt))
+            throw new IllTypedException("Missing return statement at end of block");
+
+        else {
+            final ReturnStmt returnStmt = (ReturnStmt)hopefullyReturnStmt;
+            final Type returnType = typeof(newEnv, returnStmt.exp);
+
+            if (!(resultType.equals(returnType)))
+                throw new IllTypedException("Type mismatch. Declared: " + resultType + " ,Actual type: " + returnType);
+
+            final FunctionDefinition functionDefinition = new FunctionDefinition(
+                    returnType,
+                    methodName,
+                    convertFormalParamList((FormalParamList)md.paramList),
+                    methodDecl.body,
+                    returnStmt);
+
+            return env.addFunction(methodName, functionDefinition);
+
+        }
+    }
+
 
     /**
      * attempts to typecheck multiple statements
@@ -304,9 +356,38 @@ public class Typechecker {
                 throw new IllTypedException("Cannot negate a non-boolean type " + expType);
         }
 
-        //TODO implement
         else if (e instanceof MethodInvocation) {
-            return null;
+            final MethodInvocation asInvoc = (MethodInvocation) e;
+            final List<Exp> argList = ((ArgumentList)asInvoc.argList).expList;
+
+            if (asInvoc.exp instanceof IdentifierLiteral) {
+                final IdentifierLiteral methodIdentifier = (IdentifierLiteral)asInvoc.exp;
+
+                //this throws an exception of function isnt in scope
+                final FunctionDefinition methodDef = env.lookupFunction(methodIdentifier.name);
+                final Type returnType = methodDef.returnType;
+
+                if (methodDef.formalParams.size() != argList.size())
+                    throw new IllTypedException("Wrong number of params in method call");
+
+                //compare called method params to definition
+                for (int i = 0; i < methodDef.formalParams.size(); i++) {
+                    final Type paramType = typeof(env, argList.get(i));
+                    final Type definedParamType = methodDef.formalParams.get(i).theType;
+
+                    if (paramType != definedParamType)
+                        throw new IllTypedException("Type mismatch in params of methodcall: " +
+                                argList.get(i) +  "is not of type " + definedParamType);
+                }
+
+                return returnType;
+
+            } else if (asInvoc.exp instanceof FieldAccessExp) {
+                return null;
+
+            } else {
+                throw new IllTypedException("Not a valid method call: " + e);
+            }
         }
         else if (e instanceof FieldAccessExp) {
             final FieldAccessExp asField = (FieldAccessExp)e;
@@ -317,8 +398,13 @@ public class Typechecker {
                 final TypeEnvironment tau = typecheckClass(env, getClass(((IdentifierLiteral)asClass.className).name));
                 return tau.lookupVariable(id.name);
             }
-
-            return null;
+            else if (asField.left instanceof MethodInvocation) {
+                //TODO finish
+                return null;
+            }
+            else {
+                throw new IllTypedException("Not a valid field access" + e);
+            }
 
         }
 
@@ -365,7 +451,7 @@ public class Typechecker {
             final Tokenizer tokenizer = new Tokenizer(tokenizerInput);
             final Parser parser = new Parser(tokenizer.tokenize());
             final List<Decl> parsed = parser.parseProgram();
-            final Typechecker typechecker = new Typechecker(parsed, null);
+            final Typechecker typechecker = new Typechecker(parsed);
             typechecker.typecheckProgram();
 
             System.out.println(parsed);
