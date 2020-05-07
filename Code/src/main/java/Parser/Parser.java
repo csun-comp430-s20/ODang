@@ -521,7 +521,7 @@ public class Parser {
      * @throws ParseException
      */
     private final ParseResult<Decl> parseMethodDeclarator(final int startPos) throws ParseException {
-        final ParseResult<Exp> identifier = parsePrimary(startPos);
+        final ParseResult<Exp> identifier = parseLiteral(startPos);
         checkTokenIs(identifier.nextPos, new LeftParenToken());
         final ParseResult<FormalParamList> paramList = parseFormalParamList(identifier.nextPos + 1);
         checkTokenIs(paramList.nextPos, new RightParenToken());
