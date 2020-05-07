@@ -15,10 +15,7 @@ import Typechecker.Types.*;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.HashMap;
+import java.util.*;
 
 import Typechecker.Types.IntType;
 
@@ -145,10 +142,24 @@ public class Typechecker {
      * @throws IllTypedException
      */
 
-    public TypeEnvironment typecheckClass(final TypeEnvironment env, final ClassDecl classDecl) {
-        return null;
+    public TypeEnvironment typecheckClass(final TypeEnvironment env, final ClassDecl classDecl) throws IllTypedException {
+        if (!(classDecl.extendsClass == null)) {
+
+            final ClassType superClassType = (ClassType)convertParserType(classDecl.extendsClass);
+            final ClassDecl superClass = getClass(superClassType.className);
+            final TypeEnvironment newEnv = typecheckClass(env, superClass);
+
+            return typecheckClassBody(newEnv, (ClassBodyDecs)classDecl.classBody);
+
+        }
+        else {
+            return typecheckClassBody(env, (ClassBodyDecs)classDecl.classBody);
+        }
     }
 
+    public TypeEnvironment typecheckClassBody(final TypeEnvironment env, final ClassBodyDecs classBody) {
+        return null;
+    }
 
     public TypeEnvironment typecheckMethod(final TypeEnvironment env, final MethodDecl methodDecl) throws IllTypedException {
 
@@ -171,7 +182,7 @@ public class Typechecker {
             final Type returnType = typeof(newEnv, returnStmt.exp);
 
             if (!(resultType.equals(returnType)))
-                throw new IllTypedException("Type mismatch. Declared: " + resultType + " ,Actual type: " + returnType);
+                throw new IllTypedException("Type mismatch. Declared: " + resultType + ", Actual type: " + returnType);
 
             final FunctionDefinition functionDefinition = new FunctionDefinition(
                     returnType,
