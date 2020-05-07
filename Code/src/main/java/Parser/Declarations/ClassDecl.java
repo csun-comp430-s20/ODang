@@ -30,7 +30,8 @@ public class ClassDecl implements Decl {
     }
 
     public String toString() {
-        return String.format(this.getClass().getSimpleName() + " {" + identifier +
+        final String extendsString = (extendsClass == null) ? "" : " extends " + extendsClass + " ";
+        return String.format(this.getClass().getSimpleName() + " " + identifier + extendsString + " {" +
                 " " + classBody + "}");
     }
 }

@@ -174,8 +174,7 @@ public class Parser {
                     classBody.nextPos);
         }
         //<super>
-        else {
-            checkTokenIs(identifier.nextPos, new ExtendsToken());
+        else if (readToken(identifier.nextPos) instanceof ExtendsToken){
             final ParseResult<ParserType> classType = parseType(identifier.nextPos + 1);
             if (!(classType.result instanceof ClassParserType))
                 throw new ParseException("Invalid class type: " + classType.result);
@@ -186,6 +185,9 @@ public class Parser {
                     classBody.result),
                     classBody.nextPos);
 
+        }
+        else {
+            throw new ParseException("Invalid form of class definition");
         }
     }
 
@@ -521,7 +523,7 @@ public class Parser {
      * @throws ParseException
      */
     private final ParseResult<Decl> parseMethodDeclarator(final int startPos) throws ParseException {
-        final ParseResult<Exp> identifier = parsePrimary(startPos);
+        final ParseResult<Exp> identifier = parseLiteral(startPos);
         checkTokenIs(identifier.nextPos, new LeftParenToken());
         final ParseResult<FormalParamList> paramList = parseFormalParamList(identifier.nextPos + 1);
         checkTokenIs(paramList.nextPos, new RightParenToken());

@@ -7,9 +7,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class TypeEnvironment {
-    public final ImmutableMap<String,FunctionDefinition> functions;
-    public final ImmutableMap<String, Type> variables;
-    public final String thisClass;
+    private final ImmutableMap<String,FunctionDefinition> functions;
+    private final ImmutableMap<String, Type> variables;
+    private final String thisClass;
 
     public TypeEnvironment(final ImmutableMap<String, FunctionDefinition> functions,
                            final ImmutableMap<String, Type> variables,
@@ -80,6 +80,13 @@ public class TypeEnvironment {
 
     public ImmutableMap<String, FunctionDefinition> getFunctions() {
         return functions;
+    }
+
+    public String getClassName() throws IllTypedException {
+        if (thisClass == null)
+            throw new IllTypedException("No class associated to this environment");
+        else
+            return thisClass;
     }
 
 }

@@ -15,17 +15,12 @@ import Typechecker.Types.*;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.HashMap;
+import java.util.*;
 
 import Typechecker.Types.IntType;
 
 public class Typechecker {
 
-    private final Map<String, FunctionDefinition> functionDefinitions;
-    public final List<FunctionDefinition> programFunctions;
     public final List<Decl> program;
     public final Map<String, ClassDecl> classes;
     public final TypeEnvironment env;
@@ -37,7 +32,7 @@ public class Typechecker {
      * @param program a list of class declarations
      * @throws IllTypedException
      */
-    public Typechecker(final List<Decl> program, final List<FunctionDefinition> programFunctions) throws IllTypedException {
+    public Typechecker(final List<Decl> program) throws IllTypedException {
         this.program = program;
         this.env = new TypeEnvironment(null, null, null);
         classes = new HashMap<String, ClassDecl>();
@@ -52,16 +47,6 @@ public class Typechecker {
             classes.put(className.name, curClassDecl);
         }
 
-        functionDefinitions = new HashMap<String, FunctionDefinition>();
-        this.programFunctions = programFunctions;
-        for (final FunctionDefinition function: programFunctions) {
-            if (!functionDefinitions.containsKey(function.name)) {
-                functionDefinitions.put(function.name, function);
-            } else {
-                throw new IllTypedException("Duplicate function name: " + function.name);
-            }
-        }
-
     }
 
     /**
@@ -71,8 +56,7 @@ public class Typechecker {
         this.env = null;
         this.program = null;
         this.classes = new HashMap<String, ClassDecl>();
-        this.programFunctions = null;
-        this.functionDefinitions = null;
+
     }
 
     public static class Pair<U, V> {
@@ -117,11 +101,33 @@ public class Typechecker {
         else throw new IllTypedException("Not a valid Parser.Type to convert: " + type);
     }
 
+    final static List<FormalParameter> convertFormalParamList(final FormalParamList list) throws IllTypedException {
+        if (list.declList.isEmpty())
+            return new ArrayList<>();
+        else {
+            final List<FormalParameter> formalParameterList = new ArrayList<>();
+            for (final Decl decl : list.declList) {
+                final FormalParam parserParam = (FormalParam)decl;
+                final Type paramType = convertParserType(parserParam.paramParserType);
+                final String paramName = ((IdentifierLiteral)parserParam.paramIdentifier).name;
+                formalParameterList.add(new FormalParameter(paramType, paramName));
+            }
+            return formalParameterList;
+        }
+    }
+
     public ClassDecl getClass(final String className) throws IllTypedException {
         final ClassDecl result = classes.get(className);
         if (result == null)
             throw new IllTypedException("No such class defined: " + className);
         else return result;
+    }
+
+    public static TypeEnvironment sameEnvNewClassName(final TypeEnvironment env, final String newName) {
+        return new TypeEnvironment(
+                env.getFunctions(),
+                env.getVariables(),
+                newName);
     }
 
     public static TypeEnvironment createEmptyTypeEnvironment() {
@@ -131,10 +137,6 @@ public class Typechecker {
     public void typecheckProgram() throws IllTypedException {
         for (final Decl classDecl : program) {
             typecheckClass(createEmptyTypeEnvironment(), (ClassDecl)classDecl);
-        }
-
-        for (final FunctionDefinition function: programFunctions) {
-            typecheckFunction(createEmptyTypeEnvironment(), function);
         }
     }
 
@@ -146,134 +148,122 @@ public class Typechecker {
      * @return TypeEnvironment containing all mappings of functions and variables
      * @throws IllTypedException
      */
+
     public TypeEnvironment typecheckClass(final TypeEnvironment env, final ClassDecl classDecl) throws IllTypedException {
 
-        final IdentifierLiteral classIdentifier = (IdentifierLiteral) classDecl.identifier;
-        TypeEnvironment newEnv = new TypeEnvironment(env.getFunctions(), env.getVariables(), classIdentifier.name);
-        if (classDecl.extendsClass == null)
-            newEnv = typecheckDecl(newEnv, classDecl.classBody);
+        final String className = ((IdentifierLiteral)classDecl.identifier).name;
+        final TypeEnvironment envWithClass = new TypeEnvironment(
+                env.getFunctions(),
+                env.getVariables(),
+                className);
 
-        //if classDecl has a superclass, add methods and variables from superclass to env
-        else {
-            final ClassParserType type = (ClassParserType) classDecl.extendsClass;
-            final ClassDecl superClass = getClass(((IdentifierLiteral)type.className).name);
-            final TypeEnvironment superClassEnv = typecheckClass(new TypeEnvironment(
-                    null, null, ((IdentifierLiteral)superClass.identifier).name), superClass);
+        if (!(classDecl.extendsClass == null)) {
+            final ClassType superClassType = (ClassType)convertParserType(classDecl.extendsClass);
+            final ClassDecl superClass = getClass(superClassType.className);
+            final TypeEnvironment newEnv = typecheckClass(envWithClass, superClass);
 
-            newEnv = typecheckClass(superClassEnv, classDecl);
+            return typecheckClassBodyDecs(
+                    sameEnvNewClassName(newEnv, className),
+                    (ClassBodyDecs)classDecl.classBody);
+
         }
-
-        return newEnv;
+        else {
+            return typecheckClassBodyDecs(envWithClass, (ClassBodyDecs)classDecl.classBody);
+        }
     }
 
-    public TypeEnvironment typecheckDecl(TypeEnvironment env, final Decl d) throws IllTypedException {
-
-         if (d instanceof ClassBodyDecs) {
-            final ClassBodyDecs classBodyDecs = (ClassBodyDecs)d;
-            for (final Decl classBody: classBodyDecs.classBodyDecs) {
-                env = typecheckDecl(env, classBody);
-            }
-            return env;
+    public TypeEnvironment typecheckClassBodyDecs(final TypeEnvironment env, final ClassBodyDecs classBody) throws IllTypedException {
+        TypeEnvironment updatedEnv = env;
+        for (final Decl decl : classBody.classBodyDecs) {
+            updatedEnv = typecheckClassBodyDecl(updatedEnv, decl);
         }
+        return updatedEnv;
+    }
 
-        else if (d instanceof ConstructorDecl) {
+    public TypeEnvironment typecheckClassBodyDecl (final TypeEnvironment env, final Decl d) throws IllTypedException {
+
+        if (d instanceof ConstructorDecl) {
             final ConstructorDecl constructorDecl = (ConstructorDecl)d;
-            final ConstructorDeclarator constructorDeclarator = (ConstructorDeclarator) constructorDecl.constructorDeclarator;
-            final IdentifierLiteral identifier = (IdentifierLiteral)constructorDeclarator.identifier;
+            final ConstructorDeclarator constrDeclarator = (ConstructorDeclarator)constructorDecl.constructorDeclarator;
+            final String constructorName = ((IdentifierLiteral)constrDeclarator.identifier).name;
 
-            if (classes.containsKey(identifier.name)) {
-                return typecheckDecl(env, constructorDecl.constructorBody);
-            }
+            if (!constructorName.equals(env.getClassName()))
+                throw new IllTypedException("Constructor must have the same name as the class");
 
-            else {
-                throw new IllTypedException("Constructor naming mismatch for class: " + identifier.name);
-            }
+            return null;
         }
 
         else if (d instanceof FieldDecl) {
-            TypeEnvironment newEnv = env;
+            TypeEnvironment updatedEnv = env;
             final FieldDecl fieldDecl = (FieldDecl)d;
-            final Type declaredType = convertParserType(fieldDecl.parserType);
-            final VarDeclaratorList varList = (VarDeclaratorList) fieldDecl.varDeclarators;
+            final Type fieldType = convertParserType(fieldDecl.parserType);
+            final VarDeclaratorList varList = (VarDeclaratorList)fieldDecl.varDeclarators;
+
             for (final Decl decl : varList.varDeclList) {
                 final VarDeclarator varDec = (VarDeclarator)decl;
-                final String identifierName = ((IdentifierLiteral)varDec.identifier).name;
-                if (!(varDec.exp == null)){
-                    newEnv = env.addVariable(identifierName, declaredType);
-                } else {
-                    final Type actualType = typeof(env, varDec.exp);
-                    if (actualType.equals(declaredType))
-                        newEnv = env.addVariable(identifierName, declaredType);
-                    else
-                        throw new IllTypedException("Expression of type: " + actualType + 
-                                "cannot be assigned to a variable with type: " + declaredType);
+                final IdentifierLiteral identifier = (IdentifierLiteral) varDec.identifier;
+                if (varDec.exp == null) {
+                    updatedEnv.addVariable(identifier.name, fieldType);
+                }
+                else {
+                    final Type actualType = typeof(updatedEnv, varDec.exp);
+                    if (!(fieldType.equals(actualType)))
+                        throw new IllTypedException("Field declared " + fieldDecl + ", cannot assign " + actualType);
+                    else {
+                        System.out.println(fieldType);
+                        return updatedEnv.addVariable(identifier.name, fieldType);
+                    }
                 }
             }
-            return newEnv;
-         }
+            return updatedEnv;
+        }
 
         else if (d instanceof MethodDecl) {
-
-            //have to cast all values to their respective classes, a bit messy
-            final MethodDecl methodDecl = (MethodDecl)d;
-            final MethodHeader methodHeader = (MethodHeader)methodDecl.header;
-            final Type resultType = convertParserType(methodHeader.resultParserType);
-
-            final MethodDeclarator methodDeclarator = (MethodDeclarator)methodHeader.methodDeclarator;
-            final IdentifierLiteral identifier = (IdentifierLiteral)methodDeclarator.identifier;
-
-            //converting a Parser.FormalParamList to a List of Typechecker.FormalParameter
-            final FormalParamList parsedParamList = (FormalParamList)methodDeclarator.paramList;
-
-            final List<FormalParameter> formalParams = new ArrayList<>();
-            for (final Decl parsedFormalParam : parsedParamList.declList) {
-                final FormalParam formalParam = (FormalParam) parsedFormalParam;
-                final Type paramType = convertParserType(formalParam.paramParserType);
-                final IdentifierLiteral paramName = (IdentifierLiteral)formalParam.paramIdentifier;
-                formalParams.add(new FormalParameter(paramType, paramName.name));
-            }
-
-            final String functionName = new String(identifier.name);
-            //TODO what is the returnExp? put as null for now
-            final FunctionDefinition funcDef = new FunctionDefinition(
-                    resultType,
-                    functionName,
-                    formalParams,
-                    methodDecl.body,
-                    null);
-
-
-
-            return env.addFunction(functionName, funcDef);
-         }
+            final MethodDecl methodDecl = (MethodDecl) d;
+            return typecheckMethod(env, methodDecl);
+        }
 
         else {
             assert(false);
-            throw new IllTypedException("Unrecognized declaration: " + d.toString());
+            throw new IllTypedException("Not a valid class body declaration");
         }
-    }
-    
 
-    /**
-     * attempts to typecheck a function
-     * @param function the function definition to typecheck
-     * @return void
-     * @throws IllTypedException unrecognized expression
-     */
-    public void typecheckFunction(TypeEnvironment env, final FunctionDefinition function) throws IllTypedException {
-        for (final FormalParameter formalParam: function.formalParams) {
-            if (!env.containsVariable(formalParam.theVariable)) {
-                env = env.addVariable(formalParam.theVariable, formalParam.theType);
-            } else {
-                throw new IllTypedException("Duplicate formal parameter name");
-            }
-        }
-        final TypeEnvironment finalEnv = typecheckStmts(env, false, function.body);
-        final Type actualReturnType = typeof(finalEnv, function.returnStmt.exp);
-        if (!actualReturnType.equals(function.returnType)) {
-            throw new IllTypedException("return type mismatch");
+    }
+    public TypeEnvironment typecheckMethod(final TypeEnvironment env, final MethodDecl methodDecl) throws IllTypedException {
+
+        final MethodHeader mh = (MethodHeader)methodDecl.header;
+        final Type resultType = convertParserType(mh.resultParserType);
+        final MethodDeclarator md = (MethodDeclarator)mh.methodDeclarator;
+        final String methodName = ((IdentifierLiteral)md.identifier).name;
+
+        final BlockStmt body = (BlockStmt)methodDecl.body;
+
+        final Stmt hopefullyReturnStmt = body.block.get(body.block.size());
+
+        final TypeEnvironment newEnv = typecheckStmts(env, false, body);
+
+        if (!(hopefullyReturnStmt instanceof ReturnStmt))
+            throw new IllTypedException("Missing return statement at end of block");
+
+        else {
+            final ReturnStmt returnStmt = (ReturnStmt)hopefullyReturnStmt;
+            final Type returnType = typeof(newEnv, returnStmt.exp);
+
+            if (!(resultType.equals(returnType)))
+                throw new IllTypedException("Type mismatch. Declared: " + resultType + ", Actual type: " + returnType);
+
+            final FunctionDefinition functionDefinition = new FunctionDefinition(
+                    returnType,
+                    methodName,
+                    convertFormalParamList((FormalParamList)md.paramList),
+                    methodDecl.body,
+                    returnStmt);
+
+            return env.addFunction(methodName, functionDefinition);
+
         }
     }
+
 
     /**
      * attempts to typecheck multiple statements
@@ -372,8 +362,7 @@ public class Typechecker {
             final Type right = typeof(env, asBOP.right);
 
             //assignment
-            switch(asBOP.op)
-            {
+            switch(asBOP.op) {
                 case "=":
                 case "-=":
                 case "+=":
@@ -382,46 +371,37 @@ public class Typechecker {
                     if(!env.containsVariable(asID.name))
                         throw new IllTypedException("Variable not in scope: " + asID.name);
             
-                    if(left.equals(right))
-                    {
+                    if(left.equals(right)) {
                         return left;
-                    }
-                    else
+                    } else
                         throw new IllTypedException("Type mismatch: type " + right + "cannot be assigned to type " + left);
                 case "+":
                 case "-":
                 case "*":
                 case "/":
-                    if(left instanceof IntType && right instanceof IntType)
-                    {
+                    if(left instanceof IntType && right instanceof IntType) {
                         return new IntType();
                     }
-                    else
-                    {
+                    else {
                         throw new IllTypedException("Operator " + asBOP.op + " cannot be applied to " + left + ", " + right);
                     }
                 case "<":
                 case ">":
-                    if(left instanceof IntType && right instanceof IntType)
-                    {
+                    if(left instanceof IntType && right instanceof IntType) {
                         return new BoolType();
                     }
-                    else
-                    {
+                    else {
                         throw new IllTypedException("Operator " + asBOP.op + " cannot be applied to " + left + ", " + right);
                     }
                 case "!=":
                 case "==":
-                    if(left instanceof IntType && right instanceof IntType)
-                    {
+                    if(left instanceof IntType && right instanceof IntType) {
                         return new BoolType();
                     }
-                    if(left instanceof BoolType && right instanceof BoolType)
-                    {
+                    if(left instanceof BoolType && right instanceof BoolType) {
                         return new BoolType();
                     }
-                    else
-                    {
+                    else {
                         throw new IllTypedException("Operator " + asBOP.op + " cannot be applied to " + left + ", " + right);
                     }
                 default:
@@ -454,25 +434,59 @@ public class Typechecker {
             else
                 throw new IllTypedException("Cannot negate a non-boolean type " + expType);
         }
+
+        else if (e instanceof MethodInvocation) {
+            final MethodInvocation asInvoc = (MethodInvocation) e;
+            final List<Exp> argList = ((ArgumentList)asInvoc.argList).expList;
+
+            if (asInvoc.exp instanceof IdentifierLiteral) {
+                final IdentifierLiteral methodIdentifier = (IdentifierLiteral)asInvoc.exp;
+
+                //this throws an exception of function isnt in scope
+                final FunctionDefinition methodDef = env.lookupFunction(methodIdentifier.name);
+                final Type returnType = methodDef.returnType;
+
+                if (methodDef.formalParams.size() != argList.size())
+                    throw new IllTypedException("Wrong number of params in method call");
+
+                //compare called method params to definition
+                for (int i = 0; i < methodDef.formalParams.size(); i++) {
+                    final Type paramType = typeof(env, argList.get(i));
+                    final Type definedParamType = methodDef.formalParams.get(i).theType;
+
+                    if (paramType != definedParamType)
+                        throw new IllTypedException("Type mismatch in params of methodcall: " +
+                                argList.get(i) +  "is not of type " + definedParamType);
+                }
+
+                return returnType;
+
+            } else if (asInvoc.exp instanceof FieldAccessExp) {
+                return null;
+
+            } else {
+                throw new IllTypedException("Not a valid method call: " + e);
+            }
+        }
         else if (e instanceof FieldAccessExp) {
             final FieldAccessExp asField = (FieldAccessExp)e;
-            //TODO need to consider multiple dots, i.e. foo.apple.cow()
-            if (classes.containsKey(asField.left.toString())) {
-                final Type leftType = typeof(env, asField.left);
-                if (functionDefinitions.containsKey(asField.right.toString())) {
-                    final Type rightType = typeof(env, asField.right);
-                    return rightType;
-                }
+            final IdentifierLiteral id = (IdentifierLiteral)asField.right;
+
+            if (asField.left instanceof ClassInstanceExp) {
+                final ClassInstanceExp asClass = (ClassInstanceExp) asField.left;
+                final TypeEnvironment tau = typecheckClass(env, getClass(((IdentifierLiteral)asClass.className).name));
+                return tau.lookupVariable(id.name);
             }
-            if (asField.left instanceof ThisExp){
-                //TODO in case of this.___
+            else if (asField.left instanceof MethodInvocation) {
+                //TODO finish
+                return null;
             }
-            if (asField.left instanceof SuperExp){
-                //TODO in case of super.___
+            else {
+                throw new IllTypedException("Not a valid field access" + e);
             }
 
-            return null;
         }
+
         else if (e instanceof IntegerLiteral) {
             return new IntType();
         }
@@ -516,7 +530,7 @@ public class Typechecker {
             final Tokenizer tokenizer = new Tokenizer(tokenizerInput);
             final Parser parser = new Parser(tokenizer.tokenize());
             final List<Decl> parsed = parser.parseProgram();
-            final Typechecker typechecker = new Typechecker(parsed, null);
+            final Typechecker typechecker = new Typechecker(parsed);
             typechecker.typecheckProgram();
 
             System.out.println(parsed);
