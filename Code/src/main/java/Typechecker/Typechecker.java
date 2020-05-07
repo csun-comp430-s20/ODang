@@ -123,6 +123,13 @@ public class Typechecker {
         else return result;
     }
 
+    public static TypeEnvironment sameEnvNewClassName(final TypeEnvironment env, final String newName) {
+        return new TypeEnvironment(
+                env.getFunctions(),
+                env.getVariables(),
+                newName);
+    }
+
     public static TypeEnvironment createEmptyTypeEnvironment() {
         return new TypeEnvironment(null, null, null);
     }
@@ -143,24 +150,85 @@ public class Typechecker {
      */
 
     public TypeEnvironment typecheckClass(final TypeEnvironment env, final ClassDecl classDecl) throws IllTypedException {
-        if (!(classDecl.extendsClass == null)) {
 
+        final String className = ((IdentifierLiteral)classDecl.identifier).name;
+        final TypeEnvironment envWithClass = new TypeEnvironment(
+                env.getFunctions(),
+                env.getVariables(),
+                className);
+
+        if (!(classDecl.extendsClass == null)) {
             final ClassType superClassType = (ClassType)convertParserType(classDecl.extendsClass);
             final ClassDecl superClass = getClass(superClassType.className);
-            final TypeEnvironment newEnv = typecheckClass(env, superClass);
+            final TypeEnvironment newEnv = typecheckClass(envWithClass, superClass);
 
-            return typecheckClassBody(newEnv, (ClassBodyDecs)classDecl.classBody);
+            return typecheckClassBodyDecs(
+                    sameEnvNewClassName(newEnv, className),
+                    (ClassBodyDecs)classDecl.classBody);
 
         }
         else {
-            return typecheckClassBody(env, (ClassBodyDecs)classDecl.classBody);
+            return typecheckClassBodyDecs(envWithClass, (ClassBodyDecs)classDecl.classBody);
         }
     }
 
-    public TypeEnvironment typecheckClassBody(final TypeEnvironment env, final ClassBodyDecs classBody) {
-        return null;
+    public TypeEnvironment typecheckClassBodyDecs(final TypeEnvironment env, final ClassBodyDecs classBody) throws IllTypedException {
+        TypeEnvironment updatedEnv = env;
+        for (final Decl decl : classBody.classBodyDecs) {
+            updatedEnv = typecheckClassBodyDecl(updatedEnv, decl);
+        }
+        return updatedEnv;
     }
 
+    public TypeEnvironment typecheckClassBodyDecl (final TypeEnvironment env, final Decl d) throws IllTypedException {
+
+        if (d instanceof ConstructorDecl) {
+            final ConstructorDecl constructorDecl = (ConstructorDecl)d;
+            final ConstructorDeclarator constrDeclarator = (ConstructorDeclarator)constructorDecl.constructorDeclarator;
+            final String constructorName = ((IdentifierLiteral)constrDeclarator.identifier).name;
+
+            if (!constructorName.equals(env.getClassName()))
+                throw new IllTypedException("Constructor must have the same name as the class");
+
+            return null;
+        }
+
+        else if (d instanceof FieldDecl) {
+            TypeEnvironment updatedEnv = env;
+            final FieldDecl fieldDecl = (FieldDecl)d;
+            final Type fieldType = convertParserType(fieldDecl.parserType);
+            final VarDeclaratorList varList = (VarDeclaratorList)fieldDecl.varDeclarators;
+
+            for (final Decl decl : varList.varDeclList) {
+                final VarDeclarator varDec = (VarDeclarator)decl;
+                final IdentifierLiteral identifier = (IdentifierLiteral) varDec.identifier;
+                if (varDec.exp == null) {
+                    updatedEnv.addVariable(identifier.name, fieldType);
+                }
+                else {
+                    final Type actualType = typeof(updatedEnv, varDec.exp);
+                    if (!(fieldType.equals(actualType)))
+                        throw new IllTypedException("Field declared " + fieldDecl + ", cannot assign " + actualType);
+                    else {
+                        System.out.println(fieldType);
+                        return updatedEnv.addVariable(identifier.name, fieldType);
+                    }
+                }
+            }
+            return updatedEnv;
+        }
+
+        else if (d instanceof MethodDecl) {
+            final MethodDecl methodDecl = (MethodDecl) d;
+            return typecheckMethod(env, methodDecl);
+        }
+
+        else {
+            assert(false);
+            throw new IllTypedException("Not a valid class body declaration");
+        }
+
+    }
     public TypeEnvironment typecheckMethod(final TypeEnvironment env, final MethodDecl methodDecl) throws IllTypedException {
 
         final MethodHeader mh = (MethodHeader)methodDecl.header;
