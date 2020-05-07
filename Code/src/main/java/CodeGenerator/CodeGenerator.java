@@ -16,6 +16,16 @@ public class CodeGenerator  {
         this.AST = AST;
     }
 
+    public String generateExp(final String codeIn, final Exp e) throws CodeGeneratorException{
+        if ( e instanceof IntegerLiteral){
+            final IntegerLiteral asInt = (IntegerLiteral)e;
+            return codeOutput + Integer.toString(asInt.value);
+        }
+        else {
+            assert (false);
+            throw new CodeGeneratorException("Unrecognizable expression.");
+        }
+    }
 
     public static void main(String[] args) {
 
