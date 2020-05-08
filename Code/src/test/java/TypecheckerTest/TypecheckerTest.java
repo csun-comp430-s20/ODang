@@ -13,9 +13,7 @@ import Parser.Declarations.*;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.util.*;
 
-import com.google.common.collect.ImmutableMap;
 import org.junit.jupiter.api.*;
 
 public class TypecheckerTest {
@@ -27,6 +25,16 @@ public class TypecheckerTest {
         final Constructor<Typechecker> constructor = Typechecker.class.getDeclaredConstructor();
         constructor.setAccessible(true);
         return (constructor.newInstance().typeof(env, e));
+    }
+
+    public static TypeEnvironment typecheckClass(TypeEnvironment env, final ClassDecl decl) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException, IllTypedException {
+
+        if (env == null)
+            env = Typechecker.createEmptyTypeEnvironment();
+
+        final Constructor<Typechecker> constructor = Typechecker.class.getDeclaredConstructor();
+        constructor.setAccessible(true);
+        return (constructor.newInstance().typecheckClass(env, decl));
     }
 
     public static void assertTypechecksExp(TypeEnvironment env,
@@ -58,19 +66,19 @@ public class TypecheckerTest {
         assertTypechecksExp( null, new BoolType(), "true");
     }
     @Test
-    public void checkTypeOfIdentifierLiteralInt() {
+    public void checkTypeOfIdentifierLiteralInt() throws IllTypedException {
         TypeEnvironment env = new TypeEnvironment(null, null, null);
         TypeEnvironment newEnv = env.addVariable("foo", new IntType());
         assertTypechecksExp(newEnv, new IntType(), "foo");
     }
     @Test
-    public void checkTypeOfIdentifierLiteralBool() {
+    public void checkTypeOfIdentifierLiteralBool() throws IllTypedException {
         TypeEnvironment env = new TypeEnvironment(null, null, null);
         TypeEnvironment newEnv = env.addVariable("foo", new BoolType());
         assertTypechecksExp(newEnv, new BoolType(), "foo");
     }
     @Test
-    public void checkTypeOfIdentifierLiteralString() {
+    public void checkTypeOfIdentifierLiteralString() throws IllTypedException {
         TypeEnvironment env = new TypeEnvironment(null, null, null);
         TypeEnvironment newEnv = env.addVariable("foo", new StringType());
         assertTypechecksExp(newEnv, new StringType(), "foo");
@@ -262,24 +270,35 @@ public class TypecheckerTest {
         Assertions.assertThrows(IllTypedException.class, () -> typeof(null, PostDecrExp));
     }
     @Test
-    public void checkTypeOfAssignmentExpIdentifierInteger() {
+    public void checkTypeOfAssignmentExpIdentifierInteger() throws IllTypedException {
         TypeEnvironment env = new TypeEnvironment(null, null, null);
         TypeEnvironment newEnv = env.addVariable("foo", new IntType());
 
         assertTypechecksExp(newEnv, new IntType(), "foo = 2");
     }
     @Test
-    public void checkTypeOfAssignmentExpIdentifierBoolean() {
+    public void checkTypeOfAssignmentExpIdentifierBoolean() throws IllTypedException {
         TypeEnvironment env = new TypeEnvironment(null, null, null);
         TypeEnvironment newEnv = env.addVariable("foo", new BoolType());
 
         assertTypechecksExp(newEnv, new BoolType(), "foo = true");
     }
     @Test
-    public void checkTypeOfAssignmentExpIdentifierString() {
+    public void checkTypeOfAssignmentExpIdentifierString() throws IllTypedException {
         TypeEnvironment env = new TypeEnvironment(null, null, null);
         TypeEnvironment newEnv = env.addVariable("foo", new StringType());
 
         assertTypechecksExp(newEnv, new StringType(), "foo = \"testString\"");
     }
+
+    @Test
+    public void checkExceptionThrownSuperClassNotDefined() throws TokenizerException, ParseException {
+        final String testString = "class TestClass extends TestClass2 {}";
+        final Parser parser = new Parser(new Tokenizer(testString).tokenize());
+
+        final ClassDecl decl = (ClassDecl)parser.parseProgram().get(0);
+
+        Assertions.assertThrows(IllTypedException.class, () -> typecheckClass(null, decl));
+    }
+
 }

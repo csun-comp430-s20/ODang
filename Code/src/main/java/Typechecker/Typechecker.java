@@ -8,7 +8,7 @@ import Parser.Statements.*;
 import Parser.Literals.*;
 import Parser.Types.*;
 
-import Parser.Types.Void;
+import Parser.Types.ParserVoid;
 import Tokenizer.Tokenizer;
 import Typechecker.Types.*;
 
@@ -95,7 +95,7 @@ public class Typechecker {
             else
                 throw new IllTypedException("Not a valid primitive type to convert: " + type);
         }
-        else if (type instanceof Void)
+        else if (type instanceof ParserVoid)
             return new VoidType();
 
         else throw new IllTypedException("Not a valid Parser.Type to convert: " + type);
@@ -136,7 +136,7 @@ public class Typechecker {
 
     public void typecheckProgram() throws IllTypedException {
         for (final Decl classDecl : program) {
-            typecheckClass(createEmptyTypeEnvironment(), (ClassDecl)classDecl);
+            System.out.println(typecheckClass(createEmptyTypeEnvironment(), (ClassDecl)classDecl));
         }
     }
 
@@ -173,7 +173,12 @@ public class Typechecker {
     }
 
     public TypeEnvironment typecheckClassBodyDecs(final TypeEnvironment env, final ClassBodyDecs classBody) throws IllTypedException {
-        TypeEnvironment updatedEnv = env;
+
+        if (classBody == null)
+            return env;
+
+        TypeEnvironment updatedEnv = env.copy();
+
         for (final Decl decl : classBody.classBodyDecs) {
             updatedEnv = typecheckClassBodyDecl(updatedEnv, decl);
         }
@@ -194,7 +199,8 @@ public class Typechecker {
         }
 
         else if (d instanceof FieldDecl) {
-            TypeEnvironment updatedEnv = env;
+            TypeEnvironment updatedEnv = env.copy();
+
             final FieldDecl fieldDecl = (FieldDecl)d;
             final Type fieldType = convertParserType(fieldDecl.parserType);
             final VarDeclaratorList varList = (VarDeclaratorList)fieldDecl.varDeclarators;
@@ -203,15 +209,15 @@ public class Typechecker {
                 final VarDeclarator varDec = (VarDeclarator)decl;
                 final IdentifierLiteral identifier = (IdentifierLiteral) varDec.identifier;
                 if (varDec.exp == null) {
-                    updatedEnv.addVariable(identifier.name, fieldType);
+
+                    updatedEnv = updatedEnv.addVariable(identifier.name, fieldType);
                 }
                 else {
                     final Type actualType = typeof(updatedEnv, varDec.exp);
                     if (!(fieldType.equals(actualType)))
                         throw new IllTypedException("Field declared " + fieldDecl + ", cannot assign " + actualType);
                     else {
-                        System.out.println(fieldType);
-                        return updatedEnv.addVariable(identifier.name, fieldType);
+                        updatedEnv = updatedEnv.addVariable(identifier.name, fieldType);
                     }
                 }
             }
@@ -236,9 +242,9 @@ public class Typechecker {
         final MethodDeclarator md = (MethodDeclarator)mh.methodDeclarator;
         final String methodName = ((IdentifierLiteral)md.identifier).name;
 
-        final BlockStmt body = (BlockStmt)methodDecl.body;
+        final Block body = (Block)methodDecl.body;
 
-        final Stmt hopefullyReturnStmt = body.block.get(body.block.size());
+        final Stmt hopefullyReturnStmt = body.blockStmts.get(body.blockStmts.size()-1);
 
         final TypeEnvironment newEnv = typecheckStmts(env, false, body);
 
@@ -275,10 +281,10 @@ public class Typechecker {
      */
     public TypeEnvironment typecheckStmts(TypeEnvironment env,  final boolean breakOk,
                                                      final Stmt s) throws IllTypedException {
-        if (s instanceof BlockStmt) {
-            final BlockStmt asBlock = (BlockStmt)s;
+        if (s instanceof Block) {
+            final Block asBlock = (Block)s;
 
-            for (final Stmt stmt : asBlock.block)
+            for (final Stmt stmt : asBlock.blockStmts)
                 env = typecheckStmts(env, breakOk, stmt);
 
         }
@@ -501,7 +507,7 @@ public class Typechecker {
         }
         //have to check if the variable is in scope
         else if (e instanceof IdentifierLiteral) {
-            IdentifierLiteral asID = (IdentifierLiteral)e;
+            final IdentifierLiteral asID = (IdentifierLiteral)e;
             if (env.containsVariable(asID.name)) {
                 return env.lookupVariable(asID.name);
             } else {
@@ -531,10 +537,10 @@ public class Typechecker {
             final Parser parser = new Parser(tokenizer.tokenize());
             final List<Decl> parsed = parser.parseProgram();
             final Typechecker typechecker = new Typechecker(parsed);
-            typechecker.typecheckProgram();
 
             System.out.println(parsed);
 
+            typechecker.typecheckProgram();
 
         } catch (Exception e) {
             e.printStackTrace();
