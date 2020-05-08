@@ -16,33 +16,42 @@ public class CodeGenerator  {
         this.AST = AST;
     }
 
-    public String generateExp(final String codeIn, final Exp e) throws CodeGeneratorException{
 
-        if (e instanceof BooleanLiteral) {
+
+    public String generateExp(final Exp e) throws CodeGeneratorException{
+        if (e instanceof PreIncrDecrExp){
+            final PreIncrDecrExp asPre = (PreIncrDecrExp)e;
+            return asPre.preOp + generateExp(asPre.prefixExp);
+        }
+        else if (e instanceof PostIncrDecrExp){
+            final PostIncrDecrExp asPost = (PostIncrDecrExp)e;
+            return generateExp(asPost.postfixExp) + asPost.postOp;
+        }
+        else if (e instanceof BooleanLiteral) {
             final BooleanLiteral asBool = (BooleanLiteral)e;
-            return codeOutput + Boolean.toString(asBool.value);
+            return Boolean.toString(asBool.value);
         }
         else if (e instanceof IdentifierLiteral) {
             final IdentifierLiteral asId = (IdentifierLiteral)e;
-            return codeOutput + asId.name;
+            return asId.name;
         }
         else if ( e instanceof IntegerLiteral){
             final IntegerLiteral asInt = (IntegerLiteral)e;
-            return codeOutput + Integer.toString(asInt.value);
+            return Integer.toString(asInt.value);
         }
         else if (e instanceof NullLiteral){
             final NullLiteral asNull = (NullLiteral)e;
-            return codeOutput + "null";
+            return "null";
         }
         else if (e instanceof StringLiteral) {
             final StringLiteral asString = (StringLiteral)e;
-            return codeOutput + asString.name;
+            return asString.name;
         }
         else {
             assert (false);
             throw new CodeGeneratorException("Unrecognizable expression.");
         }
-    }
+    }//remember to add all the results to the overall string output in the end
 
     public static void main(String[] args) {
 

@@ -20,7 +20,7 @@ public class CodeGeneratorTest {
         try {
             final Parser parser = new Parser(new Tokenizer(received).tokenize());
             final Exp parsedExp = (parser.parseExp(0)).getResult();
-            Assertions.assertEquals(expected, new CodeGenerator(null).generateExp(received, parsedExp));
+            Assertions.assertEquals(expected, new CodeGenerator(null).generateExp(parsedExp));
         }catch (Exception e) {
             e.printStackTrace();
         }
@@ -50,5 +50,25 @@ public class CodeGeneratorTest {
     @Test
     public void checkGeneratesString() throws CodeGeneratorException{
         assertGenerateExpFromString("hello", "\"hello\"");
+    }
+
+    @Test
+    public void checkGeneratesPreIncrement() throws CodeGeneratorException{
+        assertGenerateExpFromString("++var", "++var");
+    }
+
+    @Test
+    public void checkGeneratesPreDecrement() throws CodeGeneratorException{
+        assertGenerateExpFromString("--foo", "--foo");
+    }
+
+    @Test
+    public void checkGeneratesPostIncrement() throws CodeGeneratorException{
+        assertGenerateExpFromString("bar++", "bar++");
+    }
+
+    @Test
+    public void checkGeneratesPostDecrement() throws CodeGeneratorException{
+        assertGenerateExpFromString("apple--", "apple--");
     }
 }
