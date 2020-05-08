@@ -340,11 +340,11 @@ public class Parser {
         if (readToken(startPos + 1) instanceof ThisToken ||
                 readToken(startPos + 1) instanceof SuperToken) {
             final ParseResult<Decl> explicitConstructorInvocation = parseExplicitConstructorInvocation(startPos + 1);
-            final ParseResult<Stmt> blockStmts = parseBlock(explicitConstructorInvocation.nextPos);
+            final ParseResult<List<Stmt>> blockStmts = parseBlockStmtHelper(explicitConstructorInvocation.nextPos);
             checkTokenIs(blockStmts.nextPos, new RightCurlyToken());
             return new ParseResult<Decl>(new ConstructorBody(
                     explicitConstructorInvocation.result,
-                    blockStmts.result), blockStmts.nextPos + 1);
+                    new Block(blockStmts.result)), blockStmts.nextPos + 1);
         }
         else {
             final ParseResult<Stmt> blockStmts = parseBlock(startPos + 1);
@@ -591,29 +591,7 @@ public class Parser {
         checkTokenIs(blockStmts.nextPos, new RightCurlyToken());
         return new ParseResult<Stmt>(new Block(blockStmts.result), blockStmts.nextPos + 1);
     }
-/*
-    /**
-     * attempts to parse the the statements in a block, assumes each Stmt separated by semi-colons
-     * @param startPos position in the token list
-     * @return ParseResult<Stmt> containing all statements in the block
-     * @throws ParseException
 
-    private ParseResult<List<Stmt>> parseBlockStmts(final int startPos) throws ParseException {
-        //empty block
-        if (readToken(startPos) instanceof RightCurlyToken) {
-            return new ParseResult<List<Stmt>>(new ArrayList<>(), startPos);
-        }
-        else {
-            final ParseResult<Stmt> firstStmt = parseBlockStmt(startPos);
-            Stmt resultBlockStmt = firstStmt.result;
-            final ParseResult<List<Stmt>> rest = parseBlockStmtHelper(firstStmt.nextPos);
-            for (final Stmt otherStmt : rest.result) {
-                resultBlockStmt = new BlockStmt(resultBlockStmt, otherStmt);
-            }
-            return new ParseResult<Stmt>(resultBlockStmt, rest.nextPos);
-        }
-    }
-*/
     /**
      * greedy method for parsing statements inside a block
      * @param startPos position in the list

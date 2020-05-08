@@ -195,7 +195,24 @@ public class Typechecker {
             if (!constructorName.equals(env.getClassName()))
                 throw new IllTypedException("Constructor must have the same name as the class");
 
-            return null;
+            final List<FormalParameter> formalParams = convertFormalParamList(constrDeclarator.paramList);
+
+            TypeEnvironment newEnv = env.copy();
+            if (!(formalParams.isEmpty())) {
+                for (final FormalParameter param : formalParams)
+                    newEnv = newEnv.addVariable(param.theVariable, param.theType);
+            }
+            final ConstructorBody body = (ConstructorBody) constructorDecl.constructorBody;
+
+            if (body.explConstrInvoc != null) {
+                return null;
+                //TODO implement super/this class constructor
+            }
+            else {
+                final Block blockStmts = (Block)body.blockStmts;
+                //TODO finish
+                return null;
+            }
         }
 
         else if (d instanceof FieldDecl) {
