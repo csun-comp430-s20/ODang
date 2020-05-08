@@ -9,6 +9,7 @@ import Tokenizer.*;
 import Tokenizer.Tokens.*;
 import CodeGenerator.*;
 
+import com.sun.tools.javac.jvm.Code;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Assertions;
 
@@ -27,7 +28,27 @@ public class CodeGeneratorTest {
     }
 
     @Test
+    public void checkGeneratesBoolean() throws CodeGeneratorException{
+        assertGenerateExpFromString("false", "false");
+    }
+
+    @Test
+    public void checkGeneratesIdentifier() throws CodeGeneratorException{
+        assertGenerateExpFromString("varName", "varName");
+    }
+
+    @Test
     public void checkGeneratesInteger() throws CodeGeneratorException{
         assertGenerateExpFromString("6", "6");
+    }
+
+    @Test
+    public void checkGeneratesNull() throws CodeGeneratorException{
+        assertGenerateExpFromString("null", "null");
+    }
+
+    @Test
+    public void checkGeneratesString() throws CodeGeneratorException{
+        assertGenerateExpFromString("hello", "\"hello\"");
     }
 }
