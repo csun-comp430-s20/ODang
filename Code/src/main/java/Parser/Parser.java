@@ -4,7 +4,6 @@ import Parser.Declarations.*;
 import Parser.Statements.*;
 import Parser.Expressions.*;
 import Parser.Literals.*;
-import Parser.Types.Void;
 import Tokenizer.Tokens.*;
 import Parser.Types.*;
 
@@ -341,14 +340,14 @@ public class Parser {
         if (readToken(startPos + 1) instanceof ThisToken ||
                 readToken(startPos + 1) instanceof SuperToken) {
             final ParseResult<Decl> explicitConstructorInvocation = parseExplicitConstructorInvocation(startPos + 1);
-            final ParseResult<Stmt> blockStmts = parseBlockStmts(explicitConstructorInvocation.nextPos);
+            final ParseResult<Stmt> blockStmts = parseBlock(explicitConstructorInvocation.nextPos);
             checkTokenIs(blockStmts.nextPos, new RightCurlyToken());
             return new ParseResult<Decl>(new ConstructorBody(
                     explicitConstructorInvocation.result,
                     blockStmts.result), blockStmts.nextPos + 1);
         }
         else {
-            final ParseResult<Stmt> blockStmts = parseBlockStmts(startPos + 1);
+            final ParseResult<Stmt> blockStmts = parseBlock(startPos + 1);
             checkTokenIs(blockStmts.nextPos, new RightCurlyToken());
             return new ParseResult<Decl>(new ConstructorBody(
                     null,
@@ -508,7 +507,7 @@ public class Parser {
             resultType = parseType(startPos);
         } catch (ParseException e) {
             checkTokenIs(startPos, new VoidToken());
-            resultType = new ParseResult<ParserType>(new Void(), startPos + 1);
+            resultType = new ParseResult<ParserType>(new ParserVoid(), startPos + 1);
         }
         final ParseResult<Decl> methodDeclarator = parseMethodDeclarator(resultType.nextPos);
         return new ParseResult<Decl>(new MethodHeader(
@@ -588,21 +587,21 @@ public class Parser {
      */
     private ParseResult<Stmt> parseBlock(final int startPos) throws ParseException {
         checkTokenIs(startPos, new LeftCurlyToken());
-        final ParseResult<Stmt> blockStmts = parseBlockStmts(startPos + 1);
+        final ParseResult<List<Stmt>> blockStmts = parseBlockStmtHelper(startPos + 1);
         checkTokenIs(blockStmts.nextPos, new RightCurlyToken());
-        return new ParseResult<Stmt>(blockStmts.result, blockStmts.nextPos + 1);
+        return new ParseResult<Stmt>(new Block(blockStmts.result), blockStmts.nextPos + 1);
     }
-
+/*
     /**
      * attempts to parse the the statements in a block, assumes each Stmt separated by semi-colons
      * @param startPos position in the token list
      * @return ParseResult<Stmt> containing all statements in the block
      * @throws ParseException
-     */
-    private ParseResult<Stmt> parseBlockStmts(final int startPos) throws ParseException {
+
+    private ParseResult<List<Stmt>> parseBlockStmts(final int startPos) throws ParseException {
         //empty block
         if (readToken(startPos) instanceof RightCurlyToken) {
-            return new ParseResult<Stmt>(null, startPos);
+            return new ParseResult<List<Stmt>>(new ArrayList<>(), startPos);
         }
         else {
             final ParseResult<Stmt> firstStmt = parseBlockStmt(startPos);
@@ -614,7 +613,7 @@ public class Parser {
             return new ParseResult<Stmt>(resultBlockStmt, rest.nextPos);
         }
     }
-
+*/
     /**
      * greedy method for parsing statements inside a block
      * @param startPos position in the list

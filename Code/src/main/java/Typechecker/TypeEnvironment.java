@@ -52,8 +52,11 @@ public class TypeEnvironment {
         return new TypeEnvironment(ImmutableMap.copyOf(newFunctions), variables, thisClass);
     }
 
-    public TypeEnvironment addVariable(final String variable, final Type type) {
+    public TypeEnvironment addVariable(final String variable, final Type type) throws IllTypedException {
         final Map<String, Type> newVariables = new HashMap<>(variables);
+        if (newVariables.containsKey(variable))
+            throw new IllTypedException("Variable already defined: " + variable);
+
         newVariables.put(variable, type);
         return new TypeEnvironment(functions, ImmutableMap.copyOf(newVariables), thisClass);
     }
@@ -74,6 +77,13 @@ public class TypeEnvironment {
         return functions.isEmpty();
     }
 
+    public TypeEnvironment copy() {
+        return new TypeEnvironment(
+                functions,
+                variables,
+                thisClass);
+    }
+
     public ImmutableMap<String, Type> getVariables() {
         return variables;
     }
@@ -89,4 +99,9 @@ public class TypeEnvironment {
             return thisClass;
     }
 
+    public String toString() {
+        return String.format("Class: " + thisClass +
+                "\nFunctions: " + functions +
+                "\nVariables: " + variables);
+    }
 }
