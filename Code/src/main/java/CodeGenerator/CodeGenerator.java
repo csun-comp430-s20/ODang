@@ -17,7 +17,13 @@ public class CodeGenerator  {
 
 
     public String generateExp(final Exp e) throws CodeGeneratorException{
-        if (e instanceof PreIncrDecrExp){
+        if (e instanceof BinaryOperatorExp){
+            final BinaryOperatorExp asBinop = (BinaryOperatorExp)e;
+            final String leftExp = generateExp(asBinop.left);
+            final String rightExp = generateExp(asBinop.right);
+            return leftExp + asBinop.op + rightExp;
+        }
+        else if (e instanceof PreIncrDecrExp){
             final PreIncrDecrExp asPre = (PreIncrDecrExp)e;
             return asPre.preOp + generateExp(asPre.prefixExp);
         }

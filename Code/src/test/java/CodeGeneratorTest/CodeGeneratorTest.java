@@ -70,4 +70,114 @@ public class CodeGeneratorTest {
     public void checkGeneratesPostDecrement() throws CodeGeneratorException{
         assertGenerateExpFromString("apple--", "apple--");
     }
+
+    @Test
+    public void checkGeneratesAddition() throws CodeGeneratorException{
+        assertGenerateExpFromString("2+3", "2+3");
+    }
+
+    @Test
+    public void checkGeneratesMultipleAdditions() throws CodeGeneratorException{
+        assertGenerateExpFromString("5+6+7+8", "5+6+7+8");
+    }
+
+    @Test
+    public void checkGeneratesSubtraction() throws CodeGeneratorException{
+        assertGenerateExpFromString("90-8", "90 - 8");
+    }
+
+    @Test
+    public void checkGeneratesMultipleSubtraction() throws CodeGeneratorException{
+        assertGenerateExpFromString("42-30-2-1", "42 - 30 - 2 - 1");
+    }
+
+    @Test
+    public void checkGeneratesMultiplication() throws CodeGeneratorException{
+        assertGenerateExpFromString("3*7", "3*7");
+    }
+
+    @Test
+    public void checkGeneratesMultipleMultiplications() throws CodeGeneratorException{
+        assertGenerateExpFromString("1*2*3*4*5", "1*2*3*4*5");
+    }
+
+    @Test
+    public void checkGeneratesDivision() throws CodeGeneratorException{
+        assertGenerateExpFromString("4/2", "4/2");
+    }
+
+    @Test
+    public void checkGeneratesMultipleDivisions() throws CodeGeneratorException{
+        assertGenerateExpFromString("10/5/1", "10/5/1");
+    }
+
+    @Test
+    public void checkGeneratesLessThan() throws CodeGeneratorException{
+        assertGenerateExpFromString("5<6", "5<6");
+    }
+
+    @Test
+    public void checkGeneratesMultipleLessThan() throws CodeGeneratorException{
+        assertGenerateExpFromString("9<10<14<22", "9<10<14<22");
+    }
+
+    @Test
+    public void checkGeneratesGreatThan() throws CodeGeneratorException{
+        assertGenerateExpFromString("10>9", "10>9");
+    }
+
+    @Test
+    public void checkGeneratesMultipleGreatThan() throws CodeGeneratorException{
+        assertGenerateExpFromString("33>20>10", "33>20>10");
+    }
+
+    @Test
+    public void checkGeneratesNotEqual() throws CodeGeneratorException{
+        assertGenerateExpFromString("55!=60", "55!=60");
+    }
+
+    @Test
+    public void checkGeneratesMultipleNotEqual() throws CodeGeneratorException{
+        assertGenerateExpFromString("3!=4!=5!=6", "3!=4!=5!=6");
+    }
+
+    @Test
+    public void checkGeneratesEqual() throws CodeGeneratorException{
+        assertGenerateExpFromString("5==5", "5==5");
+    }
+
+    @Test
+    public void checkGeneratesMultipleEqual() throws CodeGeneratorException{
+        assertGenerateExpFromString("10==10==10==10", "10==10==10==10");
+    }
+
+    @Test
+    public void checkGeneratesAssignment() throws CodeGeneratorException{
+        assertGenerateExpFromString("var=10", "var = 10");
+    }
+
+    @Test
+    public void checkGeneratesMultipleAssignment() throws CodeGeneratorException{
+        assertGenerateExpFromString("x=y=5", "x = y = 5");
+    }
+
+    @Test
+    public void checkGeneratesPlusAssignment() throws CodeGeneratorException{
+        assertGenerateExpFromString("z+=2", "z += 2");
+    }
+
+    @Test
+    public void checkGeneratesMultiplePlusAssignments() throws CodeGeneratorException{
+        assertGenerateExpFromString("a+=b+=7", "a += b += 7");
+    }
+
+    @Test
+    public void checkGeneratesSubstractAssignment() throws CodeGeneratorException{
+        assertGenerateExpFromString("pop-=5", "pop -= 5");
+    }
+
+    @Test
+    public void checkGeneratesMultipleSubtractAssignment() throws CodeGeneratorException{
+        assertGenerateExpFromString("d-=e-=f-=27", "d -= e -= f -= 27");
+    }
 }
