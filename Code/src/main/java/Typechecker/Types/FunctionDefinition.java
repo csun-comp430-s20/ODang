@@ -24,6 +24,19 @@ public class FunctionDefinition {
         this.returnStmt = returnStmt;
     }
 
+    public boolean equals(final Object other) {
+        if (other instanceof FunctionDefinition) {
+            final FunctionDefinition asFD = (FunctionDefinition) other;
+
+            return returnType.equals(asFD.returnType) &&
+                    name.equals(asFD.name) &&
+                    formalParams.equals(asFD.formalParams) &&
+                    body.equals(asFD.body) &&
+                    returnStmt.equals(asFD.returnStmt);
+        }
+        else return false;
+    }
+
     public int hashCode() {
         return returnType.hashCode() +
                 name.hashCode() +

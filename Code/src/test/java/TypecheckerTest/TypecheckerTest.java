@@ -505,7 +505,6 @@ public class TypecheckerTest {
                         new StringLiteral("bar"))));
     }
 
-
     @Test
     public void checkExceptionThrownTypeMismatchAssignmentMinusEqualsStringInt() {
         final Map<String, Type> mutableEnv = new HashMap<>();
@@ -531,7 +530,6 @@ public class TypecheckerTest {
                         new IdentifierLiteral("foo"),
                         new BooleanLiteral(true))));
     }
-
 
     @Test
     public void checkExceptionThrownSuperClassNotDefined() throws TokenizerException, ParseException {
