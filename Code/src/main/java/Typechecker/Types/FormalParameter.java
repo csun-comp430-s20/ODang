@@ -9,4 +9,12 @@ public class FormalParameter {
         this.theType = theType;
         this.theVariable = theVariable;
     }
+
+    public int hashCode() {
+        return theType.hashCode() + theVariable.hashCode();
+    }
+
+    public String toString() {
+        return String.format(theType + " " + theVariable);
+    }
 }

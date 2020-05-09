@@ -23,4 +23,14 @@ public class FunctionDefinition {
         this.body = body;
         this.returnStmt = returnStmt;
     }
+
+    public int hashCode() {
+        return returnType.hashCode() +
+                name.hashCode() +
+                formalParams.hashCode();
+    }
+
+    public String toString() {
+        return String.format(getClass().getSimpleName() + ": " +returnType + " " + name + formalParams);
+    }
 }

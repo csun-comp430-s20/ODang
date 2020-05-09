@@ -273,7 +273,8 @@ public class Typechecker {
             final Type returnType = typeof(newEnv, returnStmt.exp);
 
             if (!(resultType.equals(returnType)))
-                throw new IllTypedException("Type mismatch. Declared: " + resultType + ", Actual type: " + returnType);
+                throw new IllTypedException("Type mismatch in method " + methodName +
+                        ". Declared: " + resultType + ", Return type: " + returnType);
 
             final FunctionDefinition functionDefinition = new FunctionDefinition(
                     returnType,
@@ -320,7 +321,20 @@ public class Typechecker {
      */
     public TypeEnvironment typecheckStmt(final TypeEnvironment env, final boolean breakOk,
                                                      final Stmt s) throws IllTypedException {
-        if (s instanceof BreakStmt) {
+
+
+        if (s instanceof StmtExpr) {
+            final StmtExpr stmtExpr = (StmtExpr)s;
+            typeof(env, stmtExpr.exp);
+            return env;
+        }
+
+        else if (s instanceof PrintlnStmt) {
+            //TODO javascript can handle this, no need to typecheck I think
+            return env;
+        }
+
+        else if (s instanceof BreakStmt) {
             if (breakOk) {
                 return env;
             } else {
@@ -366,7 +380,7 @@ public class Typechecker {
         }
         else {
             assert(false);
-            throw new IllTypedException("Unrecognized statement");
+            throw new IllTypedException("Unrecognized statement: " + s);
         }
     }
 
