@@ -301,4 +301,67 @@ public class TypecheckerTest {
         Assertions.assertThrows(IllTypedException.class, () -> typecheckClass(null, decl));
     }
 
+    @Test
+    public void checkExceptionThrownWrongReturnTypeMethodIntBoolean() throws TokenizerException, ParseException {
+        final String testString = "class TestClass{int testMethod(boolean foo){return true;}}";
+        final Parser parser = new Parser(new Tokenizer(testString).tokenize());
+        final ClassDecl decl = (ClassDecl)parser.parseProgram().get(0);
+        Assertions.assertThrows(IllTypedException.class, () -> typecheckClass(null, decl));
+    }
+    @Test
+    public void checkExceptionThrownWrongReturnTypeMethodIntString() throws TokenizerException, ParseException {
+        final String testString = "class TestClass{int testMethod(boolean foo){return \"bar\";}}";
+        final Parser parser = new Parser(new Tokenizer(testString).tokenize());
+        final ClassDecl decl = (ClassDecl)parser.parseProgram().get(0);
+        Assertions.assertThrows(IllTypedException.class, () -> typecheckClass(null, decl));
+    }
+    @Test
+    public void checkExceptionThrownWrongReturnTypeMethodIntNull() throws TokenizerException, ParseException {
+        final String testString = "class TestClass{int testMethod(boolean foo){return null;}}";
+        final Parser parser = new Parser(new Tokenizer(testString).tokenize());
+        final ClassDecl decl = (ClassDecl)parser.parseProgram().get(0);
+        Assertions.assertThrows(IllTypedException.class, () -> typecheckClass(null, decl));
+    }
+    @Test
+    public void checkExceptionThrownWrongReturnTypeMethodBooleanInt() throws TokenizerException, ParseException {
+        final String testString = "class TestClass{boolean testMethod(boolean foo){return 2;}}";
+        final Parser parser = new Parser(new Tokenizer(testString).tokenize());
+        final ClassDecl decl = (ClassDecl)parser.parseProgram().get(0);
+        Assertions.assertThrows(IllTypedException.class, () -> typecheckClass(null, decl));
+    }
+    @Test
+    public void checkExceptionThrownWrongReturnTypeMethodBooleanString() throws TokenizerException, ParseException {
+        final String testString = "class TestClass{boolean testMethod(boolean foo){return \"foo\";}}";
+        final Parser parser = new Parser(new Tokenizer(testString).tokenize());
+        final ClassDecl decl = (ClassDecl)parser.parseProgram().get(0);
+        Assertions.assertThrows(IllTypedException.class, () -> typecheckClass(null, decl));
+    }
+    @Test
+    public void checkExceptionThrownWrongReturnTypeMethodBooleanNull() throws TokenizerException, ParseException {
+        final String testString = "class TestClass{boolean testMethod(boolean foo){return null;}}";
+        final Parser parser = new Parser(new Tokenizer(testString).tokenize());
+        final ClassDecl decl = (ClassDecl)parser.parseProgram().get(0);
+        Assertions.assertThrows(IllTypedException.class, () -> typecheckClass(null, decl));
+    }
+    @Test
+    public void checkExceptionThrownWrongReturnTypeMethodStringInt() throws TokenizerException, ParseException {
+        final String testString = "class TestClass{String testMethod(boolean foo){return 1;}}";
+        final Parser parser = new Parser(new Tokenizer(testString).tokenize());
+        final ClassDecl decl = (ClassDecl)parser.parseProgram().get(0);
+        Assertions.assertThrows(IllTypedException.class, () -> typecheckClass(null, decl));
+    }
+    @Test
+    public void checkExceptionThrownWrongReturnTypeMethodStringBoolean() throws TokenizerException, ParseException {
+        final String testString = "class TestClass{String testMethod(boolean foo){return false;}}";
+        final Parser parser = new Parser(new Tokenizer(testString).tokenize());
+        final ClassDecl decl = (ClassDecl)parser.parseProgram().get(0);
+        Assertions.assertThrows(IllTypedException.class, () -> typecheckClass(null, decl));
+    }
+    @Test
+    public void checkExceptionThrownWrongReturnTypeMethodStringNull() throws TokenizerException, ParseException {
+        final String testString = "class TestClass{String testMethod(boolean foo){return null;}}";
+        final Parser parser = new Parser(new Tokenizer(testString).tokenize());
+        final ClassDecl decl = (ClassDecl)parser.parseProgram().get(0);
+        Assertions.assertThrows(IllTypedException.class, () -> typecheckClass(null, decl));
+    }
 }
