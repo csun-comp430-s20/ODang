@@ -13,7 +13,10 @@ import Parser.Declarations.*;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.util.HashMap;
+import java.util.Map;
 
+import com.google.common.collect.ImmutableMap;
 import org.junit.jupiter.api.*;
 
 public class TypecheckerTest {
@@ -290,6 +293,245 @@ public class TypecheckerTest {
 
         assertTypechecksExp(newEnv, new StringType(), "foo = \"testString\"");
     }
+
+    @Test
+    public void checkExceptionThrownTypeMismatchAssignmentSingleEqualsBoolInt() {
+        final Map<String, Type> mutableEnv = new HashMap<>();
+        mutableEnv.put("foo", new BoolType());
+        final ImmutableMap<String, Type> tempEnv = ImmutableMap.copyOf(mutableEnv);
+        final TypeEnvironment env = new TypeEnvironment(null, tempEnv, null);
+
+        Assertions.assertThrows(IllTypedException.class, () ->
+                typeof(env, new BinaryOperatorExp("=",
+                        new IdentifierLiteral("foo"),
+                        new IntegerLiteral(2))));
+    }
+
+    @Test
+    public void checkExceptionThrownTypeMismatchAssignmentSingleEqualsBoolString() {
+        final Map<String, Type> mutableEnv = new HashMap<>();
+        mutableEnv.put("foo", new BoolType());
+        final ImmutableMap<String, Type> tempEnv = ImmutableMap.copyOf(mutableEnv);
+        final TypeEnvironment env = new TypeEnvironment(null, tempEnv, null);
+
+        Assertions.assertThrows(IllTypedException.class, () ->
+                typeof(env, new BinaryOperatorExp("=",
+                        new IdentifierLiteral("foo"),
+                        new StringLiteral("bar"))));
+    }
+
+    @Test
+    public void checkExceptionThrownTypeMismatchAssignmentSingleEqualsIntBool() {
+        final Map<String, Type> mutableEnv = new HashMap<>();
+        mutableEnv.put("foo", new IntType());
+        final ImmutableMap<String, Type> tempEnv = ImmutableMap.copyOf(mutableEnv);
+        final TypeEnvironment env = new TypeEnvironment(null, tempEnv, null);
+
+        Assertions.assertThrows(IllTypedException.class, () ->
+                typeof(env, new BinaryOperatorExp("=",
+                        new IdentifierLiteral("foo"),
+                        new BooleanLiteral(true))));
+    }
+
+    @Test
+    public void checkExceptionThrownTypeMismatchAssignmentSingleEqualsIntString() {
+        final Map<String, Type> mutableEnv = new HashMap<>();
+        mutableEnv.put("foo", new IntType());
+        final ImmutableMap<String, Type> tempEnv = ImmutableMap.copyOf(mutableEnv);
+        final TypeEnvironment env = new TypeEnvironment(null, tempEnv, null);
+
+        Assertions.assertThrows(IllTypedException.class, () ->
+                typeof(env, new BinaryOperatorExp("=",
+                        new IdentifierLiteral("foo"),
+                        new StringLiteral("bar"))));
+    }
+
+
+    @Test
+    public void checkExceptionThrownTypeMismatchAssignmentSingleEqualsStringInt() {
+        final Map<String, Type> mutableEnv = new HashMap<>();
+        mutableEnv.put("foo", new StringType());
+        final ImmutableMap<String, Type> tempEnv = ImmutableMap.copyOf(mutableEnv);
+        final TypeEnvironment env = new TypeEnvironment(null, tempEnv, null);
+
+        Assertions.assertThrows(IllTypedException.class, () ->
+                typeof(env, new BinaryOperatorExp("=",
+                        new IdentifierLiteral("foo"),
+                        new IntegerLiteral(1))));
+    }
+
+    @Test
+    public void checkExceptionThrownTypeMismatchAssignmentSingleEqualsStringBool() {
+        final Map<String, Type> mutableEnv = new HashMap<>();
+        mutableEnv.put("foo", new StringType());
+        final ImmutableMap<String, Type> tempEnv = ImmutableMap.copyOf(mutableEnv);
+        final TypeEnvironment env = new TypeEnvironment(null, tempEnv, null);
+
+        Assertions.assertThrows(IllTypedException.class, () ->
+                typeof(env, new BinaryOperatorExp("=",
+                        new IdentifierLiteral("foo"),
+                        new BooleanLiteral(true))));
+    }
+
+
+    @Test
+    public void checkExceptionThrownTypeMismatchAssignmentPlusEqualsBoolInt() {
+        final Map<String, Type> mutableEnv = new HashMap<>();
+        mutableEnv.put("foo", new BoolType());
+        final ImmutableMap<String, Type> tempEnv = ImmutableMap.copyOf(mutableEnv);
+        final TypeEnvironment env = new TypeEnvironment(null, tempEnv, null);
+
+        Assertions.assertThrows(IllTypedException.class, () ->
+                typeof(env, new BinaryOperatorExp("+=",
+                        new IdentifierLiteral("foo"),
+                        new IntegerLiteral(2))));
+    }
+
+    @Test
+    public void checkExceptionThrownTypeMismatchAssignmentPlusEqualsBoolString() {
+        final Map<String, Type> mutableEnv = new HashMap<>();
+        mutableEnv.put("foo", new BoolType());
+        final ImmutableMap<String, Type> tempEnv = ImmutableMap.copyOf(mutableEnv);
+        final TypeEnvironment env = new TypeEnvironment(null, tempEnv, null);
+
+        Assertions.assertThrows(IllTypedException.class, () ->
+                typeof(env, new BinaryOperatorExp("+=",
+                        new IdentifierLiteral("foo"),
+                        new StringLiteral("bar"))));
+    }
+
+    @Test
+    public void checkExceptionThrownTypeMismatchAssignmentPlusEqualsIntBool() {
+        final Map<String, Type> mutableEnv = new HashMap<>();
+        mutableEnv.put("foo", new IntType());
+        final ImmutableMap<String, Type> tempEnv = ImmutableMap.copyOf(mutableEnv);
+        final TypeEnvironment env = new TypeEnvironment(null, tempEnv, null);
+
+        Assertions.assertThrows(IllTypedException.class, () ->
+                typeof(env, new BinaryOperatorExp("+=",
+                        new IdentifierLiteral("foo"),
+                        new BooleanLiteral(true))));
+    }
+
+    @Test
+    public void checkExceptionThrownTypeMismatchAssignmentPlusEqualsIntString() {
+        final Map<String, Type> mutableEnv = new HashMap<>();
+        mutableEnv.put("foo", new IntType());
+        final ImmutableMap<String, Type> tempEnv = ImmutableMap.copyOf(mutableEnv);
+        final TypeEnvironment env = new TypeEnvironment(null, tempEnv, null);
+
+        Assertions.assertThrows(IllTypedException.class, () ->
+                typeof(env, new BinaryOperatorExp("+=",
+                        new IdentifierLiteral("foo"),
+                        new StringLiteral("bar"))));
+    }
+
+
+    @Test
+    public void checkExceptionThrownTypeMismatchAssignmentPlusEqualsStringInt() {
+        final Map<String, Type> mutableEnv = new HashMap<>();
+        mutableEnv.put("foo", new StringType());
+        final ImmutableMap<String, Type> tempEnv = ImmutableMap.copyOf(mutableEnv);
+        final TypeEnvironment env = new TypeEnvironment(null, tempEnv, null);
+
+        Assertions.assertThrows(IllTypedException.class, () ->
+                typeof(env, new BinaryOperatorExp("+=",
+                        new IdentifierLiteral("foo"),
+                        new IntegerLiteral(1))));
+    }
+
+    @Test
+    public void checkExceptionThrownTypeMismatchAssignmentPlusEqualsStringBool() {
+        final Map<String, Type> mutableEnv = new HashMap<>();
+        mutableEnv.put("foo", new StringType());
+        final ImmutableMap<String, Type> tempEnv = ImmutableMap.copyOf(mutableEnv);
+        final TypeEnvironment env = new TypeEnvironment(null, tempEnv, null);
+
+        Assertions.assertThrows(IllTypedException.class, () ->
+                typeof(env, new BinaryOperatorExp("+=",
+                        new IdentifierLiteral("foo"),
+                        new BooleanLiteral(true))));
+    }
+
+    @Test
+    public void checkExceptionThrownTypeMismatchAssignmentMinusEqualsBoolInt() {
+        final Map<String, Type> mutableEnv = new HashMap<>();
+        mutableEnv.put("foo", new BoolType());
+        final ImmutableMap<String, Type> tempEnv = ImmutableMap.copyOf(mutableEnv);
+        final TypeEnvironment env = new TypeEnvironment(null, tempEnv, null);
+
+        Assertions.assertThrows(IllTypedException.class, () ->
+                typeof(env, new BinaryOperatorExp("-=",
+                        new IdentifierLiteral("foo"),
+                        new IntegerLiteral(2))));
+    }
+
+    @Test
+    public void checkExceptionThrownTypeMismatchAssignmentMinusEqualsBoolString() {
+        final Map<String, Type> mutableEnv = new HashMap<>();
+        mutableEnv.put("foo", new BoolType());
+        final ImmutableMap<String, Type> tempEnv = ImmutableMap.copyOf(mutableEnv);
+        final TypeEnvironment env = new TypeEnvironment(null, tempEnv, null);
+
+        Assertions.assertThrows(IllTypedException.class, () ->
+                typeof(env, new BinaryOperatorExp("-=",
+                        new IdentifierLiteral("foo"),
+                        new StringLiteral("bar"))));
+    }
+
+    @Test
+    public void checkExceptionThrownTypeMismatchAssignmentMinusEqualsIntBool() {
+        final Map<String, Type> mutableEnv = new HashMap<>();
+        mutableEnv.put("foo", new IntType());
+        final ImmutableMap<String, Type> tempEnv = ImmutableMap.copyOf(mutableEnv);
+        final TypeEnvironment env = new TypeEnvironment(null, tempEnv, null);
+
+        Assertions.assertThrows(IllTypedException.class, () ->
+                typeof(env, new BinaryOperatorExp("-=",
+                        new IdentifierLiteral("foo"),
+                        new BooleanLiteral(true))));
+    }
+
+    @Test
+    public void checkExceptionThrownTypeMismatchAssignmentMinusEqualsIntString() {
+        final Map<String, Type> mutableEnv = new HashMap<>();
+        mutableEnv.put("foo", new IntType());
+        final ImmutableMap<String, Type> tempEnv = ImmutableMap.copyOf(mutableEnv);
+        final TypeEnvironment env = new TypeEnvironment(null, tempEnv, null);
+
+        Assertions.assertThrows(IllTypedException.class, () ->
+                typeof(env, new BinaryOperatorExp("-=",
+                        new IdentifierLiteral("foo"),
+                        new StringLiteral("bar"))));
+    }
+
+
+    @Test
+    public void checkExceptionThrownTypeMismatchAssignmentMinusEqualsStringInt() {
+        final Map<String, Type> mutableEnv = new HashMap<>();
+        mutableEnv.put("foo", new StringType());
+        final ImmutableMap<String, Type> tempEnv = ImmutableMap.copyOf(mutableEnv);
+        final TypeEnvironment env = new TypeEnvironment(null, tempEnv, null);
+
+        Assertions.assertThrows(IllTypedException.class, () ->
+                typeof(env, new BinaryOperatorExp("-=",
+                        new IdentifierLiteral("foo"),
+                        new IntegerLiteral(1))));
+    }
+
+    @Test
+    public void checkExceptionThrownTypeMismatchAssignmentMinusEqualsStringBool() {
+        final Map<String, Type> mutableEnv = new HashMap<>();
+        mutableEnv.put("foo", new StringType());
+        final ImmutableMap<String, Type> tempEnv = ImmutableMap.copyOf(mutableEnv);
+        final TypeEnvironment env = new TypeEnvironment(null, tempEnv, null);
+
+        Assertions.assertThrows(IllTypedException.class, () ->
+                typeof(env, new BinaryOperatorExp("-=",
+                        new IdentifierLiteral("foo"),
+                        new BooleanLiteral(true))));
+    }
+
 
     @Test
     public void checkExceptionThrownSuperClassNotDefined() throws TokenizerException, ParseException {

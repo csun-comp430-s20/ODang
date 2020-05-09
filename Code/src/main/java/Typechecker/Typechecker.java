@@ -403,11 +403,6 @@ public class Typechecker {
                 case "=":
                 case "-=":
                 case "+=":
-                    final IdentifierLiteral asID = (IdentifierLiteral) asBOP.left;
-            
-                    if(!env.containsVariable(asID.name))
-                        throw new IllTypedException("Variable not in scope: " + asID.name);
-            
                     if(left.equals(right)) {
                         return left;
                     } else
