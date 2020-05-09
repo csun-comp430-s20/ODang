@@ -5,8 +5,8 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>org.comp430</groupId>
-    <artifactId>Code</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <artifactId>ODang</artifactId>
+    <version>1.0_DEV</version>
 
     <dependencies>
         <dependency>
