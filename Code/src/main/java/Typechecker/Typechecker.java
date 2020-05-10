@@ -302,8 +302,9 @@ public class Typechecker {
         if (s instanceof Block) {
             final Block asBlock = (Block)s;
 
+            //do not update env here, whats declared inside block stays inside
             for (final Stmt stmt : asBlock.blockStmts)
-                env = typecheckStmts(env, breakOk, stmt);
+                typecheckStmts(env, breakOk, stmt);
 
         }
         else
@@ -322,8 +323,37 @@ public class Typechecker {
     public TypeEnvironment typecheckStmt(final TypeEnvironment env, final boolean breakOk,
                                                      final Stmt s) throws IllTypedException {
 
+        if (s instanceof LocalVardec) {
 
-        if (s instanceof StmtExpr) {
+
+            final LocalVardec varDec = (LocalVardec)s;
+            final Type declaredType = convertParserType(varDec.parserType);
+
+            TypeEnvironment updatedEnv = env.copy();
+            final VarDeclaratorList varList = (VarDeclaratorList)varDec.varDeclarators;
+
+            for (final Decl decl : varList.varDeclList) {
+                final VarDeclarator varDeclarator = (VarDeclarator)decl;
+                final IdentifierLiteral identifier = (IdentifierLiteral) varDeclarator.identifier;
+                if (varDeclarator.exp == null) {
+
+                    updatedEnv = updatedEnv.addVariable(identifier.name, declaredType);
+                }
+                else {
+                    final Type actualType = typeof(updatedEnv, varDeclarator.exp);
+                    if (!(declaredType.equals(actualType)))
+                        throw new IllTypedException("Field declared " + declaredType + ", cannot assign " + actualType);
+                    else {
+                        updatedEnv = updatedEnv.addVariable(identifier.name, declaredType);
+                    }
+                }
+            }
+            return updatedEnv;
+
+
+        }
+
+        else if (s instanceof StmtExpr) {
             final StmtExpr stmtExpr = (StmtExpr)s;
             typeof(env, stmtExpr.exp);
             return env;

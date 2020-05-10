@@ -2,10 +2,8 @@ package TypecheckerTest;
 
 import Parser.*;
 import Parser.Expressions.*;
-import Parser.Literals.BooleanLiteral;
-import Parser.Literals.IdentifierLiteral;
-import Parser.Literals.IntegerLiteral;
-import Parser.Literals.StringLiteral;
+import Parser.Literals.*;
+import Parser.Statements.*;
 import Tokenizer.*;
 import Typechecker.Types.*;
 import Typechecker.*;
@@ -56,6 +54,35 @@ public class TypecheckerTest {
             e.printStackTrace();
         }
     }
+
+    /*
+    TypeEnvironment Tests
+     */
+
+    @Test
+    public void checkTypeEnvironmentClassType() throws IllTypedException {
+        final TypeEnvironment env = new TypeEnvironment(null, null, "TestClass");
+        Assertions.assertEquals(env.thisType(), new ClassType("TestClass"));
+    }
+    @Test
+    public void checkTypeEnvironmentThrowsExceptionLookupFunction() {
+        final TypeEnvironment env = new TypeEnvironment(null, null, "Test");
+        Assertions.assertThrows(IllTypedException.class, () -> env.lookupFunction("test2"));
+    }
+    @Test
+    public void checkTypeEnvironmentThrowsExceptionLookupVariable() {
+        final TypeEnvironment env = new TypeEnvironment(null, null, "Test");
+        Assertions.assertThrows(IllTypedException.class, () -> env.lookupVariable("foo"));
+    }
+    @Test
+    public void checkTypeEnvironmentThrowsExceptionThisType() {
+        final TypeEnvironment env = new TypeEnvironment(null, null, null);
+        Assertions.assertThrows(IllTypedException.class, () -> env.thisType());
+    }
+    /*
+    Typechecker Tests
+     */
+
     @Test
     public void checkTypeOfStringLiteral() {
         assertTypechecksExp( null, new StringType(), "\"hello world\"");

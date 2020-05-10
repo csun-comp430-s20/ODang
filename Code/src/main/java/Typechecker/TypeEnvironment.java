@@ -39,11 +39,12 @@ public class TypeEnvironment {
     }
 
     public FunctionDefinition lookupFunction(final String functionName) throws IllTypedException {
-        final FunctionDefinition result = functions.get(functionName);
-        if (result == null)
-            throw new IllTypedException("No such function defined: " + functionName);
-        else
-            return result;
+        if (functions.containsKey(functionName)) {
+            return functions.get(functionName);
+        }
+        else {
+            throw new IllTypedException("No such function in scope: " + functionName);
+        }
     }
     public TypeEnvironment addFunction(final String functionName,
                                        final FunctionDefinition functionDefinition) {
