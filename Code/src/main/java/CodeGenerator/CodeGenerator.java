@@ -1,8 +1,10 @@
 package CodeGenerator;
 
 import Parser.Declarations.*;
+import Parser.Statements.*;
 import Parser.Expressions.*;
 import Parser.Literals.*;
+import Typechecker.IllTypedException;
 
 import java.util.List;
 
@@ -14,8 +16,34 @@ public class CodeGenerator  {
         this.AST = AST;
     }
 
+    /**
+     * attempts to code generate a statement
+     * @param s current statement
+     * @return string that represents the code output of s
+     * @throws CodeGeneratorException unrecognized statement
+     */
+    public String generateStmt(final Stmt s) throws CodeGeneratorException{
+        if (s instanceof ReturnStmt){
+            final ReturnStmt asReturn = (ReturnStmt)s;
+            if (asReturn.exp == null) {
+                return "return;";
+            }
+            else{
+                return "return " + generateExp(asReturn.exp) + ";";
+            }
+        }
+        else {
+            assert(false);
+            throw new CodeGeneratorException("Unrecognizable statement.");
+        }
+    }
 
-
+    /**
+     * attempts to code generate an expression
+     * @param e current expression
+     * @return string that represents the code output of e
+     * @throws CodeGeneratorException unrecognized expression
+     */
     public String generateExp(final Exp e) throws CodeGeneratorException{
         if (e instanceof BinaryOperatorExp){
             final BinaryOperatorExp asBinop = (BinaryOperatorExp)e;
@@ -81,7 +109,7 @@ public class CodeGenerator  {
             assert (false);
             throw new CodeGeneratorException("Unrecognizable expression.");
         }
-    }//remember to add all the results to the overall string output in the end
+    }// TODO remember to add all the results to the overall string output in the end and to deal with whitespaces
 
     public static void main(String[] args) {
 

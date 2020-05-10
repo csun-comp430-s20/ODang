@@ -26,6 +26,17 @@ public class CodeGeneratorTest {
 
     }
 
+    public static void assertGenerateStmtFromString(final String expected, final String receieved){
+        try {
+            final Parser parser = new Parser(new Tokenizer(receieved).tokenize());
+            final Stmt parsedStmt = (parser.parseStmt(0)).getResult();
+            Assertions.assertEquals(expected, new CodeGenerator(null).generateStmt(parsedStmt));
+        }catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    //***EXPR TESTS***//
     @Test
     public void checkGeneratesBoolean() throws CodeGeneratorException{
         assertGenerateExpFromString("false", "false");
@@ -214,5 +225,16 @@ public class CodeGeneratorTest {
     @Test
     public void checkGeneratesMethodWithMultipleArguments() throws CodeGeneratorException{
         assertGenerateExpFromString("beta(2,true,false)", "beta(2,true,false)");
+    }
+
+    //***STMT TESTS***//
+    @Test
+    public void checkGeneratesRegularReturnStatement() throws CodeGeneratorException{
+        assertGenerateStmtFromString("return;", "return;");
+    }
+
+    @Test
+    public void checkGeneratesReturnStatementWithValue() throws CodeGeneratorException{
+        assertGenerateStmtFromString("return 8;", "return 8;");
     }
 }
