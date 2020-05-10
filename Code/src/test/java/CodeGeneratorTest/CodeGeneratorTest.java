@@ -185,4 +185,34 @@ public class CodeGeneratorTest {
     public void checkGeneratesNegateUnaryExpression() throws CodeGeneratorException{
         assertGenerateExpFromString("!x", "!x");
     }
+
+    @Test
+    public void checkGeneratesFieldAccessExpression() throws CodeGeneratorException{
+        assertGenerateExpFromString("func.method", "func.method");
+    }
+
+    @Test
+    public void checkGeneratesFieldAccessWithOneArgument() throws CodeGeneratorException{
+        assertGenerateExpFromString("x.bar(false)", "x.bar(false)");
+    }
+
+    @Test
+    public void checkGeneratesFieldAccessWithMultipleArguments() throws CodeGeneratorException{
+        assertGenerateExpFromString("test.foo(false,2,5)", "test.foo(false,2,5)");
+    }
+
+    @Test
+    public void checkGeneratesFieldAccessWithMultipleDots() throws CodeGeneratorException{
+        assertGenerateExpFromString("func.test.work(10,false)",
+                "func.test.work(10,false)");
+    }
+    @Test
+    public void checkGeneratesMethodWithOneArgument() throws CodeGeneratorException{
+        assertGenerateExpFromString("apple(2)", "apple(2)");
+    }
+
+    @Test
+    public void checkGeneratesMethodWithMultipleArguments() throws CodeGeneratorException{
+        assertGenerateExpFromString("beta(2,true,false)", "beta(2,true,false)");
+    }
 }
