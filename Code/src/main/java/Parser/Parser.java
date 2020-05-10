@@ -1068,6 +1068,10 @@ public class Parser {
                 final ParseResult<Exp> preDecrExp = parsePreDecrExpr(startPos);
                 return new ParseResult<Exp>(preDecrExp.result, preDecrExp.nextPos);
             }
+            else if (OpToken.name.equals("!")) {
+                final ParseResult<Exp> negateExp = parseNoIncDecUnaryExp(startPos);
+                return new ParseResult<Exp>(negateExp.result, negateExp.nextPos);
+            }
             else throw new ParseException("invalid unary incr/decr operator" + OpToken.name);
         }
         //<unary expr no incr decr

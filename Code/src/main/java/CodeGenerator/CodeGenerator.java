@@ -30,28 +30,25 @@ public class CodeGenerator  {
         else if (e instanceof PostIncrDecrExp){
             final PostIncrDecrExp asPost = (PostIncrDecrExp)e;
             return generateExp(asPost.postfixExp) + asPost.postOp;
-        }
-        else if (e instanceof BooleanLiteral) {
-            final BooleanLiteral asBool = (BooleanLiteral)e;
+        } else if (e instanceof NegateUnaryExp) {
+            final NegateUnaryExp asNeg = (NegateUnaryExp)e;
+            return "!" + generateExp(asNeg.exp);
+        } else if (e instanceof BooleanLiteral) {
+            final BooleanLiteral asBool = (BooleanLiteral) e;
             return Boolean.toString(asBool.value);
-        }
-        else if (e instanceof IdentifierLiteral) {
-            final IdentifierLiteral asId = (IdentifierLiteral)e;
+        } else if (e instanceof IdentifierLiteral) {
+            final IdentifierLiteral asId = (IdentifierLiteral) e;
             return asId.name;
-        }
-        else if ( e instanceof IntegerLiteral){
-            final IntegerLiteral asInt = (IntegerLiteral)e;
+        } else if (e instanceof IntegerLiteral) {
+            final IntegerLiteral asInt = (IntegerLiteral) e;
             return Integer.toString(asInt.value);
-        }
-        else if (e instanceof NullLiteral){
-            final NullLiteral asNull = (NullLiteral)e;
+        } else if (e instanceof NullLiteral) {
+            final NullLiteral asNull = (NullLiteral) e;
             return "null";
-        }
-        else if (e instanceof StringLiteral) {
-            final StringLiteral asString = (StringLiteral)e;
+        } else if (e instanceof StringLiteral) {
+            final StringLiteral asString = (StringLiteral) e;
             return asString.name;
-        }
-        else {
+        } else {
             assert (false);
             throw new CodeGeneratorException("Unrecognizable expression.");
         }

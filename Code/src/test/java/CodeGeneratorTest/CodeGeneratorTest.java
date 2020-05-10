@@ -180,4 +180,9 @@ public class CodeGeneratorTest {
     public void checkGeneratesMultipleSubtractAssignment() throws CodeGeneratorException{
         assertGenerateExpFromString("d-=e-=f-=27", "d -= e -= f -= 27");
     }
+
+    @Test
+    public void checkGeneratesNegateUnaryExpression() throws CodeGeneratorException{
+        assertGenerateExpFromString("!x", "!x");
+    }
 }
