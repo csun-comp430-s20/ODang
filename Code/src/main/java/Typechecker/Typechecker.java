@@ -101,6 +101,13 @@ public class Typechecker {
         else throw new IllTypedException("Not a valid Parser.Type to convert: " + type);
     }
 
+
+    /**
+     * converts a Parser.FormalParamList to a List<Typechecker.FormalParameter>
+     * @param list Parser.FormalParamList
+     * @return List<Formalparameter>
+     * @throws IllTypedException
+     */
     final static List<FormalParameter> convertFormalParamList(final FormalParamList list) throws IllTypedException {
         if (list.declList.isEmpty())
             return new ArrayList<>();
@@ -116,6 +123,12 @@ public class Typechecker {
         }
     }
 
+    /**
+     * attempts to get a class from the classes-map
+     * @param className the key
+     * @return a ClassDecl
+     * @throws IllTypedException if key doesnt match
+     */
     public ClassDecl getClass(final String className) throws IllTypedException {
         final ClassDecl result = classes.get(className);
         if (result == null)
@@ -123,20 +136,35 @@ public class Typechecker {
         else return result;
     }
 
+
+    /**
+     * copies a TypeEnvironment and returns a TypeEnviroment with a new class-name
+     * @param env initial typeenviroment
+     * @param newName new class-name to give the enviroment
+     * @return new TypeEnvironment with the same functions/variables as env, but with a new name
+     */
     public static TypeEnvironment sameEnvNewClassName(final TypeEnvironment env, final String newName) {
         return new TypeEnvironment(
                 env.getFunctions(),
                 env.getVariables(),
                 newName);
     }
-
+    /**
+     * creates an empty type-environment without any methods, functions or class
+     * @return empty TypeEnviroment
+     */
     public static TypeEnvironment createEmptyTypeEnvironment() {
         return new TypeEnvironment(null, null, null);
     }
 
+
+    /**
+     * top level function that calls typecheckClass on all classes found in the classes-list
+     * @throws IllTypedException
+     */
     public void typecheckProgram() throws IllTypedException {
         for (final Decl classDecl : program) {
-            System.out.println(typecheckClass(createEmptyTypeEnvironment(), (ClassDecl)classDecl));
+            typecheckClass(createEmptyTypeEnvironment(), (ClassDecl)classDecl);
         }
     }
 
@@ -172,6 +200,13 @@ public class Typechecker {
         }
     }
 
+    /**
+     * loops through and typechecks all class body declarations in a ClassBody
+     * @param env the type environment
+     * @param classBody the classbody
+     * @return Typeenviroment with declared variables and methods
+     * @throws IllTypedException if not well-typed
+     */
     public TypeEnvironment typecheckClassBodyDecs(final TypeEnvironment env, final ClassBodyDecs classBody) throws IllTypedException {
 
         if (classBody == null)
@@ -185,6 +220,15 @@ public class Typechecker {
         return updatedEnv;
     }
 
+
+    /**
+     * attempts to typecheck a ClassBodyDecl, ie. <class member dec> | <constructor dec>,
+     * and all nodes within a <class member dec> or a <constructor dec>
+     * @param env the type environment
+     * @param d the declaration to typecheck
+     * @return a typeenvironment containing new declared methods or variables
+     * @throws IllTypedException if not well-typed
+     */
     public TypeEnvironment typecheckClassBodyDecl (final TypeEnvironment env, final Decl d) throws IllTypedException {
 
         if (d instanceof ConstructorDecl) {
@@ -254,6 +298,14 @@ public class Typechecker {
         }
 
     }
+
+    /**
+     * attempts to typecheck a MethodDeclaration
+     * @param env type environment to add method to
+     * @param methodDecl the method declaration to typecheck
+     * @return TypeEnvironment containing the new method
+     * @throws IllTypedException if method decl not well-typed
+     */
     public TypeEnvironment typecheckMethod(final TypeEnvironment env, final MethodDecl methodDecl) throws IllTypedException {
 
         final MethodHeader mh = (MethodHeader)methodDecl.header;
@@ -587,6 +639,8 @@ public class Typechecker {
             throw new IllTypedException("unrecognized expression: " + e.toString());
         }
     }
+
+    //TODO remove before final submission
     public static void main(String[] args) {
 
         Map<String, Type> test = new HashMap<>();
