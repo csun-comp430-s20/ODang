@@ -208,11 +208,13 @@ public class Typechecker {
                 return null;
                 //TODO implement super/this class constructor
             }
-            else {
+            else if (body.blockStmts instanceof Block){
                 final Block blockStmts = (Block)body.blockStmts;
-                //TODO finish
-                return null;
+                newEnv = typecheckStmts(newEnv, false, blockStmts);
+                return newEnv;
             }
+            else
+                throw new IllTypedException("Invalid form of constructor");
         }
 
         else if (d instanceof FieldDecl) {
