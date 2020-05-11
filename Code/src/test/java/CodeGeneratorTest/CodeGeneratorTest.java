@@ -38,203 +38,228 @@ public class CodeGeneratorTest {
 
     //***EXPR TESTS***//
     @Test
-    public void checkGeneratesBoolean() throws CodeGeneratorException{
+    public void checkGeneratesBoolean() {
         assertGenerateExpFromString("false", "false");
     }
 
     @Test
-    public void checkGeneratesIdentifier() throws CodeGeneratorException{
+    public void checkGeneratesIdentifier() {
         assertGenerateExpFromString("varName", "varName");
     }
 
     @Test
-    public void checkGeneratesInteger() throws CodeGeneratorException{
+    public void checkGeneratesInteger() {
         assertGenerateExpFromString("6", "6");
     }
 
     @Test
-    public void checkGeneratesNull() throws CodeGeneratorException{
+    public void checkGeneratesNull() {
         assertGenerateExpFromString("null", "null");
     }
 
     @Test
-    public void checkGeneratesString() throws CodeGeneratorException{
-        assertGenerateExpFromString("hello", "\"hello\"");
+    public void checkGeneratesString() {
+        assertGenerateExpFromString("\"hello\"", "\"hello\"");
     }
 
     @Test
-    public void checkGeneratesPreIncrement() throws CodeGeneratorException{
+    public void checkGeneratesPreIncrement() {
         assertGenerateExpFromString("++var", "++var");
     }
 
     @Test
-    public void checkGeneratesPreDecrement() throws CodeGeneratorException{
+    public void checkGeneratesPreDecrement() {
         assertGenerateExpFromString("--foo", "--foo");
     }
 
     @Test
-    public void checkGeneratesPostIncrement() throws CodeGeneratorException{
+    public void checkGeneratesPostIncrement() {
         assertGenerateExpFromString("bar++", "bar++");
     }
 
     @Test
-    public void checkGeneratesPostDecrement() throws CodeGeneratorException{
+    public void checkGeneratesPostDecrement() {
         assertGenerateExpFromString("apple--", "apple--");
     }
 
     @Test
-    public void checkGeneratesAddition() throws CodeGeneratorException{
+    public void checkGeneratesAddition() {
         assertGenerateExpFromString("2+3", "2+3");
     }
 
     @Test
-    public void checkGeneratesMultipleAdditions() throws CodeGeneratorException{
+    public void checkGeneratesMultipleAdditions() {
         assertGenerateExpFromString("5+6+7+8", "5+6+7+8");
     }
 
     @Test
-    public void checkGeneratesSubtraction() throws CodeGeneratorException{
+    public void checkGeneratesSubtraction() {
         assertGenerateExpFromString("90-8", "90 - 8");
     }
 
     @Test
-    public void checkGeneratesMultipleSubtraction() throws CodeGeneratorException{
+    public void checkGeneratesMultipleSubtraction() {
         assertGenerateExpFromString("42-30-2-1", "42 - 30 - 2 - 1");
     }
 
     @Test
-    public void checkGeneratesMultiplication() throws CodeGeneratorException{
+    public void checkGeneratesMultiplication() {
         assertGenerateExpFromString("3*7", "3*7");
     }
 
     @Test
-    public void checkGeneratesMultipleMultiplications() throws CodeGeneratorException{
+    public void checkGeneratesMultipleMultiplications() {
         assertGenerateExpFromString("1*2*3*4*5", "1*2*3*4*5");
     }
 
     @Test
-    public void checkGeneratesDivision() throws CodeGeneratorException{
+    public void checkGeneratesDivision() {
         assertGenerateExpFromString("4/2", "4/2");
     }
 
     @Test
-    public void checkGeneratesMultipleDivisions() throws CodeGeneratorException{
+    public void checkGeneratesMultipleDivisions() {
         assertGenerateExpFromString("10/5/1", "10/5/1");
     }
 
     @Test
-    public void checkGeneratesLessThan() throws CodeGeneratorException{
+    public void checkGeneratesLessThan() {
         assertGenerateExpFromString("5<6", "5<6");
     }
 
     @Test
-    public void checkGeneratesMultipleLessThan() throws CodeGeneratorException{
+    public void checkGeneratesMultipleLessThan() {
         assertGenerateExpFromString("9<10<14<22", "9<10<14<22");
     }
 
     @Test
-    public void checkGeneratesGreatThan() throws CodeGeneratorException{
+    public void checkGeneratesGreatThan() {
         assertGenerateExpFromString("10>9", "10>9");
     }
 
     @Test
-    public void checkGeneratesMultipleGreatThan() throws CodeGeneratorException{
+    public void checkGeneratesMultipleGreatThan() {
         assertGenerateExpFromString("33>20>10", "33>20>10");
     }
 
     @Test
-    public void checkGeneratesNotEqual() throws CodeGeneratorException{
+    public void checkGeneratesNotEqual() {
         assertGenerateExpFromString("55!=60", "55!=60");
     }
 
     @Test
-    public void checkGeneratesMultipleNotEqual() throws CodeGeneratorException{
+    public void checkGeneratesMultipleNotEqual() {
         assertGenerateExpFromString("3!=4!=5!=6", "3!=4!=5!=6");
     }
 
     @Test
-    public void checkGeneratesEqual() throws CodeGeneratorException{
+    public void checkGeneratesEqual() {
         assertGenerateExpFromString("5==5", "5==5");
     }
 
     @Test
-    public void checkGeneratesMultipleEqual() throws CodeGeneratorException{
+    public void checkGeneratesMultipleEqual() {
         assertGenerateExpFromString("10==10==10==10", "10==10==10==10");
     }
 
     @Test
-    public void checkGeneratesAssignment() throws CodeGeneratorException{
+    public void checkGeneratesAssignment() {
         assertGenerateExpFromString("var=10", "var = 10");
     }
 
     @Test
-    public void checkGeneratesMultipleAssignment() throws CodeGeneratorException{
+    public void checkGeneratesMultipleAssignment() {
         assertGenerateExpFromString("x=y=5", "x = y = 5");
     }
 
     @Test
-    public void checkGeneratesPlusAssignment() throws CodeGeneratorException{
+    public void checkGeneratesPlusAssignment() {
         assertGenerateExpFromString("z+=2", "z += 2");
     }
 
     @Test
-    public void checkGeneratesMultiplePlusAssignments() throws CodeGeneratorException{
+    public void checkGeneratesMultiplePlusAssignments() {
         assertGenerateExpFromString("a+=b+=7", "a += b += 7");
     }
 
     @Test
-    public void checkGeneratesSubstractAssignment() throws CodeGeneratorException{
+    public void checkGeneratesSubstractAssignment() {
         assertGenerateExpFromString("pop-=5", "pop -= 5");
     }
 
     @Test
-    public void checkGeneratesMultipleSubtractAssignment() throws CodeGeneratorException{
+    public void checkGeneratesMultipleSubtractAssignment() {
         assertGenerateExpFromString("d-=e-=f-=27", "d -= e -= f -= 27");
     }
 
     @Test
-    public void checkGeneratesNegateUnaryExpression() throws CodeGeneratorException{
+    public void checkGeneratesNegateUnaryExpression() {
         assertGenerateExpFromString("!x", "!x");
     }
 
     @Test
-    public void checkGeneratesFieldAccessExpression() throws CodeGeneratorException{
+    public void checkGeneratesFieldAccessExpression() {
         assertGenerateExpFromString("func.method", "func.method");
     }
 
     @Test
-    public void checkGeneratesFieldAccessWithOneArgument() throws CodeGeneratorException{
+    public void checkGeneratesFieldAccessWithOneArgument() {
         assertGenerateExpFromString("x.bar(false)", "x.bar(false)");
     }
 
     @Test
-    public void checkGeneratesFieldAccessWithMultipleArguments() throws CodeGeneratorException{
+    public void checkGeneratesFieldAccessWithMultipleArguments() {
         assertGenerateExpFromString("test.foo(false,2,5)", "test.foo(false,2,5)");
     }
 
     @Test
-    public void checkGeneratesFieldAccessWithMultipleDots() throws CodeGeneratorException{
+    public void checkGeneratesFieldAccessWithMultipleDots() {
         assertGenerateExpFromString("func.test.work(10,false)",
                 "func.test.work(10,false)");
     }
     @Test
-    public void checkGeneratesMethodWithOneArgument() throws CodeGeneratorException{
+    public void checkGeneratesMethodWithOneArgument() {
         assertGenerateExpFromString("apple(2)", "apple(2)");
     }
 
     @Test
-    public void checkGeneratesMethodWithMultipleArguments() throws CodeGeneratorException{
+    public void checkGeneratesMethodWithMultipleArguments() {
         assertGenerateExpFromString("beta(2,true,false)", "beta(2,true,false)");
     }
 
     //***STMT TESTS***//
     @Test
-    public void checkGeneratesRegularReturnStatement() throws CodeGeneratorException{
+    public void checkGeneratesRegularReturnStatement() {
         assertGenerateStmtFromString("return;", "return;");
     }
 
     @Test
-    public void checkGeneratesReturnStatementWithValue() throws CodeGeneratorException{
+    public void checkGeneratesReturnStatementWithValue() {
         assertGenerateStmtFromString("return 8;", "return 8;");
+    }
+
+    @Test
+    public void checkGeneratesRegularBreakStatement() {
+        assertGenerateStmtFromString("break;", "break;");
+    }
+
+    @Test
+    public void checkGeneratesBreakStatementWithIdentifier() {
+        assertGenerateStmtFromString("break foo;", "break foo;");
+    }
+
+    @Test
+    public void checkGeneratesEmptyStatement() {
+        assertGenerateStmtFromString(";", ";");
+    }
+
+    @Test
+    public void checkGeneratesPrintStatementWithValue() {
+        assertGenerateStmtFromString("console.log(5);", "println(5);");
+    }
+
+    @Test
+    public void checkGeneratesPrintStatementWithString() {
+        assertGenerateStmtFromString("console.log(\"bar\");", "println(\"bar\");");
     }
 }

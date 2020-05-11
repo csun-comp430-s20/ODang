@@ -32,6 +32,22 @@ public class CodeGenerator  {
                 return "return " + generateExp(asReturn.exp) + ";";
             }
         }
+        else if (s instanceof  BreakStmt){
+            final BreakStmt asBreak = (BreakStmt)s;
+            if (asBreak.identifier == null){
+                return "break;";
+            }
+            else {
+                return "break " + generateExp(asBreak.identifier) + ";";
+            }
+        }
+        else if (s instanceof EmptyStmt){
+            return ";";
+        }
+        else if (s instanceof PrintlnStmt){
+            final PrintlnStmt asPrint = (PrintlnStmt)s;
+            return "console.log(" + generateExp(asPrint.exp) + ");";
+        }
         else {
             assert(false);
             throw new CodeGeneratorException("Unrecognizable statement.");
@@ -103,7 +119,7 @@ public class CodeGenerator  {
         }
         else if (e instanceof StringLiteral) {
             final StringLiteral asString = (StringLiteral) e;
-            return asString.name;
+            return "\"" + asString.name + "\"";
         }
         else {
             assert (false);
