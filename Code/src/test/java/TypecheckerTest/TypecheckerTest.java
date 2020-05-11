@@ -685,8 +685,26 @@ public class TypecheckerTest {
                 "testMethod", null, null, new ReturnStmt(new IntegerLiteral(2)));
         final TypeEnvironment env = Typechecker.createEmptyTypeEnvironment();
         final TypeEnvironment newEnv = env.addFunction("testMethod", intMethod);
-        assertTypechecksExp(newEnv, new IntType(), "int testMethod() {return 2;}");
+        assertTypechecksExp(newEnv, new IntType(), "testMethod();");
+
+    }
+    @Test
+    public void checkTypeOfMethodInvocationBoolean() {
+        final FunctionDefinition boolMethod = new FunctionDefinition(new BoolType(),
+                "testMethod", null, null, new ReturnStmt(new BooleanLiteral(true)));
+        final TypeEnvironment env = Typechecker.createEmptyTypeEnvironment();
+        final TypeEnvironment newEnv = env.addFunction("testMethod", boolMethod);
+        assertTypechecksExp(newEnv, new BoolType(), "testMethod();");
 
     }
 
+    @Test
+    public void checkTypeOfMethodInvocationString() {
+        final FunctionDefinition stringMethod = new FunctionDefinition(new StringType(),
+                "testMethod", null, null, new ReturnStmt(new StringLiteral("foo")));
+        final TypeEnvironment env = Typechecker.createEmptyTypeEnvironment();
+        final TypeEnvironment newEnv = env.addFunction("testMethod", stringMethod);
+        assertTypechecksExp(newEnv, new StringType(), "testMethod();");
+
+    }
 }

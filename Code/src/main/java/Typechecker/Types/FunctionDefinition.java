@@ -1,4 +1,5 @@
 package Typechecker.Types;
+import java.util.ArrayList;
 import java.util.List;
 import Parser.Expressions.*;
 import Parser.Statements.*;
@@ -19,7 +20,8 @@ public class FunctionDefinition {
                                         final ReturnStmt returnStmt) {
         this.returnType = returnType;
         this.name = name;
-        this.formalParams = formalParams;
+        this.formalParams = (formalParams == null) ?
+                new ArrayList<>() : formalParams;
         this.body = body;
         this.returnStmt = returnStmt;
     }
