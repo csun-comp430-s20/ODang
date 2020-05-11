@@ -76,8 +76,64 @@ public class TypecheckerTest {
     }
     @Test
     public void checkTypeEnvironmentThrowsExceptionThisType() {
-        final TypeEnvironment env = new TypeEnvironment(null, null, null);
+        final TypeEnvironment env = Typechecker.createEmptyTypeEnvironment();
         Assertions.assertThrows(IllTypedException.class, () -> env.thisType());
+    }
+    @Test
+    public void checkTypeEnvironmentFunctionsIsEmptyTrue() {
+        final TypeEnvironment env = Typechecker.createEmptyTypeEnvironment();
+        Assertions.assertEquals(true, env.functionsIsEmpty());
+    }
+    @Test
+    public void checkTypeEnvironmentVariablesIsEmptyTrue() {
+        final TypeEnvironment env = Typechecker.createEmptyTypeEnvironment();
+        Assertions.assertEquals(true, env.variablesIsEmpty());
+    }
+    @Test
+    public void checkTypeEnvironmentFunctionsIsEmptyFalse() {
+        final TypeEnvironment env = Typechecker.createEmptyTypeEnvironment();
+        final FunctionDefinition func = new FunctionDefinition(new IntType(),
+                "foo",
+                null,
+                null,
+                new ReturnStmt(new IntegerLiteral(1)));
+        final TypeEnvironment newEnv = env.addFunction("foo", func);
+        Assertions.assertEquals(false, newEnv.functionsIsEmpty());
+    }
+    @Test
+    public void checkTypeEnvironmentVariablesIsEmptyFalse() throws IllTypedException {
+        final TypeEnvironment env = Typechecker.createEmptyTypeEnvironment();
+        final TypeEnvironment newEnv = env.addVariable("foo", new IntType());
+        Assertions.assertEquals(false, newEnv.variablesIsEmpty());
+    }
+
+    @Test
+    public void checkTypeEnvironmentContainsFunctionTrue() {
+        final TypeEnvironment env = Typechecker.createEmptyTypeEnvironment();
+        final FunctionDefinition func = new FunctionDefinition(new IntType(),
+                "foo",
+                null,
+                null,
+                new ReturnStmt(new IntegerLiteral(1)));
+        final TypeEnvironment newEnv = env.addFunction("foo", func);
+        Assertions.assertEquals(true, newEnv.containsFunction("foo"));
+    }
+
+    @Test
+    public void checkTypeEnvironmentContainsFunctionFalse() {
+        final TypeEnvironment env = Typechecker.createEmptyTypeEnvironment();
+        Assertions.assertEquals(false, env.containsFunction("foo"));
+    }
+
+    @Test
+    public void checkTypeEnvironmentGetClassName() throws IllTypedException {
+        final TypeEnvironment env = new TypeEnvironment(null, null, "TestClass");
+        Assertions.assertEquals("TestClass", env.getClassName());
+    }
+    @Test
+    public void checkTypeEnvironmentThrowsExceptionGetClassName() {
+        final TypeEnvironment env = Typechecker.createEmptyTypeEnvironment();
+        Assertions.assertThrows(IllTypedException.class, () -> env.getClassName());
     }
     /*
     Typechecker Tests
@@ -686,7 +742,6 @@ public class TypecheckerTest {
         final TypeEnvironment env = Typechecker.createEmptyTypeEnvironment();
         final TypeEnvironment newEnv = env.addFunction("testMethod", intMethod);
         assertTypechecksExp(newEnv, new IntType(), "testMethod();");
-
     }
     @Test
     public void checkTypeOfMethodInvocationBoolean() {
@@ -695,7 +750,6 @@ public class TypecheckerTest {
         final TypeEnvironment env = Typechecker.createEmptyTypeEnvironment();
         final TypeEnvironment newEnv = env.addFunction("testMethod", boolMethod);
         assertTypechecksExp(newEnv, new BoolType(), "testMethod();");
-
     }
 
     @Test
@@ -705,6 +759,6 @@ public class TypecheckerTest {
         final TypeEnvironment env = Typechecker.createEmptyTypeEnvironment();
         final TypeEnvironment newEnv = env.addFunction("testMethod", stringMethod);
         assertTypechecksExp(newEnv, new StringType(), "testMethod();");
-
     }
+
 }
