@@ -299,6 +299,47 @@ public class TypecheckerTest {
         );
         Assertions.assertThrows(IllTypedException.class, () -> typeof(null, PostDecrExp));
     }
+
+    @Test
+    public void checkTypeOfNegateUnaryExpSingleTrue() {
+        final NegateUnaryExp negate = new NegateUnaryExp(new BooleanLiteral(true));
+        assertTypechecksExp(null, new BoolType(), "!true");
+    }
+
+    @Test
+    public void checkTypeOfNegateUnaryExpSingleFalse() {
+        final NegateUnaryExp negate = new NegateUnaryExp(new BooleanLiteral(true));
+        assertTypechecksExp(null, new BoolType(), "!false");
+    }
+
+    @Test
+    public void checkTypeOfNegateUnaryExpBinopIntEqualsTrue() {
+        final NegateUnaryExp negate = new NegateUnaryExp(new BinaryOperatorExp(
+                "==", new IntegerLiteral(1), new IntegerLiteral(1)));
+        assertTypechecksExp(null, new BoolType(), "!(1 == 1)");
+    }
+
+    @Test
+    public void checkTypeOfNegateUnaryExpBinopBoolEqualsTrue() {
+        final NegateUnaryExp negate = new NegateUnaryExp(new BinaryOperatorExp(
+                "==", new BooleanLiteral(true), new BooleanLiteral(true)));
+        assertTypechecksExp(null, new BoolType(), "!(true == true)");
+    }
+
+    @Test
+    public void checkTypeOfNegateUnaryExpBinopIntNotEqualsTrue() {
+        final NegateUnaryExp negate = new NegateUnaryExp(new BinaryOperatorExp(
+                "!=", new IntegerLiteral(1), new IntegerLiteral(1)));
+        assertTypechecksExp(null, new BoolType(), "!(1 != 1)");
+    }
+
+    @Test
+    public void checkTypeOfNegateUnaryExpBinopBoolNotEqualsTrue() {
+        final NegateUnaryExp negate = new NegateUnaryExp(new BinaryOperatorExp(
+                "!=", new BooleanLiteral(true), new BooleanLiteral(true)));
+        assertTypechecksExp(null, new BoolType(), "!(true != true)");
+    }
+
     @Test
     public void checkTypeOfAssignmentExpIdentifierInteger() throws IllTypedException {
         TypeEnvironment env = new TypeEnvironment(null, null, null);

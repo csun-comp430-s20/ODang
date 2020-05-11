@@ -559,6 +559,8 @@ public class Typechecker {
 
         }
 
+
+
         else if (e instanceof IntegerLiteral) {
             return new IntType();
         }
