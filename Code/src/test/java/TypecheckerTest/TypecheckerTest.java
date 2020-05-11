@@ -341,6 +341,12 @@ public class TypecheckerTest {
     }
 
     @Test
+    public void checkTypeOfNegateUnaryExpIntegerLiteralThrowsException() {
+        final NegateUnaryExp negate = new NegateUnaryExp(new IntegerLiteral(1));
+        Assertions.assertThrows(IllTypedException.class, () -> typeof(null, negate));
+    }
+
+    @Test
     public void checkTypeOfAssignmentExpIdentifierInteger() throws IllTypedException {
         TypeEnvironment env = new TypeEnvironment(null, null, null);
         TypeEnvironment newEnv = env.addVariable("foo", new IntType());
