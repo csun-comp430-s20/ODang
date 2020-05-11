@@ -11,7 +11,9 @@ import Parser.Declarations.*;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import com.google.common.collect.ImmutableMap;
@@ -769,4 +771,31 @@ public class TypecheckerTest {
         assertTypechecksExp(newEnv, new StringType(), "testMethod();");
     }
 
+    @Test
+    public void checkTypeOfMethodInvocationThrowsExceptionWrongNumberOfArguments() {
+
+        final List<FormalParameter> parameterList = new ArrayList<>();
+        parameterList.add(new FormalParameter(new IntType(), "test"));
+        final FunctionDefinition stringMethod = new FunctionDefinition(new StringType(),
+                "testMethod", parameterList, null, new ReturnStmt(new StringLiteral("foo")));
+
+        final MethodInvocation mi = new MethodInvocation(new IdentifierLiteral("foo"), new ArgumentList(new IntegerLiteral(1)));
+        final TypeEnvironment env = Typechecker.createEmptyTypeEnvironment();
+        final TypeEnvironment newEnv = env.addFunction("testMethod", stringMethod);
+        Assertions.assertThrows(IllTypedException.class, () -> typeof(newEnv, mi));
+    }
+
+    @Test
+    public void checkTypeOfMethodInvocationThrowsExceptionTypeMismatchArglist() {
+
+        final List<FormalParameter> parameterList = new ArrayList<>();
+        parameterList.add(new FormalParameter(new BoolType(), "test"));
+        final FunctionDefinition stringMethod = new FunctionDefinition(new StringType(),
+                "testMethod", parameterList, null, new ReturnStmt(new StringLiteral("foo")));
+
+        final MethodInvocation mi = new MethodInvocation(new IdentifierLiteral("foo"), new ArgumentList(new IntegerLiteral(1)));
+        final TypeEnvironment env = Typechecker.createEmptyTypeEnvironment();
+        final TypeEnvironment newEnv = env.addFunction("testMethod", stringMethod);
+        Assertions.assertThrows(IllTypedException.class, () -> typeof(newEnv, mi));
+    }
 }
