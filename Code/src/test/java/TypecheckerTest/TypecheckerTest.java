@@ -135,6 +135,14 @@ public class TypecheckerTest {
         final TypeEnvironment env = Typechecker.createEmptyTypeEnvironment();
         Assertions.assertThrows(IllTypedException.class, () -> env.getClassName());
     }
+
+    @Test
+    public void checkTypeEnvironmentThrowsExceptionAddingExistingVariable() throws IllTypedException {
+        final TypeEnvironment env = Typechecker.createEmptyTypeEnvironment();
+        final TypeEnvironment newEnv = env.addVariable("foo", new IntType());
+        Assertions.assertThrows(IllTypedException.class, () -> newEnv.addVariable("foo", new BoolType()));
+    }
+
     /*
     Typechecker Tests
      */
