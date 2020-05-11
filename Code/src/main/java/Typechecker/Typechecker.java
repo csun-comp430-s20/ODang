@@ -535,6 +535,7 @@ public class Typechecker {
         else if (e instanceof FieldAccessExp) {
             final FieldAccessExp asField = (FieldAccessExp)e;
             final IdentifierLiteral id = (IdentifierLiteral)asField.right;
+            final Type idType = typeof(env, id);
 
             if (asField.left instanceof ClassInstanceExp) {
                 final ClassInstanceExp asClass = (ClassInstanceExp) asField.left;
@@ -542,8 +543,15 @@ public class Typechecker {
                 return tau.lookupVariable(id.name);
             }
             else if (asField.left instanceof MethodInvocation) {
-                //TODO finish
-                return null;
+                final MethodInvocation methodInvocation = (MethodInvocation)asField.left;
+                final Type leftType = typeof(env, methodInvocation);
+                if (leftType.equals(idType))
+                    return leftType;
+                else
+                    throw new IllTypedException("Not a valid field access, " +
+                            asField.left + " is of type: "+ leftType +
+                            ", " + id + " is of type: " + idType);
+
             }
             else {
                 throw new IllTypedException("Not a valid field access" + e);
