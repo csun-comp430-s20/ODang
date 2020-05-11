@@ -262,4 +262,29 @@ public class CodeGeneratorTest {
     public void checkGeneratesPrintStatementWithString() {
         assertGenerateStmtFromString("console.log(\"bar\");", "println(\"bar\");");
     }
+
+    @Test
+    public void checkGeneratesStmtExprWithLessThan() {
+        assertGenerateStmtFromString("5<7;", "5<7;");
+    }
+
+    @Test
+    public void checkGeneratesStmtExprWithFieldAccess() {
+        assertGenerateStmtFromString("foo.bar();", "foo.bar();");
+    }
+
+    @Test
+    public void checkGeneratesBlockWithReturnStatement() {
+        assertGenerateStmtFromString("{return;}", "{return;}");
+    }
+
+    @Test
+    public void checkGeneratesBlockWithBreakStatement() {
+        assertGenerateStmtFromString("{break;}", "{break;}");
+    }
+
+    @Test
+    public void checkGeneratesBlockWithFieldAccess() {
+        assertGenerateStmtFromString("{foo.box();}", "{foo.box();}");
+    }
 }

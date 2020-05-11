@@ -23,7 +23,21 @@ public class CodeGenerator  {
      * @throws CodeGeneratorException unrecognized statement
      */
     public String generateStmt(final Stmt s) throws CodeGeneratorException{
-        if (s instanceof ReturnStmt){
+        if (s instanceof StmtExpr){
+            final StmtExpr asStmtExpr = (StmtExpr)s;
+            return generateExp(asStmtExpr.exp) + ";";
+        }
+        else if (s instanceof Block){
+            final Block asBlock = (Block)s;
+            StringBuilder result = new StringBuilder();
+            result.append("{");
+
+            for (final Stmt stmt : asBlock.blockStmts){
+                result.append(generateStmt(stmt));
+            }
+            return result + "}";
+        }
+        else if (s instanceof ReturnStmt){
             final ReturnStmt asReturn = (ReturnStmt)s;
             if (asReturn.exp == null) {
                 return "return;";
