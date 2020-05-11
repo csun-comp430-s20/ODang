@@ -7,6 +7,7 @@
     <groupId>org.comp430</groupId>
     <artifactId>ODang</artifactId>
     <version>1.0_DEV</version>
+    <packaging>jar</packaging>
 
     <dependencies>
         <dependency>
@@ -34,6 +35,20 @@
     </properties>
     <build>
         <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>3.2.0</version>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <addClasspath>true</addClasspath>
+                            <classpathPrefix>lib/</classpathPrefix>
+                            <mainClass>ODang</mainClass>
+                        </manifest>
+                    </archive>
+                </configuration>
+            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
@@ -78,6 +93,7 @@
                     </execution>
                 </executions>
             </plugin>
+
         </plugins>
     </build>
 
