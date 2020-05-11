@@ -506,7 +506,7 @@ public class Typechecker {
             if (asInvoc.exp instanceof IdentifierLiteral) {
                 final IdentifierLiteral methodIdentifier = (IdentifierLiteral)asInvoc.exp;
 
-                //this throws an exception of function isnt in scope
+                //this throws an exception if function isnt in scope
                 final FunctionDefinition methodDef = env.lookupFunction(methodIdentifier.name);
                 final Type returnType = methodDef.returnType;
 
@@ -526,7 +526,7 @@ public class Typechecker {
                 return returnType;
 
             } else if (asInvoc.exp instanceof FieldAccessExp) {
-                return null;
+                return typeof(env, asInvoc.exp);
 
             } else {
                 throw new IllTypedException("Not a valid method call: " + e);

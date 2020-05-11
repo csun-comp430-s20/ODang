@@ -678,4 +678,15 @@ public class TypecheckerTest {
         final ClassDecl decl = (ClassDecl)parser.parseProgram().get(0);
         Assertions.assertThrows(IllTypedException.class, () -> typecheckClass(null, decl));
     }
+
+    @Test
+    public void checkTypeOfMethodInvocationInteger() {
+        final FunctionDefinition intMethod = new FunctionDefinition(new IntType(),
+                "testMethod", null, null, new ReturnStmt(new IntegerLiteral(2)));
+        final TypeEnvironment env = Typechecker.createEmptyTypeEnvironment();
+        final TypeEnvironment newEnv = env.addFunction("testMethod", intMethod);
+        assertTypechecksExp(newEnv, new IntType(), "int testMethod() {return 2;}");
+
+    }
+
 }
