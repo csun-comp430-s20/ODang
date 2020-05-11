@@ -85,12 +85,15 @@ public class CodeGenerator  {
         }
         else if (e instanceof ArgumentList){
             final ArgumentList asArg = (ArgumentList)e;
-            String result = "(";
+            StringBuilder result = new StringBuilder();
+            result.append("(");
+
             for (final Exp curArg : asArg.expList){
                 if (asArg.expList.indexOf(curArg) == asArg.expList.size() - 1){
-                    result = result + generateExp(curArg);
+                    result.append(generateExp(curArg));
                 } else {
-                    result = result + generateExp(curArg) + ",";
+                    result.append(generateExp(curArg));
+                    result.append(",");
                 }
             }
             return result + ")";
