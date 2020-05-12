@@ -1,14 +1,33 @@
-# ODang
-The ODang language by Charles Dang, Giovanni Orozco and Marius Larnøy for Comp 430 CSUN  
-Language Design Proposal: ODANG  
-Student Names: Charles Dang, Giovanni Orozco, Marius Larnøy  
-Language Name: ODANG  
-Compiler Implementation Language and Reasoning: Java. We already know how to code in Java.
-Target Language: Javascript  
-Language Description:  Object-oriented programming. We’re going to create a Java-like language that is more optimized and useful.  
-Planned Restrictions: No garbage collection.  
+## ODang
+#### _Created by Charles Dang, Marius Kleppe Larnøy and Giovanni Orozco_
+ODang is an object-oriented language written in Java that compiles to JavaScript. 
 
-Computation Abstraction Non-Trivial Feature: Object-oriented classes  
-Non-Trivial Feature #2: Subtyping  
-Non-Trivial Feature #3: Operator Overloading  
-Work Planned for Custom Component: Subtyping will be left for the end since we need object-oriented classes implemented first
+## Getting Started 
+You can either: 
+1. Download the ODang.jar and run it with `java -jar ODang.jar`
+2. Download the source and run it with Maven using `mvn exec:java -D exec.mainClass=ODang`
+
+
+## Features
+Odang implements object-oriented classes and subtyping into JavaScript using prototype based inheritence.
+Notable features:
+* Object-oriented classes
+* Subtyping
+* Strong types
+
+
+## Syntax
+ODang uses a Java-like syntax
+
+*Hello World in ODang*
+```java
+class Foo {
+  println("Hello World");
+}
+```
+
+## Limitations
+* No garbage collection
+* Limited set of types
+* Unlike Java there are no access modifiers, everything is implicitly public 
+
