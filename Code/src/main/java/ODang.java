@@ -4,9 +4,7 @@ import Parser.Declarations.Decl;
 import Typechecker.Typechecker;
 import CodeGenerator.CodeGenerator;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
+import java.io.*;
 import java.util.List;
 import java.util.Scanner;
 
@@ -17,22 +15,34 @@ public class ODang {
         System.out.println("Created by: \nCharles Dang, " +
                 "Marius Kleppe Larnøy and Giovanni Orozco\n");
 
-        try {
-            final Scanner scanner = new Scanner(System.in);
-            String inputFileName;
-
-            while (true) {
-                System.out.println("Specify file to compile (.odang) > ");
-                final String userInput = scanner.nextLine();
-                final String[] split = userInput.split("\\.");
-                final String extension = split[1];
-                if (extension.equalsIgnoreCase("odang")) {
-                    inputFileName = userInput;
+        while(true) {
+            try {
+                final String programString = readFile(new Scanner(System.in));
+                if (programString.equalsIgnoreCase("q"))
                     break;
-                }
-                System.out.println("." + extension + " is not a valid extension, try again\n");
+
+                compile(programString);
+                System.out.println("Compilation complete!\nFile saved as <filename>.js");
+                break;
+            } catch (Exception e) {
+                System.out.println(e.getLocalizedMessage());
             }
-            scanner.close();
+        }
+
+    }
+
+    public static String readFile(final Scanner scanner) throws IOException, InvalidFileNameException {
+
+        System.out.println("Specify file to compile (<filename>.odang) \nEnter 'q' to exit\n >");
+        String inputFileName = scanner.nextLine();
+
+        if (inputFileName.equalsIgnoreCase("q"))
+            return inputFileName;
+        else {
+
+            final String extension = inputFileName.split("\\.")[1];
+            if (!extension.equalsIgnoreCase("odang"))
+                throw new InvalidFileNameException("Invalid file extension: " + extension);
 
             final File file = new File(inputFileName);
             final BufferedReader br = new BufferedReader(new FileReader(file));
@@ -42,18 +52,21 @@ public class ODang {
                 tokenizerInput += line;
             }
             br.close();
+            scanner.close();
+            return tokenizerInput;
+        }
+    }
+    public static void compile(final String input) {
+        try {
             final List<Decl> AST = (
-                    new Parser(new Tokenizer(tokenizerInput).tokenize()).parseProgram()
-                    );
+                    new Parser(new Tokenizer(input).tokenize()).parseProgram()
+            );
             new Typechecker(AST).typecheckProgram();
-            System.out.println(AST);
             final CodeGenerator codeGen = new CodeGenerator(AST);
 
-            //TODO create output file
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
+            //TODO finish generation
+        } catch(final Exception e) {
+            System.out.println(e.getLocalizedMessage());
         }
-
-
     }
 }
