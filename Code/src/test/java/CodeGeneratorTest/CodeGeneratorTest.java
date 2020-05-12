@@ -292,4 +292,14 @@ public class CodeGeneratorTest {
     public void checkGeneratesForStatementWithTwoInitializers() {
         assertGenerateStmtFromString("for(foo=0,bar=1;foo<5;foo++){return foo;}", "for(foo = 0, bar = 1; foo < 5; foo++) {return foo;}");
     }
+
+    @Test
+    public void checkGeneratesIfElseStatement() {
+        assertGenerateStmtFromString("if(x<0){x=1;}else{x=2;}", "if(x < 0) {x = 1;} else {x = 2;}");
+    }
+
+    @Test
+    public void checkGeneratesWhileStatement() {
+        assertGenerateStmtFromString("while(x==5){x+=1;}", "while (x == 5) { x += 1;}");
+    }
 }

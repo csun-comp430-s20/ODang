@@ -60,13 +60,32 @@ public class CodeGenerator  {
             final ForStmt asFor = (ForStmt)s;//local var decl
             String result = "for(";
             final String init = generateStmt(asFor.forInit);
-            result = result + init + ";";
+            result += init + ";";
             final String conditional = generateExp(asFor.conditional);
-            result = result + conditional + ";";
+            result += conditional + ";";
             final String update = generateStmt(asFor.forUpdate);
-            result = result + update + ")";
+            result  += update + ")";
             final String block = generateStmt(asFor.body);
             return result + block;
+        }
+        else if (s instanceof IfElseStmt){
+            final IfElseStmt asIf = (IfElseStmt)s;
+            String result = "if(";
+            final String guard = generateExp(asIf.guard);
+            result += guard + ")";
+            final String trueBranch = generateStmt(asIf.trueBranch);
+            result += trueBranch + "else";
+            final String falseBranch = generateStmt(asIf.falseBranch);
+            return result + falseBranch;
+        }
+        else if (s instanceof WhileStmt){
+            final WhileStmt asWhile = (WhileStmt)s;
+            String result = "while(";
+            final String guard = generateExp(asWhile.guard);
+            result+= guard + ")";
+            final String body = generateStmt(asWhile.body);
+
+            return result + body;
         }
         else if (s instanceof ReturnStmt){
             final ReturnStmt asReturn = (ReturnStmt)s;
