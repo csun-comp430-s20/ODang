@@ -406,6 +406,10 @@ public class Typechecker {
 
 
         }
+        else if (s instanceof ExprStmt) {
+            final ExprStmt exprStmt = (ExprStmt)s;
+            return typecheckStmt(env, breakOk, exprStmt.stmt);
+        }
 
         else if (s instanceof StmtExpr) {
             final StmtExpr stmtExpr = (StmtExpr)s;
