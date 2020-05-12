@@ -16,6 +16,21 @@ public class CodeGenerator  {
         this.AST = AST;
     }
 
+    public String generateDecl(final Decl d) throws CodeGeneratorException{
+        if (d instanceof VarDeclarator){
+            final VarDeclarator asVar = (VarDeclarator)d;
+            if (asVar.exp == null){
+                return generateExp(asVar.identifier);
+            }
+            else
+                return generateExp(asVar.identifier) + "=" + generateExp(asVar.exp);
+        }
+        else{
+            assert(false);
+            throw new CodeGeneratorException("Unrecognizable declaration.");
+        }
+    }
+
     /**
      * attempts to code generate a statement
      * @param s current statement

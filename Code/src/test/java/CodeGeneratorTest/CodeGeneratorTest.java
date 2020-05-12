@@ -36,6 +36,16 @@ public class CodeGeneratorTest {
         }
     }
 
+    public static void assertGeneratesDeclFromString(final String expected, final String receieved) {
+        try {
+            final Parser parser = new Parser(new Tokenizer(receieved).tokenize());
+            final Decl parsedDecl = (parser.parseTopLevelClass());
+            Assertions.assertEquals(expected, new CodeGenerator(null).generateDecl(parsedDecl));
+        }catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     //***EXPR TESTS***//
     @Test
     public void checkGeneratesBoolean() {
@@ -302,4 +312,7 @@ public class CodeGeneratorTest {
     public void checkGeneratesWhileStatement() {
         assertGenerateStmtFromString("while(x==5){x+=1;}", "while (x == 5) { x += 1;}");
     }
+
+    //***DECL TESTS***//
+
 }
