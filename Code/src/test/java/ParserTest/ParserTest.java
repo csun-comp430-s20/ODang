@@ -451,8 +451,8 @@ public class ParserTest {
     @Test
     public void checkParsesWhileStmt() {
         List<Stmt> blockStmts = new ArrayList<>();
-        blockStmts.add(new StmtExpr(new BinaryOperatorExp(
-                "+=", new IdentifierLiteral("foo"), new IntegerLiteral(1))));
+        blockStmts.add(new ExprStmt(new StmtExpr(new BinaryOperatorExp(
+                "+=", new IdentifierLiteral("foo"), new IntegerLiteral(1)))));
         final Stmt expected = new WhileStmt(
                 new BinaryOperatorExp("<", new IdentifierLiteral("foo"), new IntegerLiteral(5)),
                 new Block(blockStmts));
@@ -473,11 +473,11 @@ public class ParserTest {
         List<Stmt> trueBranch = new ArrayList<>();
         List<Stmt> falseBranch = new ArrayList<>();
 
-        trueBranch.add(new StmtExpr(new FieldAccessExp(new IdentifierLiteral("foo"), new MethodInvocation(
-                new IdentifierLiteral("method"), new ArgumentList(null)))));
+        trueBranch.add(new ExprStmt(new StmtExpr(new FieldAccessExp(new IdentifierLiteral("foo"), new MethodInvocation(
+                new IdentifierLiteral("method"), new ArgumentList(null))))));
 
-        falseBranch.add(new StmtExpr(new FieldAccessExp(new IdentifierLiteral("bar"), new MethodInvocation(
-                new IdentifierLiteral("method2"), new ArgumentList(null)))));
+        falseBranch.add(new ExprStmt(new StmtExpr(new FieldAccessExp(new IdentifierLiteral("bar"), new MethodInvocation(
+                new IdentifierLiteral("method2"), new ArgumentList(null))))));
         final Stmt expected = new IfElseStmt(new BinaryOperatorExp(
                 "==", new IdentifierLiteral("foo"), new IntegerLiteral(2)),
                 new Block(trueBranch),
@@ -488,10 +488,10 @@ public class ParserTest {
     @Test
     public void checkParsesBlockStmts() {
         List<Stmt> blockStmts = new ArrayList<>();
-        blockStmts.add(new StmtExpr(new BinaryOperatorExp(
-                "=", new IdentifierLiteral("x"), new IntegerLiteral(2))));
-        blockStmts.add(new StmtExpr(new BinaryOperatorExp(
-                "=", new IdentifierLiteral("y"), new IntegerLiteral(5))));
+        blockStmts.add(new ExprStmt(new StmtExpr(new BinaryOperatorExp(
+                "=", new IdentifierLiteral("x"), new IntegerLiteral(2)))));
+        blockStmts.add(new ExprStmt(new StmtExpr(new BinaryOperatorExp(
+                "=", new IdentifierLiteral("y"), new IntegerLiteral(5)))));
         blockStmts.add(new ReturnStmt(new IdentifierLiteral("x")));
         final Stmt expected = new Block(blockStmts);
 

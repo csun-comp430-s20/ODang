@@ -826,7 +826,7 @@ public class Parser {
     private ParseResult<Stmt> parseExprStmt(final int startPos) throws ParseException {
         final ParseResult<Stmt> stmtExpr = parseStmtExpr(startPos);
         checkTokenIs(stmtExpr.nextPos, new SemiColonToken());
-        return new ParseResult<Stmt>(stmtExpr.result, stmtExpr.nextPos + 1);
+        return new ParseResult<Stmt>(new ExprStmt(stmtExpr.result), stmtExpr.nextPos + 1);
     }
     /**
      * attempts to parse a <stmt expr>, ie <assignment> | <preincrement expr> | <predecrement expr> |

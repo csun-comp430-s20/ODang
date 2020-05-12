@@ -88,7 +88,7 @@ public class CodeGeneratorTest {
     }
 
     @Test
-    public void checkGeneratesMultipleAdditions() {
+    public void checkGeneratesThreeAdditions() {
         assertGenerateExpFromString("5+6+7+8", "5+6+7+8");
     }
 
@@ -98,7 +98,7 @@ public class CodeGeneratorTest {
     }
 
     @Test
-    public void checkGeneratesMultipleSubtraction() {
+    public void checkGeneratesThreeSubtraction() {
         assertGenerateExpFromString("42-30-2-1", "42 - 30 - 2 - 1");
     }
 
@@ -108,7 +108,7 @@ public class CodeGeneratorTest {
     }
 
     @Test
-    public void checkGeneratesMultipleMultiplications() {
+    public void checkGeneratesFourMultiplications() {
         assertGenerateExpFromString("1*2*3*4*5", "1*2*3*4*5");
     }
 
@@ -118,7 +118,7 @@ public class CodeGeneratorTest {
     }
 
     @Test
-    public void checkGeneratesMultipleDivisions() {
+    public void checkGeneratesTwoDivisions() {
         assertGenerateExpFromString("10/5/1", "10/5/1");
     }
 
@@ -128,7 +128,7 @@ public class CodeGeneratorTest {
     }
 
     @Test
-    public void checkGeneratesMultipleLessThan() {
+    public void checkGeneratesThreeLessThan() {
         assertGenerateExpFromString("9<10<14<22", "9<10<14<22");
     }
 
@@ -138,7 +138,7 @@ public class CodeGeneratorTest {
     }
 
     @Test
-    public void checkGeneratesMultipleGreatThan() {
+    public void checkGeneratesTwoGreatThan() {
         assertGenerateExpFromString("33>20>10", "33>20>10");
     }
 
@@ -148,7 +148,7 @@ public class CodeGeneratorTest {
     }
 
     @Test
-    public void checkGeneratesMultipleNotEqual() {
+    public void checkGeneratesThreeNotEqual() {
         assertGenerateExpFromString("3!=4!=5!=6", "3!=4!=5!=6");
     }
 
@@ -158,7 +158,7 @@ public class CodeGeneratorTest {
     }
 
     @Test
-    public void checkGeneratesMultipleEqual() {
+    public void checkGeneratesThreeEqual() {
         assertGenerateExpFromString("10==10==10==10", "10==10==10==10");
     }
 
@@ -168,7 +168,7 @@ public class CodeGeneratorTest {
     }
 
     @Test
-    public void checkGeneratesMultipleAssignment() {
+    public void checkGeneratesTwoAssignments() {
         assertGenerateExpFromString("x=y=5", "x = y = 5");
     }
 
@@ -178,7 +178,7 @@ public class CodeGeneratorTest {
     }
 
     @Test
-    public void checkGeneratesMultiplePlusAssignments() {
+    public void checkGeneratesTwoPlusAssignments() {
         assertGenerateExpFromString("a+=b+=7", "a += b += 7");
     }
 
@@ -188,7 +188,7 @@ public class CodeGeneratorTest {
     }
 
     @Test
-    public void checkGeneratesMultipleSubtractAssignment() {
+    public void checkGeneratesThreeSubtractAssignment() {
         assertGenerateExpFromString("d-=e-=f-=27", "d -= e -= f -= 27");
     }
 
@@ -208,12 +208,12 @@ public class CodeGeneratorTest {
     }
 
     @Test
-    public void checkGeneratesFieldAccessWithMultipleArguments() {
+    public void checkGeneratesFieldAccessWithThreeArguments() {
         assertGenerateExpFromString("test.foo(false,2,5)", "test.foo(false,2,5)");
     }
 
     @Test
-    public void checkGeneratesFieldAccessWithMultipleDots() {
+    public void checkGeneratesFieldAccessWithTwoDots() {
         assertGenerateExpFromString("func.test.work(10,false)",
                 "func.test.work(10,false)");
     }
@@ -223,7 +223,7 @@ public class CodeGeneratorTest {
     }
 
     @Test
-    public void checkGeneratesMethodWithMultipleArguments() {
+    public void checkGeneratesMethodWithThreeArguments() {
         assertGenerateExpFromString("beta(2,true,false)", "beta(2,true,false)");
     }
 
@@ -286,5 +286,10 @@ public class CodeGeneratorTest {
     @Test
     public void checkGeneratesBlockWithFieldAccess() {
         assertGenerateStmtFromString("{foo.box();}", "{foo.box();}");
+    }
+
+    @Test
+    public void checkGeneratesForStatementWithTwoInitializers() {
+        assertGenerateStmtFromString("for(foo=0,bar=1;foo<5;foo++){return foo;}", "for(foo = 0, bar = 1; foo < 5; foo++) {return foo;}");
     }
 }

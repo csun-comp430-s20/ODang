@@ -23,9 +23,28 @@ public class CodeGenerator  {
      * @throws CodeGeneratorException unrecognized statement
      */
     public String generateStmt(final Stmt s) throws CodeGeneratorException{
-        if (s instanceof StmtExpr){
+        if (s instanceof ExprStmt){
+            final ExprStmt asExprStmt = (ExprStmt)s;
+            return generateStmt(asExprStmt.stmt) + ";";
+        }
+        else if (s instanceof StmtExpr){
             final StmtExpr asStmtExpr = (StmtExpr)s;
-            return generateExp(asStmtExpr.exp) + ";";
+            return generateExp(asStmtExpr.exp) /*+ ";"*/;
+        }
+        else if (s instanceof StmtExprList){
+            final StmtExprList asStmtExprList = (StmtExprList)s;
+            StringBuilder result = new StringBuilder();
+
+            for (final Stmt stmt : asStmtExprList.list){
+                if (asStmtExprList.list.indexOf(stmt) == asStmtExprList.list.size() - 1){
+                    result.append(generateStmt(stmt));
+                } else {
+                    result.append(generateStmt(stmt));
+                    result.append(",");
+                }
+            }
+
+            return result.toString();
         }
         else if (s instanceof Block){
             final Block asBlock = (Block)s;
@@ -36,6 +55,18 @@ public class CodeGenerator  {
                 result.append(generateStmt(stmt));
             }
             return result + "}";
+        }
+        else if (s instanceof ForStmt){
+            final ForStmt asFor = (ForStmt)s;//local var decl
+            String result = "for(";
+            final String init = generateStmt(asFor.forInit);
+            result = result + init + ";";
+            final String conditional = generateExp(asFor.conditional);
+            result = result + conditional + ";";
+            final String update = generateStmt(asFor.forUpdate);
+            result = result + update + ")";
+            final String block = generateStmt(asFor.body);
+            return result + block;
         }
         else if (s instanceof ReturnStmt){
             final ReturnStmt asReturn = (ReturnStmt)s;
