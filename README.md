@@ -17,15 +17,35 @@ Notable features:
 
 
 ## Syntax
-ODang uses a Java-like syntax
+ODang uses a Java-like syntax, with some simplifications
+Legal types: `int`, `boolean`, `String`, ClassType
 
-*Hello World in ODang*
-```java
-class Foo {
-  println("Hello World");
+*Class Definition*
+```
+class Foo {}
+class Foo extends Bar {}
+```
+*Class Instance Creation*
+```
+Foo bar = new Foo();
+```
+*Method Declaration*
+```
+int plusOne(int x) {
+  return x + 1;
 }
 ```
 
+*Field declarations and access*
+```
+class Foo {
+  int x = 2;
+}
+class Bar {
+  Foo obj = new Foo();
+  int y = obj.x + 2;
+}
+```
 ## Limitations
 * No garbage collection
 * Limited set of types
