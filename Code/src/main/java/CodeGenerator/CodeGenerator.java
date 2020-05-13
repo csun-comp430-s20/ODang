@@ -17,7 +17,72 @@ public class CodeGenerator  {
     }
 
     public String generateDecl(final Decl d) throws CodeGeneratorException{
-        if (d instanceof VarDeclarator){
+        if (d instanceof ClassDecl){
+            final ClassDecl asClassDecl = (ClassDecl)d;
+            String result = "function ";
+            result += generateExp(asClassDecl.identifier) + "(";
+            if (asClassDecl.extendsClass == null){//TODO this and super
+                if (asClassDecl.classBody == null) {
+                    return result += "){}";
+                }else{
+                    final ClassBodyDecs asClassBodyDecs = (ClassBodyDecs)asClassDecl.classBody;
+                    final StringBuilder parameters = new StringBuilder();
+
+                    for (Decl decl : asClassBodyDecs.classBodyDecs){
+                        if (decl instanceof ConstructorDecl){
+                            final ConstructorDecl asConstructorDecl = (ConstructorDecl)decl;
+                            final ConstructorDeclarator asConstructorDeclarator = (ConstructorDeclarator)asConstructorDecl.constructorDeclarator;
+                            final String curParams = generateDecl(asConstructorDeclarator.paramList);
+
+                            //check multiple constructors
+                            //if (parameters.toString().contains())
+                        }
+
+                    }
+                }
+            }
+            if (asClassDecl.classBody == null){
+                return result += "{}";
+            }
+            return null;
+        }
+        else if (d instanceof ConstructorDeclarator){
+            final ConstructorDeclarator asConstructorDeclarator = (ConstructorDeclarator)d;
+
+            if (asConstructorDeclarator.paramList == null){
+                return "";
+            }
+            else {
+                return generateDecl(asConstructorDeclarator.paramList);
+            }
+        }
+        else if (d instanceof FormalParamList){
+            final FormalParamList asFormalParamList = (FormalParamList)d;
+            StringBuilder result = new StringBuilder();
+
+            for (final Decl decl : asFormalParamList.declList){
+                final FormalParam asFormalParam = (FormalParam)decl;
+                if (asFormalParamList.declList.indexOf(decl) == asFormalParamList.declList.size() - 1){
+                    result.append(generateExp(asFormalParam.paramIdentifier));
+                } else {
+                    result.append(generateExp(asFormalParam.paramIdentifier));
+                    result.append(",");
+                }
+            }
+
+            return result.toString();
+        }
+        else if (d instanceof ConstructorBody){
+            final ConstructorBody asConstructorBody = (ConstructorBody)d;
+            if (asConstructorBody.explConstrInvoc == null){
+                String body = generateStmt(asConstructorBody.blockStmts);
+                return body.substring(0, body.length() - 1);
+            }
+            else {
+                return "";//TODO this and super
+            }
+        }
+        else if (d instanceof VarDeclarator){
             final VarDeclarator asVar = (VarDeclarator)d;
             if (asVar.exp == null){
                 return generateExp(asVar.identifier);

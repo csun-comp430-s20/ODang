@@ -314,5 +314,8 @@ public class CodeGeneratorTest {
     }
 
     //***DECL TESTS***//
-
+    @Test
+    public void checkGeneratesEmptyClass() {
+        assertGeneratesDeclFromString("function Bar(){}", "class Bar{}");
+    }
 }
