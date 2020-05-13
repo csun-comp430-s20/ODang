@@ -18,6 +18,7 @@ Notable features:
 
 ## Syntax
 ODang uses a Java-like syntax, with some simplifications
+
 Legal types: `int`, `boolean`, `String`, ClassType
 
 *Class Definition*
