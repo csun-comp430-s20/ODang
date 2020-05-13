@@ -75,7 +75,11 @@ public class CodeGenerator  {
         else if (d instanceof ConstructorBody){
             final ConstructorBody asConstructorBody = (ConstructorBody)d;
             if (asConstructorBody.explConstrInvoc == null){
-                String body = generateStmt(asConstructorBody.blockStmts);
+                //TODO check if this is working correctly
+                String body = "";
+                for (final Stmt bodyStmt : asConstructorBody.blockStmts) {
+                    body += generateStmt(bodyStmt);
+                }
                 return body.substring(0, body.length() - 1);
             }
             else {

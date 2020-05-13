@@ -2,11 +2,13 @@ package Parser.Declarations;
 
 import Parser.Statements.Stmt;
 
+import java.util.List;
+
 public class ConstructorBody implements Decl {
     public final Decl explConstrInvoc;
-    public final Stmt blockStmts;
+    public final List<Stmt> blockStmts;
 
-    public ConstructorBody(final Decl explConstrInvoc, final Stmt blockStmts) {
+    public ConstructorBody(final Decl explConstrInvoc, final List<Stmt> blockStmts) {
         this.explConstrInvoc = explConstrInvoc;
         this.blockStmts = blockStmts;
     }

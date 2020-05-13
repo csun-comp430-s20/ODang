@@ -236,7 +236,6 @@ public class Parser {
     private ParseResult<List<Decl>> parseClassBodyDeclHelper(final int startPos) {
         final List<Decl> resultList = new ArrayList<Decl>();
         int curPos = startPos;
-
         while (curPos < tokens.size()) {
 
             try{
@@ -316,9 +315,10 @@ public class Parser {
     private ParseResult<Decl> parseConstructorDeclarator(final int startPos) throws ParseException {
         final ParseResult<Exp> identifier = parseLiteral(startPos);
         checkTokenIs(identifier.nextPos, new LeftParenToken());
-        if (readToken(identifier.nextPos + 1) instanceof RightParenToken)
+        if (readToken(identifier.nextPos + 1) instanceof RightParenToken) {
             return new ParseResult<Decl>(new ConstructorDeclarator(
-                    identifier.result, null), identifier.nextPos + 2);
+                    identifier.result, new FormalParamList()), identifier.nextPos + 2);
+        }
 
         final ParseResult<FormalParamList> paramList = parseFormalParamList(identifier.nextPos + 1);
         checkTokenIs(paramList.nextPos, new RightParenToken());
@@ -344,10 +344,10 @@ public class Parser {
             checkTokenIs(blockStmts.nextPos, new RightCurlyToken());
             return new ParseResult<Decl>(new ConstructorBody(
                     explicitConstructorInvocation.result,
-                    new Block(blockStmts.result)), blockStmts.nextPos + 1);
+                    blockStmts.result), blockStmts.nextPos + 1);
         }
         else {
-            final ParseResult<Stmt> blockStmts = parseBlock(startPos + 1);
+            final ParseResult<List<Stmt>> blockStmts = parseBlockStmtHelper(startPos + 1);
             checkTokenIs(blockStmts.nextPos, new RightCurlyToken());
             return new ParseResult<Decl>(new ConstructorBody(
                     null,

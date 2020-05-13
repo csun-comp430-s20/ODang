@@ -252,11 +252,16 @@ public class Typechecker {
                 return null;
                 //TODO implement super/this class constructor
             }
-            else if (body.blockStmts instanceof Block){
-                final Block blockStmts = (Block)body.blockStmts;
-                newEnv = typecheckStmts(newEnv, false, blockStmts);
+            else if (!body.blockStmts.isEmpty()){
+                final List<Stmt> blockStmts = body.blockStmts;
+                for (final Stmt bodyStmt : blockStmts) {
+                    newEnv = typecheckStmts(newEnv, false, bodyStmt);
+                }
+
                 return newEnv;
             }
+            else if (body.blockStmts.isEmpty())
+                return env;
             else
                 throw new IllTypedException("Invalid form of constructor");
         }
@@ -278,7 +283,7 @@ public class Typechecker {
                 else {
                     final Type actualType = typeof(updatedEnv, varDec.exp);
                     if (!(fieldType.equals(actualType)))
-                        throw new IllTypedException("Field declared " + fieldDecl + ", cannot assign " + actualType);
+                        throw new IllTypedException("Field declared " + fieldType + ", cannot assign " + actualType);
                     else {
                         updatedEnv = updatedEnv.addVariable(identifier.name, fieldType);
                     }
