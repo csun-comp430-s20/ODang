@@ -17,13 +17,16 @@ public class CodeGenerator  {
     }
 
     public String generateDecl(final Decl d) throws CodeGeneratorException{
-        if (d instanceof ClassDecl){
+        if (d instanceof ClassDecl){//TODO make this look nice if time permits
             final ClassDecl asClassDecl = (ClassDecl)d;
-            String result = "function ";
-            result += generateExp(asClassDecl.identifier) + "(";
+            StringBuilder result = new StringBuilder();
+            result.append("function ");
+            StringBuilder body = new StringBuilder();
+            result.append(generateExp(asClassDecl.identifier));
+            result.append("(");
             if (asClassDecl.extendsClass == null){//TODO this and super
                 if (asClassDecl.classBody == null) {
-                    return result += "){}";
+                    return result.append("){}").toString();
                 }else{
                     final ClassBodyDecs asClassBodyDecs = (ClassBodyDecs)asClassDecl.classBody;
                     final StringBuilder parameters = new StringBuilder();
@@ -34,17 +37,46 @@ public class CodeGenerator  {
                             final ConstructorDeclarator asConstructorDeclarator = (ConstructorDeclarator)asConstructorDecl.constructorDeclarator;
                             final String curParams = generateDecl(asConstructorDeclarator.paramList);
 
-                            //check multiple constructors
+                            //TODO check multiple constructors
                             //if (parameters.toString().contains())
                         }
+                        else if (decl instanceof FieldDecl){
+                            final FieldDecl asFieldDecl = (FieldDecl)decl;
+                            StringBuilder declString = new StringBuilder();
+                            declString.append("var ");
+                            final VarDeclaratorList asVarDeclaratorList = (VarDeclaratorList)asFieldDecl.varDeclarators;
 
+                            for (Decl vardecl : asVarDeclaratorList.varDeclList){
+                                final VarDeclarator asVarDeclarator = (VarDeclarator)vardecl;
+
+                                if (asVarDeclarator.exp == null){
+                                    declString.append(generateExp(asVarDeclarator.identifier));
+                                } else {
+                                    declString.append(generateExp(asVarDeclarator.identifier));
+                                    declString.append("=");
+                                    declString.append(generateExp(asVarDeclarator.exp));
+                                }
+                                if (asVarDeclaratorList.varDeclList.indexOf(vardecl) == asVarDeclaratorList.varDeclList.size() - 1){
+                                   //do nothing
+                                } else {
+                                    declString.append(",");
+                                }
+                            }
+                            body.append(declString);
+                            body.append(";");
+                        }
                     }
+
+                    result.append(")");
                 }
             }
             if (asClassDecl.classBody == null){
-                return result += "{}";
+                return result.append("{}").toString();
+            } else {
+                result.append("{");
+                result.append(body);
+                return result.append("}").toString();
             }
-            return null;
         }
         else if (d instanceof ConstructorDeclarator){
             final ConstructorDeclarator asConstructorDeclarator = (ConstructorDeclarator)d;
@@ -76,9 +108,9 @@ public class CodeGenerator  {
             final ConstructorBody asConstructorBody = (ConstructorBody)d;
             if (asConstructorBody.explConstrInvoc == null){
                 //TODO check if this is working correctly
-                String body = "";
+                StringBuilder body = new StringBuilder();
                 for (final Stmt bodyStmt : asConstructorBody.blockStmts) {
-                    body += generateStmt(bodyStmt);
+                    body.append(generateStmt(bodyStmt));
                 }
                 return body.substring(0, body.length() - 1);
             }

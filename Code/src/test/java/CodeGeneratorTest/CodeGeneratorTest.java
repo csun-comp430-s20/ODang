@@ -318,45 +318,45 @@ public class CodeGeneratorTest {
     public void checkGeneratesEmptyClass() {
         assertGeneratesDeclFromString("function Bar(){}", "class Bar{}");
     }
-    
+
     @Test
     public void checkGeneratesClassWithInt() {
         assertGeneratesDeclFromString("function Bar(){var x=0;}", "class Bar{ int x = 0; }");
     }
-    
+
     @Test
     public void checkGeneratesClassWithString() {
         assertGeneratesDeclFromString("function Bar(){var x=\"test\";}", "class Bar{ string x = \"test\"; }");
     }
-    
+
     @Test
     public void checkGeneratesClassWithBoolean() {
         assertGeneratesDeclFromString("function Bar(){var x=true;}", "class Bar{ boolean x = true; }");
     }
-    
+
     @Test
     public void checkGeneratesClassWithIntAddition() {
         assertGeneratesDeclFromString("function Bar(){var x=1+2;}", "class Bar{ int x = 1 + 2;}");
     }
-    
+
     @Test
     public void checkGeneratesClassWithIntSubtraction() {
         assertGeneratesDeclFromString("function Bar(){var x=2-1;}", "class Bar{ int x = 2 - 1;}");
     }
-    
+
     @Test
     public void checkGeneratesClassWithIntMultiplication() {
         assertGeneratesDeclFromString("function Bar(){var x=2*2;}", "class Bar{ int x = 2 * 2;}");
     }
-    
+
     @Test
     public void checkGeneratesClassWithIntDivision() {
         assertGeneratesDeclFromString("function Bar(){var x=2/2;}", "class Bar{ int x = 2 / 2;}");
     }
-    
+
     @Test
     public void checkGeneratesClassWithTwoInts(){
-        assertGeneratesDeclFromString("function Bar(){var x=1; var y=2;", "class Bar{ int x = 1; int y = 2;");
+        assertGeneratesDeclFromString("function Bar(){var x=1;var y=2;}", "class Bar{ int x = 1; int y = 2;}");
     }
     
 }
