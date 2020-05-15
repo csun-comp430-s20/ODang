@@ -41,41 +41,13 @@ public class CodeGenerator  {
                             //if (parameters.toString().contains())
                         }
                         else if (decl instanceof FieldDecl){
-                            final FieldDecl asFieldDecl = (FieldDecl)decl;
-                            StringBuilder declString = new StringBuilder();
-                            declString.append("var ");
-                            final VarDeclaratorList asVarDeclaratorList = (VarDeclaratorList)asFieldDecl.varDeclarators;
-
-                            for (Decl vardecl : asVarDeclaratorList.varDeclList){
-                                final VarDeclarator asVarDeclarator = (VarDeclarator)vardecl;
-
-                                if (asVarDeclarator.exp == null){
-                                    declString.append(generateExp(asVarDeclarator.identifier));
-                                } else {
-                                    declString.append(generateExp(asVarDeclarator.identifier));
-                                    declString.append("=");
-                                    declString.append(generateExp(asVarDeclarator.exp));
-                                }
-                                if (asVarDeclaratorList.varDeclList.indexOf(vardecl) == asVarDeclaratorList.varDeclList.size() - 1){
-                                   //do nothing
-                                } else {
-                                    declString.append(",");
-                                }
-                            }
-                            body.append(declString);
+                            final String fieldDeclString = generateDecl(decl);
+                            body.append(fieldDeclString);
                             body.append(";");
                         }
                         else if (decl instanceof MethodDecl){
-                            final MethodDecl asMethodDecl = (MethodDecl)decl;
-
-                            final MethodHeader asMethodHeader = (MethodHeader)asMethodDecl.header;
-                            final MethodDeclarator asMethodDeclarator = (MethodDeclarator)asMethodHeader.methodDeclarator;
-                            final String methodName = generateExp(asMethodDeclarator.identifier);
-                            final String argList = generateDecl(asMethodDeclarator.paramList);
-                            final String methodBody = generateStmt(asMethodDecl.body);
-                            final String methodString = "this." + methodName + "=function(" + argList + ")" + methodBody;
-
-                            body.append(methodString);
+                            final String methodDeclString = generateDecl(decl);
+                            body.append(methodDeclString);
                         }
                     }
 
@@ -129,6 +101,42 @@ public class CodeGenerator  {
             else {
                 return "";//TODO this and super
             }
+        }
+        else if (d instanceof MethodDecl){
+            final MethodDecl asMethodDecl = (MethodDecl)d;
+
+            final MethodHeader asMethodHeader = (MethodHeader)asMethodDecl.header;
+            final MethodDeclarator asMethodDeclarator = (MethodDeclarator)asMethodHeader.methodDeclarator;
+            final String methodName = generateExp(asMethodDeclarator.identifier);
+            final String argList = generateDecl(asMethodDeclarator.paramList);
+            final String methodBody = generateStmt(asMethodDecl.body);
+
+            return "this." + methodName + "=function(" + argList + ")" + methodBody;
+        }
+        else if (d instanceof FieldDecl){
+            final FieldDecl asFieldDecl = (FieldDecl)d;
+            return generateDecl(asFieldDecl.varDeclarators);
+        }
+        else if (d instanceof VarDeclaratorList){
+            StringBuilder declString = new StringBuilder();
+            declString.append("var ");
+            final VarDeclaratorList asVarDeclaratorList = (VarDeclaratorList)d;
+
+            for (Decl vardecl : asVarDeclaratorList.varDeclList){
+                final VarDeclarator asVarDeclarator = (VarDeclarator)vardecl;
+
+                if (asVarDeclarator.exp == null){
+                    declString.append(generateExp(asVarDeclarator.identifier));
+                } else {
+                    declString.append(generateExp(asVarDeclarator.identifier));
+                    declString.append("=");
+                    declString.append(generateExp(asVarDeclarator.exp));
+                }
+                if (!(asVarDeclaratorList.varDeclList.indexOf(vardecl) == asVarDeclaratorList.varDeclList.size() - 1)){
+                    declString.append(",");
+                }
+            }
+            return declString.toString();
         }
         else if (d instanceof VarDeclarator){
             final VarDeclarator asVar = (VarDeclarator)d;
@@ -184,11 +192,18 @@ public class CodeGenerator  {
             }
             return result + "}";
         }
+        else if (s instanceof LocalVardec){
+            final LocalVardec asLocalVar = (LocalVardec)s;
+            return (generateDecl(asLocalVar.varDeclarators)) + ";";
+        }
         else if (s instanceof ForStmt){
             final ForStmt asFor = (ForStmt)s;//local var decl
             String result = "for(";
             final String init = generateStmt(asFor.forInit);
-            result += init + ";";
+            if (!(asFor.forInit instanceof LocalVardec))
+                result += init + ";";
+            else
+                result += init;
             final String conditional = generateExp(asFor.conditional);
             result += conditional + ";";
             final String update = generateStmt(asFor.forUpdate);

@@ -313,6 +313,42 @@ public class CodeGeneratorTest {
         assertGenerateStmtFromString("while(x==5){x+=1;}", "while (x == 5) { x += 1;}");
     }
 
+    @Test
+    public void checkGeneratesBlockWithLocalVariable() {
+        assertGenerateStmtFromString("{var x=5;}", "{int x = 5;}");
+    }
+
+    @Test
+    public void checkGeneratesBlockWithTwoLocalVariable() {
+        assertGenerateStmtFromString("{var x=5;var y=6;}", "{int x = 5; int y = 6;}");
+    }
+
+    @Test
+    public void checkGeneratesBlockWithStringVariable() {
+        assertGenerateStmtFromString("{var foo=\"hi\";}", "{String foo = \"hi\";}");
+    }
+
+    @Test
+    public void checkGeneratesBlockWithBooleanVariable() {
+        assertGenerateStmtFromString("{var x=true;}", "{boolean x = true;}");
+    }
+
+    @Test
+    public void checkGeneratesBlockWithLocalVariableAndReturnStatement() {
+        assertGenerateStmtFromString("{var x=5;return x;}", "{int x = 5; return x;}");
+    }
+
+    @Test
+    public void checkGeneratesBlockWithLocalVariableAndBreakStatement() {
+        assertGenerateStmtFromString("{var x=5;break x;}", "{int x = 5; break x;}");
+    }
+
+    @Test
+    public void checkGeneratesBlockWithLocalVariableAndForLoop() {
+        assertGenerateStmtFromString("{var x=5;for(var i=0;i<x;i++){x++;}}",
+                "{int x = 5; for(int i = 0; i < x; i++){x++;}}");
+    }
+
     //***DECL TESTS***//
     @Test
     public void checkGeneratesEmptyClass() {
