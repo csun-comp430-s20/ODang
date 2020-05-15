@@ -648,12 +648,13 @@ public class Typechecker {
             }
 
         }
-/*
+
+        //TODO finish
         else if (e instanceof ClassInstanceExp) {
             final ClassInstanceExp asClassInstance = (ClassInstanceExp)e;
-
+            return null;
         }
-*/
+
         else if (e instanceof IntegerLiteral) {
             return new IntType();
         }

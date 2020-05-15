@@ -4,6 +4,10 @@ import Parser.*;
 import Parser.Expressions.*;
 import Parser.Literals.*;
 import Parser.Statements.*;
+import Parser.Types.BooleanParserType;
+import Parser.Types.ClassParserType;
+import Parser.Types.IntParserType;
+import Parser.Types.StringParserType;
 import Tokenizer.*;
 import Typechecker.Types.*;
 import Typechecker.*;
@@ -189,6 +193,69 @@ public class TypecheckerTest {
     public void checkTypeOfNullLiteral() {
         assertTypechecksExp(null, new NullType(), "null");
     }
+
+    @Test
+    public void checkTypeOfCastExpIntToString() {
+        assertTypechecksExp(null, new StringType(), "(String) 2;");
+    }
+    @Test
+    public void checkTypeOfCastExpBoolToString() {
+        assertTypechecksExp(null, new StringType(), "(String) true;");
+    }
+    @Test
+    public void checkTypeOfCastExpSuperClassToSubclass() throws IllTypedException {
+        final ClassDecl fooDef = new ClassDecl(new IdentifierLiteral("Foo"), null);
+        final ClassDecl barDef = new ClassDecl(new IdentifierLiteral("Bar"),
+                new ClassParserType(new IdentifierLiteral("Foo")), null);
+
+        List<Decl> program = new ArrayList<>();
+        program.add(fooDef);
+        program.add(barDef);
+
+        final Typechecker typechecker = new Typechecker(program);
+        final TypeEnvironment env = typechecker.createEmptyTypeEnvironment();
+        final TypeEnvironment newEnv = env.addVariable("x", new ClassType("Foo"));
+        Assertions.assertEquals(new ClassType("Bar"), typechecker.typeof(newEnv,
+                new CastExp(new ClassParserType(new IdentifierLiteral("Bar")), new IdentifierLiteral("x"))));
+    }
+
+    @Test
+    public void checkThrowsExceptionCastedClassTypeDoesntExtendExpressionType() throws IllTypedException {
+        final ClassDecl fooDef = new ClassDecl(new IdentifierLiteral("Foo"), null);
+        final ClassDecl barDef = new ClassDecl(new IdentifierLiteral("Bar"), null);
+
+        List<Decl> program = new ArrayList<>();
+        program.add(fooDef);
+        program.add(barDef);
+
+        final Typechecker typechecker = new Typechecker(program);
+        final TypeEnvironment env = typechecker.createEmptyTypeEnvironment();
+        final TypeEnvironment newEnv = env.addVariable("x", new ClassType("Foo"));
+        Assertions.assertThrows(IllTypedException.class, () -> typechecker.typeof(newEnv,
+                new CastExp(new ClassParserType(new IdentifierLiteral("Bar")), new IdentifierLiteral("x"))));
+    }
+
+    @Test
+    public void checkThrowsExceptionCastToIllegalTypeStringToInt() {
+        final CastExp exp = new CastExp(new IntParserType(), new StringLiteral("Foo"));
+        Assertions.assertThrows(IllTypedException.class, () -> typeof(null, exp));
+    }
+    @Test
+    public void checkThrowsExceptionCastToIllegalTypeStringToBool() {
+        final CastExp exp = new CastExp(new BooleanParserType(), new StringLiteral("Foo"));
+        Assertions.assertThrows(IllTypedException.class, () -> typeof(null, exp));
+    }
+    @Test
+    public void checkThrowsExceptionCastToIllegalTypeIntToBool() {
+        final CastExp exp = new CastExp(new BooleanParserType(), new IntegerLiteral(1));
+        Assertions.assertThrows(IllTypedException.class, () -> typeof(null, exp));
+    }
+    @Test
+    public void checkThrowsExceptionCastToIllegalTypeBoolToInt() {
+        final CastExp exp = new CastExp(new IntParserType(), new BooleanLiteral(true));
+        Assertions.assertThrows(IllTypedException.class, () -> typeof(null, exp));
+    }
+
     @Test
     public void checkTypeOfBinopPlus() {
         assertTypechecksExp(null, new IntType(), "1 + 2");
