@@ -38,7 +38,7 @@ public class ODang {
             }
 
         }
-        System.out.printf("Compilation complete!\nFile saved as %s.js", userInput.split("\\.")[1]);
+        System.out.printf("Compilation complete!\nFile saved as %s.js", userInput.split("\\.")[0]);
         scanner.close();
     }
 

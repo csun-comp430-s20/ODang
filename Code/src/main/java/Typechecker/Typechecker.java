@@ -535,6 +535,34 @@ public class Typechecker {
             }
         }
 
+        else if (e instanceof CastExp) {
+            final CastExp asCast = (CastExp)e;
+            final Type castedType = convertParserType(asCast.parserType);
+            final Type expressionType = typeof(env, asCast.exp);
+
+            if (castedType.equals(expressionType))
+                return castedType;
+
+            else if (expressionType instanceof ClassType) {
+                final ClassDecl possibleSubClass = getClass(((ClassType) castedType).className);
+                if (possibleSubClass.extendsClass != null) {
+                    final Type subType = convertParserType(possibleSubClass.extendsClass);
+                    if (subType.equals(castedType))
+                        return castedType;
+                    else throw new IllTypedException("Cannot cast " + expressionType + " to " + castedType);
+                } else
+                    throw new IllTypedException("Cannot cast " + expressionType + " to " + castedType);
+            }
+            else if (expressionType instanceof IntType) {
+                if (castedType instanceof StringType)
+                    return new StringType();
+                else
+                    throw new IllTypedException("Cannot cast " + expressionType + " to " + castedType);
+            }
+            else
+                throw new IllTypedException("Cannot cast " + expressionType + " to " + castedType);
+        }
+
         else if (e instanceof PreIncrDecrExp) {
             final PreIncrDecrExp asPre = (PreIncrDecrExp)e;
             final Type expType = typeof(env, asPre.prefixExp);
