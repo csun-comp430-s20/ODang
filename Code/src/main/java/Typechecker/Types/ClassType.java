@@ -8,7 +8,7 @@ public class ClassType implements Type {
     }
     @Override
     public boolean equals(final Object other) {
-        return other instanceof ClassType;
+        return other instanceof ClassType && className.equals(((ClassType) other).className);
     }
     @Override
     public int hashCode() {
@@ -16,6 +16,6 @@ public class ClassType implements Type {
     }
     @Override
     public String toString() {
-        return String.format(this.getClass().getSimpleName());
+        return String.format(className);
     }
 }

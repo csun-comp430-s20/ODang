@@ -130,10 +130,10 @@ public class Typechecker {
      * @throws IllTypedException if key doesnt match
      */
     public ClassDecl getClass(final String className) throws IllTypedException {
-        final ClassDecl result = classes.get(className);
-        if (result == null)
+        if (!classes.containsKey(className))
             throw new IllTypedException("No such class defined: " + className);
-        else return result;
+        else
+            return classes.get(className);
     }
 
 
@@ -543,19 +543,20 @@ public class Typechecker {
             if (castedType.equals(expressionType))
                 return castedType;
 
-            else if (expressionType instanceof ClassType) {
+            else if (castedType instanceof ClassType && expressionType instanceof ClassType) {
                 final ClassDecl possibleSubClass = getClass(((ClassType) castedType).className);
                 if (possibleSubClass.extendsClass != null) {
-                    final Type subType = convertParserType(possibleSubClass.extendsClass);
-                    if (subType.equals(castedType))
+                    final Type superType = convertParserType(possibleSubClass.extendsClass);
+                    if (superType.equals(expressionType))
                         return castedType;
-                    else throw new IllTypedException("Cannot cast " + expressionType + " to " + castedType);
+                    else throw new IllTypedException("Cannot cast " + ((ClassType) expressionType).className
+                            + " to " + ((ClassType) castedType).className);
                 } else
                     throw new IllTypedException("Cannot cast " + expressionType + " to " + castedType);
             }
-            else if (expressionType instanceof IntType) {
-                if (castedType instanceof StringType)
-                    return new StringType();
+            else if (castedType instanceof StringType) {
+                if (expressionType instanceof IntType || expressionType instanceof BoolType)
+                    return castedType;
                 else
                     throw new IllTypedException("Cannot cast " + expressionType + " to " + castedType);
             }
@@ -647,9 +648,12 @@ public class Typechecker {
             }
 
         }
+/*
+        else if (e instanceof ClassInstanceExp) {
+            final ClassInstanceExp asClassInstance = (ClassInstanceExp)e;
 
-
-
+        }
+*/
         else if (e instanceof IntegerLiteral) {
             return new IntType();
         }
