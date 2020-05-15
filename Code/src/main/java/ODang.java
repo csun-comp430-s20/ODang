@@ -15,22 +15,21 @@ public class ODang {
         System.out.println("Welcome to ODang");
         System.out.println("Created by: Charles Dang, " +
                 "Marius Kleppe Larnøy and Giovanni Orozco\n");
-        String fileName = "";
+        String userInput = "";
+
+        Scanner scanner = new Scanner(System.in);
         while (true) {
             try {
                 System.out.println("Enter name of file to compile (<filename>.odang)\n" +
                         "Enter 'quit' to exit");
-                Scanner scanner = new Scanner(System.in);
-                final String userInput = scanner.nextLine();
+
+                userInput = scanner.nextLine();
                 if(userInput.equalsIgnoreCase("quit"))
-                    break;
+                    return;
                 else {
-                    fileName = userInput.split("\\.")[0];
-                    final String extension = userInput.split("\\.")[1];
-                    if (!extension.equalsIgnoreCase("odang"))
-                        break;
                     final String tokenizerInput = readFile(userInput);
                     compile(tokenizerInput);
+
                     break;
                 }
             } catch (final Exception e) {
@@ -39,11 +38,16 @@ public class ODang {
             }
 
         }
-        System.out.printf("Compilation complete!\nFile saved as %s.js", fileName);
-
+        System.out.printf("Compilation complete!\nFile saved as %s.js", userInput.split("\\.")[1]);
+        scanner.close();
     }
 
-    public static String readFile(final String fileName) throws IOException {
+    public static String readFile(final String fileName) throws IOException, InvalidFileNameException {
+
+        final String[] fileNameArray = fileName.split("\\.");
+        if (fileNameArray[1] == null || !fileNameArray[1].equalsIgnoreCase("odang"))
+            throw new InvalidFileNameException(fileName + " is not a valid filename");
+
         final File file = new File(fileName);
         final BufferedReader br = new BufferedReader(new FileReader(file));
         String tokenizerInput = "";
