@@ -358,5 +358,11 @@ public class CodeGeneratorTest {
     public void checkGeneratesClassWithTwoInts(){
         assertGeneratesDeclFromString("function Bar(){var x=1;var y=2;}", "class Bar{ int x = 1; int y = 2;}");
     }
+
+    @Test
+    public void checkGeneratesClassWithMethod(){
+        assertGeneratesDeclFromString("function Foo(){this.myMethod=function(name){return name;}}",
+                "class Foo{ void myMethod(String name){return name;}}");
+    }
     
 }

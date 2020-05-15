@@ -65,6 +65,18 @@ public class CodeGenerator  {
                             body.append(declString);
                             body.append(";");
                         }
+                        else if (decl instanceof MethodDecl){
+                            final MethodDecl asMethodDecl = (MethodDecl)decl;
+
+                            final MethodHeader asMethodHeader = (MethodHeader)asMethodDecl.header;
+                            final MethodDeclarator asMethodDeclarator = (MethodDeclarator)asMethodHeader.methodDeclarator;
+                            final String methodName = generateExp(asMethodDeclarator.identifier);
+                            final String argList = generateDecl(asMethodDeclarator.paramList);
+                            final String methodBody = generateStmt(asMethodDecl.body);
+                            final String methodString = "this." + methodName + "=function(" + argList + ")" + methodBody;
+
+                            body.append(methodString);
+                        }
                     }
 
                     result.append(")");
