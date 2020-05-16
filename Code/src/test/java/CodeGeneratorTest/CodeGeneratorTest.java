@@ -237,6 +237,51 @@ public class CodeGeneratorTest {
         assertGenerateExpFromString("beta(2,true,false)", "beta(2,true,false)");
     }
 
+    @Test
+    public void checkGeneratesClassInstanceExpression() {
+        assertGenerateExpFromString("new Cat()", "new Cat()");
+    }
+
+    @Test
+    public void checkGeneratesClassInstanceExpressionWithTwoArguments() {
+        assertGenerateExpFromString("new Dog(name,age)", "new Dog(name, age)");
+    }
+
+    @Test
+    public void checkGeneratesClassInstanceExpressionWithThreeArguments() {
+        assertGenerateExpFromString("new Dog(name,age,weight)", "new Dog(name, age, weight)");
+    }
+
+    @Test
+    public void checkGeneratesStringCastWithInteger() {
+        assertGenerateExpFromString("String(2)", "(String) 2");
+    }
+
+    @Test
+    public void checkGeneratesStringCastWithBoolean(){
+        assertGenerateExpFromString("String(false)", "(String) false");
+    }
+
+    @Test
+    public void checkGeneratesStringCastWithVariable(){
+        assertGenerateExpFromString("String(var)", "(String) var");
+    }
+
+    @Test
+    public void checkGeneratesThisExp(){
+        assertGenerateExpFromString("this", "this");
+    }
+
+    @Test
+    public void checkGeneratesThisExpWithFieldAccess(){
+        assertGenerateExpFromString("this.moo", "this.moo");
+    }
+
+    @Test
+    public void checkGeneratesThisExpWithMethod(){
+        assertGenerateExpFromString("this.Foo()", "this.Foo()");
+    }
+
     //***STMT TESTS***//
     @Test
     public void checkGeneratesRegularReturnStatement() {

@@ -4,6 +4,8 @@ import Parser.Declarations.*;
 import Parser.Statements.*;
 import Parser.Expressions.*;
 import Parser.Literals.*;
+import Parser.Types.PrimitiveParserType;
+import Parser.Types.StringParserType;
 import Typechecker.IllTypedException;
 
 import java.util.List;
@@ -310,6 +312,30 @@ public class CodeGenerator  {
             final String invoker = generateExp(asMethod.exp);
             final String argList = generateExp(asMethod.argList);
             return invoker + argList;
+        }
+        else if (e instanceof ClassInstanceExp){
+            final ClassInstanceExp asClass = (ClassInstanceExp)e;
+            final String className = generateExp(asClass.className);
+            final String argList = generateExp(asClass.argList);
+            return "new " + className + argList;
+        }
+        else if (e instanceof CastExp){
+            final CastExp asCast = (CastExp)e;
+            if (asCast.parserType instanceof PrimitiveParserType){//TODO cast to subclass
+                final PrimitiveParserType asPrimitive = (PrimitiveParserType)asCast.parserType;
+                if (asPrimitive.parserType instanceof StringParserType)
+                    return "String(" + generateExp(asCast.exp) + ")";
+                else
+                    throw new CodeGeneratorException("Unrecognizable cast: " + asCast.parserType.toString());
+            }else {
+                throw new CodeGeneratorException("Unrecognizable cast: " + asCast.parserType.toString() );
+            }
+        }
+        else if (e instanceof ThisExp){
+            return "this";
+        }
+        else if (e instanceof SuperExp){//TODO Doublecheck if it works in classes
+            return "super";
         }
         else if (e instanceof BooleanLiteral) {
             final BooleanLiteral asBool = (BooleanLiteral) e;
