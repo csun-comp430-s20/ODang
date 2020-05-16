@@ -8,6 +8,7 @@ import Parser.Types.PrimitiveParserType;
 import Parser.Types.StringParserType;
 import Typechecker.IllTypedException;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class CodeGenerator  {
@@ -18,29 +19,35 @@ public class CodeGenerator  {
         this.AST = AST;
     }
 
+    /**
+     * attempts to code generate a declaration
+     * @param d current declaration
+     * @return string that represents the code output of d
+     * @throws CodeGeneratorException unrecognized declaration
+     */
     public String generateDecl(final Decl d) throws CodeGeneratorException{
         if (d instanceof ClassDecl){//TODO make this look nice if time permits
             final ClassDecl asClassDecl = (ClassDecl)d;
             StringBuilder result = new StringBuilder();
             result.append("function ");
-            StringBuilder body = new StringBuilder();
             result.append(generateExp(asClassDecl.identifier));
             result.append("(");
-            if (asClassDecl.extendsClass == null){//TODO this and super
+            StringBuilder params = new StringBuilder();
+            StringBuilder body = new StringBuilder();
+
+            if (asClassDecl.extendsClass == null){//TODO this and super (use .call())
                 if (asClassDecl.classBody == null) {
                     return result.append("){}").toString();
                 }else{
                     final ClassBodyDecs asClassBodyDecs = (ClassBodyDecs)asClassDecl.classBody;
-                    final StringBuilder parameters = new StringBuilder();
 
                     for (Decl decl : asClassBodyDecs.classBodyDecs){
                         if (decl instanceof ConstructorDecl){
                             final ConstructorDecl asConstructorDecl = (ConstructorDecl)decl;
                             final ConstructorDeclarator asConstructorDeclarator = (ConstructorDeclarator)asConstructorDecl.constructorDeclarator;
-                            final String curParams = generateDecl(asConstructorDeclarator.paramList);
-
-                            //TODO check multiple constructors
-                            //if (parameters.toString().contains())
+                            params.append(generateDecl(asConstructorDeclarator.paramList));
+                            final ConstructorBody asConstructorBody = (ConstructorBody)asConstructorDecl.constructorBody;
+                            body.append(generateDecl(asConstructorBody));
                         }
                         else if (decl instanceof FieldDecl){
                             final String fieldDeclString = generateDecl(decl);
@@ -52,7 +59,7 @@ public class CodeGenerator  {
                             body.append(methodDeclString);
                         }
                     }
-
+                    result.append(params);
                     result.append(")");
                 }
             }
@@ -97,8 +104,12 @@ public class CodeGenerator  {
                 StringBuilder body = new StringBuilder();
                 for (final Stmt bodyStmt : asConstructorBody.blockStmts) {
                     body.append(generateStmt(bodyStmt));
+                    body.append(";");
                 }
-                return body.substring(0, body.length() - 1);
+                if (body.length() == 0)
+                    return body.toString();
+                else
+                    return body.substring(0, body.length() - 1);
             }
             else {
                 return "";//TODO this and super

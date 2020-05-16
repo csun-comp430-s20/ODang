@@ -26,9 +26,9 @@ public class CodeGeneratorTest {
 
     }
 
-    public static void assertGenerateStmtFromString(final String expected, final String receieved){
+    public static void assertGenerateStmtFromString(final String expected, final String received){
         try {
-            final Parser parser = new Parser(new Tokenizer(receieved).tokenize());
+            final Parser parser = new Parser(new Tokenizer(received).tokenize());
             final Stmt parsedStmt = (parser.parseStmt(0)).getResult();
             Assertions.assertEquals(expected, new CodeGenerator(null).generateStmt(parsedStmt));
         }catch (Exception e) {
@@ -36,9 +36,9 @@ public class CodeGeneratorTest {
         }
     }
 
-    public static void assertGeneratesDeclFromString(final String expected, final String receieved) {
+    public static void assertGeneratesDeclFromString(final String expected, final String received) {
         try {
-            final Parser parser = new Parser(new Tokenizer(receieved).tokenize());
+            final Parser parser = new Parser(new Tokenizer(received).tokenize());
             final Decl parsedDecl = (parser.parseTopLevelClass());
             Assertions.assertEquals(expected, new CodeGenerator(null).generateDecl(parsedDecl));
         }catch (Exception e) {
@@ -445,5 +445,24 @@ public class CodeGeneratorTest {
         assertGeneratesDeclFromString("function Foo(){this.myMethod=function(name){return name;}}",
                 "class Foo{ void myMethod(String name){return name;}}");
     }
-    
+
+    @Test
+    public void checkGeneratesClassWithEmptyConstructor() {
+        assertGeneratesDeclFromString("function Foo(){}", "class Foo{Foo() {}}");
+    }
+
+    @Test
+    public void checkGeneratesClassWithConstructorWithOneParameter() {
+        assertGeneratesDeclFromString("function Foo(x){}", "class Foo{Foo(int x) {}}");
+    }
+
+    @Test
+    public void checkGeneratesClassWithConstructorWithTwoParameters() {
+        assertGeneratesDeclFromString("function Foo(x,y){}", "class Foo{Foo(int x, String y) {}}");
+    }
+
+    @Test
+    public void checkGeneratesClassWithConstructorWithLocalVariable() {
+        assertGeneratesDeclFromString("function Foo(x){var y=x;}", "class Foo{Foo(int x) {int y = x;}}");
+    }
 }
