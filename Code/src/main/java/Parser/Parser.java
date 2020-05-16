@@ -357,19 +357,23 @@ public class Parser {
 
     /**
      * attempts to parse an <explicit constructor invocation>
-     *     ie this ( <argument list>? ) | super ( <argument list>? )
+     *     ie super ( <argument list>? )
      * @param startPos position in the token list
      * @return ParseResult<Decl>
      * @throws ParseException
      */
     private ParseResult<Decl> parseExplicitConstructorInvocation(final int startPos) throws ParseException {
 
-        final String name = (readToken(startPos) instanceof ThisToken) ? "this" : "super";
+        final Token token = readToken(startPos);
+
+        if (!(token instanceof SuperToken))
+            throw new ParseException("Not a valid explicit construction invocation");
+
         checkTokenIs(startPos + 1, new LeftParenToken());
         final ParseResult<ArgumentList> argList = parseArgumentList(startPos + 2);
         checkTokenIs(argList.nextPos, new RightParenToken());
         return new ParseResult<Decl>(
-                new ExplicitConstructorInvocation(name, argList.result),
+                new ExplicitConstructorInvocation(argList.result),
                 argList.nextPos + 1);
     }
     /**

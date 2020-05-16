@@ -258,10 +258,36 @@ public class Typechecker {
             final ConstructorBody body = (ConstructorBody) constructorDecl.constructorBody;
 
             if (body.explConstrInvoc != null) {
-                return null;
-                //TODO implement super/this class constructor
+                final ExplicitConstructorInvocation eci = (ExplicitConstructorInvocation)body.explConstrInvoc;
+
+                final List<Exp> argList = ((ArgumentList)eci.argList).expList;
+
+                if (getClass(constructorName).extendsClass == null)
+                    throw new IllTypedException(String.format("Class %s has no superclass, cannot invoke constructor", constructorName));
+
+                final ClassType superClassType = (ClassType)convertParserType(getClass(constructorName).extendsClass);
+                final String superClassName = superClassType.className;
+
+                if (!constructors.containsKey(superClassName))
+                    throw new IllTypedException("No constructor in superclass to invoke");
+
+                final Constructor superConstructor = constructors.get(superClassName);
+                if (superConstructor.formalParameters.size() != argList.size())
+                    throw new IllTypedException(String.format("No valid constructor to invoke, " +
+                            "expected %d arguments, found %d", superConstructor.formalParameters.size(), argList.size()));
+
+
+                for (int i = 0; i < superConstructor.formalParameters.size(); i++) {
+                    final Type invocationArgType = typeof(newEnv, argList.get(i));
+                    final Type expectedType = superConstructor.formalParameters.get(i).theType;
+                    if (!invocationArgType.equals(expectedType))
+                        throw new IllTypedException(String.format("Type mismatch in explicit constructor invocation, " +
+                                "expected %s but received %s", expectedType, invocationArgType));
+                }
+
             }
-            else if (!body.blockStmts.isEmpty()){
+
+            if (!body.blockStmts.isEmpty()){
                 final List<Stmt> blockStmts = body.blockStmts;
                 for (final Stmt bodyStmt : blockStmts) {
                     newEnv = typecheckStmts(newEnv, false, bodyStmt);
