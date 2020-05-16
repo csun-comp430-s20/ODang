@@ -23,6 +23,7 @@ public class Typechecker {
 
     public final List<Decl> program;
     public final Map<String, ClassDecl> classes;
+    public final Map<String, Constructor> constructors;
     public final TypeEnvironment env;
 
 
@@ -35,7 +36,8 @@ public class Typechecker {
     public Typechecker(final List<Decl> program) throws IllTypedException {
         this.program = program;
         this.env = new TypeEnvironment(null, null, null);
-        classes = new HashMap<String, ClassDecl>();
+        classes = new HashMap<>();
+        constructors = new HashMap<>();
 
         for (final Decl curClass : program) {
             final ClassDecl curClassDecl = (ClassDecl) curClass;
@@ -55,7 +57,8 @@ public class Typechecker {
     private Typechecker() {
         this.env = null;
         this.program = null;
-        this.classes = new HashMap<String, ClassDecl>();
+        this.classes = new HashMap<>();
+        this.constructors = new HashMap<>();
 
     }
 
@@ -241,6 +244,12 @@ public class Typechecker {
 
             final List<FormalParameter> formalParams = convertFormalParamList(constrDeclarator.paramList);
 
+            if (constructors.get(constructorName) != null &&
+                    !constructors.get(constructorName).formalParameters.equals(formalParams)) {
+                throw new IllTypedException("Constructor already defined for class " + constructorName);
+            }
+
+            constructors.put(constructorName, new Constructor(constructorName,formalParams));
             TypeEnvironment newEnv = env.copy();
             if (!(formalParams.isEmpty())) {
                 for (final FormalParameter param : formalParams)
@@ -322,7 +331,16 @@ public class Typechecker {
 
         final Stmt hopefullyReturnStmt = body.blockStmts.get(body.blockStmts.size()-1);
 
-        final TypeEnvironment newEnv = typecheckStmts(env, false, body);
+        TypeEnvironment newEnv = env.copy();
+        final FormalParamList paramList = (FormalParamList)md.paramList;
+        for (final Decl param : paramList.declList) {
+            final FormalParam formalParam = (FormalParam)param;
+            final Type paramType = convertParserType(formalParam.paramParserType);
+            final String paramName = ((IdentifierLiteral)formalParam.paramIdentifier).name;
+            newEnv = newEnv.addVariable(paramName, paramType);
+        }
+
+        typecheckStmts(newEnv, false, body);
 
         if (!(hopefullyReturnStmt instanceof ReturnStmt))
             throw new IllTypedException("Missing return statement at end of block");
@@ -608,9 +626,9 @@ public class Typechecker {
                     final Type paramType = typeof(env, argList.get(i));
                     final Type definedParamType = methodDef.formalParams.get(i).theType;
 
-                    if (paramType != definedParamType)
+                    if (!paramType.equals(definedParamType))
                         throw new IllTypedException("Type mismatch in params of methodcall: " +
-                                argList.get(i) +  "is not of type " + definedParamType);
+                                argList.get(i) +  " is of type "+ paramType +", expected " + definedParamType);
                 }
 
                 return returnType;
@@ -649,10 +667,42 @@ public class Typechecker {
 
         }
 
-        //TODO finish
         else if (e instanceof ClassInstanceExp) {
-            final ClassInstanceExp asClassInstance = (ClassInstanceExp)e;
-            return null;
+            final ClassInstanceExp classInstance = (ClassInstanceExp)e;
+            final String className = ((IdentifierLiteral)classInstance.className).name;
+
+            if (constructors.get(className) == null) {
+                if (classInstance.argList.expList.isEmpty())
+                    return new ClassType(className);
+                else
+                    throw new IllTypedException("No matching constructor for class " + className);
+            }
+            else {
+                final Constructor constructor = constructors.get(className);
+                if (constructor.formalParameters.isEmpty()) {
+                    if (classInstance.argList.expList.isEmpty())
+                        return new ClassType(className);
+                    else
+                        throw new IllTypedException(String.format("Wrong number of parameters in constructor call." +
+                                " Expected 0, found %d", classInstance.argList.expList.size()));
+                }
+                else {
+                    if (classInstance.argList.expList.size() != constructor.formalParameters.size())
+                        throw new IllTypedException(String.format("Wrong number of parameters in constructor call." +
+                                " Expected %d, received %d", constructor.formalParameters.size(), classInstance.argList.expList.size()));
+
+                    for (int i = 0; i < constructor.formalParameters.size(); i++) {
+                        final FormalParameter definedParam = constructor.formalParameters.get(i);
+                        final Type typeOfCalledParam = typeof(env, classInstance.argList.expList.get(i));
+                        if (!typeOfCalledParam.equals(definedParam.theType))
+                            throw new IllTypedException(String.format("Type mismatch in method call parameter, " +
+                                    "expected %s, received %s", definedParam.theType, typeOfCalledParam));
+                    }
+                    return new ClassType(className);
+                }
+            }
+
+
         }
 
         else if (e instanceof IntegerLiteral) {
