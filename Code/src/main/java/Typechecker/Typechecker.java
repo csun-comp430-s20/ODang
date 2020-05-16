@@ -731,35 +731,4 @@ public class Typechecker {
             throw new IllTypedException("unrecognized expression: " + e.toString());
         }
     }
-
-    //TODO remove before final submission
-    public static void main(String[] args) {
-
-        Map<String, Type> test = new HashMap<>();
-        test.put("foo", new BoolType());
-
-        try {
-            File file = new File("testProgram.odang");
-            BufferedReader br = new BufferedReader(new FileReader(file));
-            String tokenizerInput = "";
-            String line = "";
-            while ((line = br.readLine()) != null) {
-                tokenizerInput += line;
-            }
-            br.close();
-            final Tokenizer tokenizer = new Tokenizer(tokenizerInput);
-            final Parser parser = new Parser(tokenizer.tokenize());
-            final List<Decl> parsed = parser.parseProgram();
-            final Typechecker typechecker = new Typechecker(parsed);
-
-            System.out.println(parsed);
-
-            typechecker.typecheckProgram();
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-    }
-
 }

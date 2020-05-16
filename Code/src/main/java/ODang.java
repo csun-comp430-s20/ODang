@@ -61,7 +61,6 @@ public class ODang {
     public static void compile(final String inputString) throws TokenizerException, ParseException,
                                                         IllTypedException, CodeGeneratorException {
         final List<Decl> parsedProgram = new Parser(new Tokenizer(inputString).tokenize()).parseProgram();
-        System.out.println(parsedProgram);
         new Typechecker(parsedProgram).typecheckProgram();
         final CodeGenerator codeGen = new CodeGenerator(parsedProgram);
         //TODO output file
