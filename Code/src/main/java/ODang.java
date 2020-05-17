@@ -28,7 +28,7 @@ public class ODang {
                     return;
                 else {
                     final String tokenizerInput = readFile(userInput);
-                    compile(tokenizerInput);
+                    createFile(userInput, compile(tokenizerInput));
 
                     break;
                 }
@@ -58,12 +58,23 @@ public class ODang {
         br.close();
         return tokenizerInput;
     }
-    public static void compile(final String inputString) throws TokenizerException, ParseException,
+
+    public static void createFile(final String filename, final String compiledCode) throws IOException {
+        final File outputFile = new File(filename.split("\\.")[0] + ".js");
+        if (outputFile.createNewFile()) {
+            final FileWriter fileWriter = new FileWriter(outputFile.getName());
+            fileWriter.write(compiledCode);
+            fileWriter.close();
+        }
+
+    }
+
+    public static String compile(final String inputString) throws TokenizerException, ParseException,
                                                         IllTypedException, CodeGeneratorException {
         final List<Decl> parsedProgram = new Parser(new Tokenizer(inputString).tokenize()).parseProgram();
         new Typechecker(parsedProgram).typecheckProgram();
         final CodeGenerator codeGen = new CodeGenerator(parsedProgram);
-        //TODO output file
+        return codeGen.generateProgram();
 
     }
 }
