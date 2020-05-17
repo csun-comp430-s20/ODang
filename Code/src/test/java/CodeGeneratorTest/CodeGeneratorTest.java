@@ -448,13 +448,13 @@ public class CodeGeneratorTest {
     
     @Test
     public void checkGeneratesClassWithTwoMethods(){
-        assertGeneratesDeclFromString("function Foo(){this.myMethod=function(name){return name;} this.myMethodTwo=function(name){return name;}}",
+        assertGeneratesDeclFromString("function Foo(){this.myMethod=function(name){return name;}this.myMethodTwo=function(name){return name;}}",
                 "class Foo{ void myMethod(String name){return name;} void myMethodTwo(String name){return name;}}");
     }
     
     @Test
     public void checkGeneratesClassWithMethodWithTwoParameters(){
-        assertGeneratesDeclFromString("function Foo(){this.myMethod=function(name, x){return name;}}",
+        assertGeneratesDeclFromString("function Foo(){this.myMethod=function(name,x){return name;}}",
                 "class Foo{ void myMethod(String name, int x){return name;}}");
     }
 
