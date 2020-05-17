@@ -865,4 +865,44 @@ public class TypecheckerTest {
         final TypeEnvironment newEnv = env.addFunction("testMethod", stringMethod);
         Assertions.assertThrows(IllTypedException.class, () -> typeof(newEnv, mi));
     }
+
+    @Test
+    public void checkTypeOfMethodInvocationOneArgInt() {
+
+        final List<FormalParameter> params = new ArrayList<>();
+        params.add(new FormalParameter(new IntType(), "testInt"));
+
+        final FunctionDefinition stringMethod = new FunctionDefinition(new StringType(),
+                "testMethod", params, null, new ReturnStmt(new StringLiteral("foo")));
+        final TypeEnvironment env = Typechecker.createEmptyTypeEnvironment();
+        final TypeEnvironment newEnv = env.addFunction("testMethod", stringMethod);
+        assertTypechecksExp(newEnv, new StringType(), "testMethod(2);");
+    }
+
+    @Test
+    public void checkTypeOfMethodInvocationOneArgBool() {
+
+        final List<FormalParameter> params = new ArrayList<>();
+        params.add(new FormalParameter(new BoolType(), "testBool"));
+
+        final FunctionDefinition stringMethod = new FunctionDefinition(new StringType(),
+                "testMethod", params, null, new ReturnStmt(new StringLiteral("foo")));
+        final TypeEnvironment env = Typechecker.createEmptyTypeEnvironment();
+        final TypeEnvironment newEnv = env.addFunction("testMethod", stringMethod);
+        assertTypechecksExp(newEnv, new StringType(), "testMethod(true);");
+    }
+
+    @Test
+    public void checkTypeOfMethodInvocationOneArgString() {
+
+        final List<FormalParameter> params = new ArrayList<>();
+        params.add(new FormalParameter(new StringType(), "testInput"));
+
+        final FunctionDefinition stringMethod = new FunctionDefinition(new StringType(),
+                "testMethod", params, null, new ReturnStmt(new StringLiteral("foo")));
+        final TypeEnvironment env = Typechecker.createEmptyTypeEnvironment();
+        final TypeEnvironment newEnv = env.addFunction("testMethod", stringMethod);
+        assertTypechecksExp(newEnv, new StringType(), "testMethod(\"hello\");");
+    }
+
 }
