@@ -7,17 +7,27 @@ import Parser.Literals.*;
 import Parser.Types.ClassParserType;
 import Parser.Types.PrimitiveParserType;
 import Parser.Types.StringParserType;
-import Typechecker.IllTypedException;
+
+import Parser.*;
+import Tokenizer.*;
+import Tokenizer.Tokens.*;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class CodeGenerator  {
-    private final String codeOutput ="";
+    private final StringBuilder codeOutput = new StringBuilder();
     private final List<Decl> AST;
 
     public CodeGenerator(final List<Decl> AST) {
         this.AST = AST;
+    }
+
+    public String generateProgram() throws CodeGeneratorException{
+        for(final Decl decl : AST){
+            codeOutput.append(generateDecl(decl));
+        }
+        return codeOutput.toString();
     }
 
     /**
@@ -115,7 +125,6 @@ public class CodeGenerator  {
         else if (d instanceof ConstructorBody){
             final ConstructorBody asConstructorBody = (ConstructorBody)d;
 
-            //TODO check if this is working correctly
             StringBuilder body = new StringBuilder();
             for (final Stmt bodyStmt : asConstructorBody.blockStmts) {
                 final String curStmt = generateStmt(bodyStmt);
@@ -386,9 +395,23 @@ public class CodeGenerator  {
             assert (false);
             throw new CodeGeneratorException("Unrecognizable expression.");
         }
-    }// TODO remember to add all the results to the overall string output in the end and to deal with whitespaces
+    }
 
+    //TODO remove before due date
     public static void main(String[] args) {
+        System.out.println("Test.");
 
+        final String input = "class Sub extends Base{ Sub(int x, int y){ super(x); this.y = y;}}";
+        final Tokenizer tokenizer = new Tokenizer(input);
+
+        try {
+            final List<Token> tokens = tokenizer.tokenize();
+            final Parser parser = new Parser(tokens);
+            final List<Decl> parsed = parser.parseProgram();
+            final String output = new CodeGenerator(parsed).generateProgram();
+            System.out.println(output);
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
     }
 }
