@@ -61,8 +61,10 @@ public class ODang {
 
     public static void createFile(final String filename, final String compiledCode) throws IOException {
         final File outputFile = new File(filename.split("\\.")[0] + ".js");
+        if (outputFile.exists())
+            outputFile.delete();
         if (outputFile.createNewFile()) {
-            final FileWriter fileWriter = new FileWriter(outputFile.getName());
+            final FileWriter fileWriter = new FileWriter(outputFile.getName(), false);
             fileWriter.write(compiledCode);
             fileWriter.close();
         }
