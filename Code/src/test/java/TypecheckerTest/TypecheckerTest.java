@@ -905,4 +905,46 @@ public class TypecheckerTest {
         assertTypechecksExp(newEnv, new StringType(), "testMethod(\"hello\");");
     }
 
+    @Test
+    public void checkTypeOfMethodInvocationTwoArgsIntBool() {
+
+        final List<FormalParameter> params = new ArrayList<>();
+        params.add(new FormalParameter(new IntType(), "testInput1"));
+        params.add(new FormalParameter(new BoolType(), "testInput2"));
+
+        final FunctionDefinition stringMethod = new FunctionDefinition(new StringType(),
+                "testMethod", params, null, new ReturnStmt(new StringLiteral("foo")));
+        final TypeEnvironment env = Typechecker.createEmptyTypeEnvironment();
+        final TypeEnvironment newEnv = env.addFunction("testMethod", stringMethod);
+        assertTypechecksExp(newEnv, new StringType(), "testMethod(2, false);");
+    }
+
+    @Test
+    public void checkTypeOfMethodInvocationTwoArgsBoolInt() {
+
+        final List<FormalParameter> params = new ArrayList<>();
+        params.add(new FormalParameter(new BoolType(), "testInput1"));
+        params.add(new FormalParameter(new IntType(), "testInput2"));
+
+        final FunctionDefinition stringMethod = new FunctionDefinition(new StringType(),
+                "testMethod", params, null, new ReturnStmt(new StringLiteral("foo")));
+        final TypeEnvironment env = Typechecker.createEmptyTypeEnvironment();
+        final TypeEnvironment newEnv = env.addFunction("testMethod", stringMethod);
+        assertTypechecksExp(newEnv, new StringType(), "testMethod(false, 1);");
+    }
+
+    @Test
+    public void checkThrowsExceptionNumberOfArgsMismatchMethodInvocString() {
+        final List<FormalParameter> parameterList = new ArrayList<>();
+        parameterList.add(new FormalParameter(new StringType(), "test"));
+        final FunctionDefinition stringMethod = new FunctionDefinition(new BoolType(),
+                "testMethod", parameterList, null, new ReturnStmt(new StringLiteral("foo")));
+
+        final MethodInvocation mi = new MethodInvocation(new IdentifierLiteral("foo"), new ArgumentList());
+        final TypeEnvironment env = Typechecker.createEmptyTypeEnvironment();
+        final TypeEnvironment newEnv = env.addFunction("testMethod", stringMethod);
+
+        Assertions.assertThrows(IllTypedException.class, () -> typeof(newEnv, mi));
+    }
+
 }
