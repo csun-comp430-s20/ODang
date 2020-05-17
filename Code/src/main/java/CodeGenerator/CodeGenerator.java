@@ -4,6 +4,7 @@ import Parser.Declarations.*;
 import Parser.Statements.*;
 import Parser.Expressions.*;
 import Parser.Literals.*;
+import Parser.Types.ClassParserType;
 import Parser.Types.PrimitiveParserType;
 import Parser.Types.StringParserType;
 import Typechecker.IllTypedException;
@@ -35,33 +36,47 @@ public class CodeGenerator  {
             StringBuilder params = new StringBuilder();
             StringBuilder body = new StringBuilder();
 
-            if (asClassDecl.extendsClass == null){//TODO this and super (use .call())
-                if (asClassDecl.classBody == null) {
-                    return result.append("){}").toString();
-                }else{
-                    final ClassBodyDecs asClassBodyDecs = (ClassBodyDecs)asClassDecl.classBody;
+            if (asClassDecl.classBody == null) {
+                return result.append("){}").toString();
+            }else{
+                final ClassBodyDecs asClassBodyDecs = (ClassBodyDecs)asClassDecl.classBody;
 
-                    for (Decl decl : asClassBodyDecs.classBodyDecs){
-                        if (decl instanceof ConstructorDecl){
-                            final ConstructorDecl asConstructorDecl = (ConstructorDecl)decl;
-                            final ConstructorDeclarator asConstructorDeclarator = (ConstructorDeclarator)asConstructorDecl.constructorDeclarator;
-                            params.append(generateDecl(asConstructorDeclarator.paramList));
-                            final ConstructorBody asConstructorBody = (ConstructorBody)asConstructorDecl.constructorBody;
-                            body.append(generateDecl(asConstructorBody));
+                for (Decl decl : asClassBodyDecs.classBodyDecs){
+                    if (decl instanceof ConstructorDecl){
+                        final ConstructorDecl asConstructorDecl = (ConstructorDecl)decl;
+                        final ConstructorDeclarator asConstructorDeclarator = (ConstructorDeclarator)asConstructorDecl.constructorDeclarator;
+                        params.append(generateDecl(asConstructorDeclarator.paramList));
+
+                        final ConstructorBody asConstructorBody = (ConstructorBody)asConstructorDecl.constructorBody;
+                        if (asClassDecl.extendsClass != null) {
+                            final ClassParserType classType = (ClassParserType) asClassDecl.extendsClass;
+                            final String baseClass = generateExp(classType.className);
+                            final ExplicitConstructorInvocation asExplicitInvoke = (ExplicitConstructorInvocation) asConstructorBody.explConstrInvoc;
+                            body.append(baseClass);
+                            body.append(".call(this");
+                            String argList = generateExp(asExplicitInvoke.argList);
+                            if (argList.length() != 0){
+                                body.append(",");
+                                body.append(argList.substring(1, argList.length()));
+                                body.append(";");
+                            }
+                            else
+                                body.append(");");
                         }
-                        else if (decl instanceof FieldDecl){
-                            final String fieldDeclString = generateDecl(decl);
-                            body.append(fieldDeclString);
-                            body.append(";");
-                        }
-                        else if (decl instanceof MethodDecl){
-                            final String methodDeclString = generateDecl(decl);
-                            body.append(methodDeclString);
-                        }
+                        body.append(generateDecl(asConstructorBody));
                     }
-                    result.append(params);
-                    result.append(")");
+                    else if (decl instanceof FieldDecl){
+                        final String fieldDeclString = generateDecl(decl);
+                        body.append(fieldDeclString);
+                        body.append(";");
+                    }
+                    else if (decl instanceof MethodDecl){
+                        final String methodDeclString = generateDecl(decl);
+                        body.append(methodDeclString);
+                    }
                 }
+                result.append(params);
+                result.append(")");
             }
             if (asClassDecl.classBody == null){
                 return result.append("{}").toString();
@@ -99,21 +114,20 @@ public class CodeGenerator  {
         }
         else if (d instanceof ConstructorBody){
             final ConstructorBody asConstructorBody = (ConstructorBody)d;
-            if (asConstructorBody.explConstrInvoc == null){
-                //TODO check if this is working correctly
-                StringBuilder body = new StringBuilder();
-                for (final Stmt bodyStmt : asConstructorBody.blockStmts) {
-                    body.append(generateStmt(bodyStmt));
+
+            //TODO check if this is working correctly
+            StringBuilder body = new StringBuilder();
+            for (final Stmt bodyStmt : asConstructorBody.blockStmts) {
+                final String curStmt = generateStmt(bodyStmt);
+                if (!(curStmt.equals(";"))) {
+                    body.append(curStmt);
                     body.append(";");
                 }
-                if (body.length() == 0)
-                    return body.toString();
-                else
-                    return body.substring(0, body.length() - 1);
             }
-            else {
-                return "";//TODO this and super
-            }
+            if (body.length() == 0)
+                return body.toString();
+            else
+                return body.substring(0, body.length() - 1);
         }
         else if (d instanceof MethodDecl){
             final MethodDecl asMethodDecl = (MethodDecl)d;

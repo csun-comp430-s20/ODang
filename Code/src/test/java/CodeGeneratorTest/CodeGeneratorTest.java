@@ -465,4 +465,21 @@ public class CodeGeneratorTest {
     public void checkGeneratesClassWithConstructorWithLocalVariable() {
         assertGeneratesDeclFromString("function Foo(x){var y=x;}", "class Foo{Foo(int x) {int y = x;}}");
     }
+
+    @Test
+    public void checkGeneratesEmptyClassWithExtends() {
+        assertGeneratesDeclFromString("function Foo(){}", "class Foo extends Bar{}");
+    }
+
+    @Test
+    public void checkGeneratesClassWithSuper() {
+        assertGeneratesDeclFromString("function Sub(x){Base.call(this,x);}",
+                "class Sub extends Base{ Sub(int x){ super(x);}}");
+    }
+
+    @Test
+    public void checkGeneratesClassWithSuperAndTwoArguments(){
+        assertGeneratesDeclFromString("function Sub(x,y){Base.call(this,x);this.y=y;}",
+                "class Sub extends Base{ Sub(int x, int y){ super(x); this.y = y;}}");
+    }
 }
