@@ -445,6 +445,18 @@ public class CodeGeneratorTest {
         assertGeneratesDeclFromString("function Foo(){this.myMethod=function(name){return name;}}",
                 "class Foo{ void myMethod(String name){return name;}}");
     }
+    
+    @Test
+    public void checkGeneratesClassWithTwoMethods(){
+        assertGeneratesDeclFromString("function Foo(){this.myMethod=function(name){return name;} this.myMethodTwo=function(name){return name;}}",
+                "class Foo{ void myMethod(String name){return name;} void myMethodTwo(String name){return name;}}");
+    }
+    
+    @Test
+    public void checkGeneratesClassWithMethodWithTwoParameters(){
+        assertGeneratesDeclFromString("function Foo(){this.myMethod=function(name, x){return name;}}",
+                "class Foo{ void myMethod(String name, int x){return name;}}");
+    }
 
     @Test
     public void checkGeneratesClassWithEmptyConstructor() {
@@ -482,4 +494,5 @@ public class CodeGeneratorTest {
         assertGeneratesDeclFromString("function Sub(x,y){Base.call(this,x);this.y=y;}",
                 "class Sub extends Base{ Sub(int x, int y){ super(x); this.y = y;}}");
     }
+    
 }
