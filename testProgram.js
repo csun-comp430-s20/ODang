@@ -1,0 +1,1 @@
+function Foo(){this.testMethod=function(input){return input+1;}}function Bar(){var x=0;}function Baz(){var x=new Bar();}
