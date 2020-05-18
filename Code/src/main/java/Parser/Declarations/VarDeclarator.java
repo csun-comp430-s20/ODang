@@ -21,7 +21,7 @@ public class VarDeclarator implements Decl {
     }
 
     public String toString() {
-        if (exp.equals(null))
+        if (exp == null)
             return String.format(this.getClass().getSimpleName()) + " (" + identifier + ")";
         else
             return String.format(this.getClass().getSimpleName() + " (" + identifier + " = " + exp + ")");

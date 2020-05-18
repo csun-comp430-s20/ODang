@@ -1,22 +1,25 @@
 package Parser.Statements;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class BlockStmt implements Stmt {
-    public final Stmt left;
-    public final Stmt right;
-    public BlockStmt(final Stmt left, final Stmt right) {
-        this.left = left;
-        this.right = right;
+
+    public final Stmt stmt;
+
+    public BlockStmt(final Stmt stmt) {
+        this.stmt = stmt;
+
     }
     public boolean equals(Object other) {
         if (other instanceof BlockStmt) {
             BlockStmt otherBlockStmt = (BlockStmt) other;
-            return left.equals(otherBlockStmt.left) &&
-                    right.equals(otherBlockStmt.right);
+            return stmt.equals(otherBlockStmt.stmt);
         }
         else return false;
     }
 
     public String toString() {
-        return String.format(getClass().getSimpleName() + " [" + left + " " + right +"]");
+        return String.format(getClass().getSimpleName() + " " + stmt);
     }
 }

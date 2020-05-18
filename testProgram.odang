@@ -1,0 +1,11 @@
+class Foo {
+    int testMethod(int input) {
+        return input + 1;
+    }
+}
+class Bar extends Foo {
+    int x = 0;
+}
+class Baz {
+    Foo x = new Bar();
+}

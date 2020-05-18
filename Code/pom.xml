@@ -5,8 +5,9 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>org.comp430</groupId>
-    <artifactId>Code</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <artifactId>ODang</artifactId>
+    <version>1.0</version>
+    <packaging>jar</packaging>
 
     <dependencies>
         <dependency>
@@ -21,6 +22,11 @@
             <version>5.4.2</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>com.google.collections</groupId>
+            <artifactId>google-collections</artifactId>
+            <version>1.0</version>
+        </dependency>
     </dependencies>
 
     <properties>
@@ -29,6 +35,33 @@
     </properties>
     <build>
         <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>1.6</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>3.2.0</version>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <addClasspath>true</addClasspath>
+                            <classpathPrefix>lib/</classpathPrefix>
+                            <mainClass>ODang</mainClass>
+                        </manifest>
+                    </archive>
+                </configuration>
+            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
@@ -73,6 +106,7 @@
                     </execution>
                 </executions>
             </plugin>
+
         </plugins>
     </build>
 

@@ -2,22 +2,22 @@ package Parser.Declarations;
 
 import Parser.Types.*;
 public class MethodHeader implements Decl {
-    public final Type resultType;
+    public final ParserType resultParserType;
     public final Decl methodDeclarator;
 
-    public MethodHeader(final Type resultType, final Decl methodDeclarator) {
-        this.resultType = resultType;
+    public MethodHeader(final ParserType resultParserType, final Decl methodDeclarator) {
+        this.resultParserType = resultParserType;
         this.methodDeclarator = methodDeclarator;
     }
     public boolean equals(Object other) {
         if (other instanceof MethodHeader) {
             MethodHeader otherMH = (MethodHeader) other;
-            return resultType.equals(otherMH.resultType) && methodDeclarator.equals(otherMH.methodDeclarator);
+            return resultParserType.equals(otherMH.resultParserType) && methodDeclarator.equals(otherMH.methodDeclarator);
         }
         else return false;
     }
 
     public String toString() {
-        return String.format(this.getClass().getSimpleName() + " (" + resultType + " " + methodDeclarator + ")");
+        return String.format(this.getClass().getSimpleName() + " (" + resultParserType + " " + methodDeclarator + ")");
     }
 }

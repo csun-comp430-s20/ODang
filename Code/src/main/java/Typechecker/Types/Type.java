@@ -1,4 +1,4 @@
-package Parser.Types;
+package Typechecker.Types;
 
 public interface Type {
 }
