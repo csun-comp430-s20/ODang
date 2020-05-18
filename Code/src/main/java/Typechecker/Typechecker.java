@@ -311,6 +311,20 @@ public class Typechecker {
                 }
                 else {
                     final Type actualType = typeof(updatedEnv, varDec.exp);
+                    if (actualType instanceof ClassType) {
+                        final ClassType classType = (ClassType)actualType;
+                        final ClassDecl possibleSubClass = classes.get(classType.className);
+                        if (possibleSubClass.extendsClass == null)
+                            throw new IllTypedException(actualType + " is not a subclass of " + fieldType);
+                        else {
+                            final Type superType = convertParserType(possibleSubClass.extendsClass);
+                            if (superType.equals(fieldType))
+                                return updatedEnv.addVariable(identifier.name, classType);
+                            else
+                                throw new IllTypedException(actualType + " is not a subclass of " + fieldType);
+                        }
+                    }
+
                     if (!(fieldType.equals(actualType)))
                         throw new IllTypedException("Field declared " + fieldType + ", cannot assign " + actualType);
                     else {
