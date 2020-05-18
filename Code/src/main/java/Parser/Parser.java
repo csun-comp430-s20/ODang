@@ -276,16 +276,11 @@ public class Parser {
     private ParseResult<Decl> parseClassMemberDecl(final int startPos) throws ParseException {
         //tries to parse as fieldDecl, if it fails tries to parse as methodDecl
         try {
-           final ParseResult<Decl> overloadDecl = parseMethodOverload(startPos);
-           return new ParseResult<Decl>(overloadDecl.result, overloadDecl.nextPos);
+            final ParseResult<Decl> fieldDecl = parseFieldDecl(startPos);
+            return new ParseResult<Decl>(fieldDecl.result, fieldDecl.nextPos);
         } catch (ParseException d) {
-            try {
-                final ParseResult<Decl> fieldDecl = parseFieldDecl(startPos);
-                return new ParseResult<Decl>(fieldDecl.result, fieldDecl.nextPos);
-            } catch (ParseException e) {
-                final ParseResult<Decl> methodDecl = parseMethodDecl(startPos);
-                return new ParseResult<Decl>(methodDecl.result, methodDecl.nextPos);
-            }
+            final ParseResult<Decl> methodDecl = parseMethodDecl(startPos);
+            return new ParseResult<Decl>(methodDecl.result, methodDecl.nextPos);
         }
     }
 
@@ -543,45 +538,6 @@ public class Parser {
         final ParseResult<Stmt> body = parseStmt(startPos);
         return new ParseResult<Stmt>(body.result, body.nextPos);
     }
-    /**
-     * attempts to parse a method overload
-     * @param startPos position in the list
-     * @return ParseResult<Decl> containing the overload declarator and body
-     * @throws ParseException
-     */
-    private ParseResult<Decl> parseMethodOverload(final int startPos) throws ParseException {
-        final ParseResult<Decl> overloadDecl = parseOverloadDeclarator(startPos);
-        //no body, just a semicolon after
-        if (readToken(overloadDecl.nextPos) instanceof SemiColonToken) {
-            return new ParseResult<Decl>(new MethodOverloadDecl(overloadDecl.result, null), overloadDecl.nextPos + 1);
-        } else {
-            //body statement
-            final ParseResult<Stmt> overloadBody = parseBlock(overloadDecl.nextPos);
-            return new ParseResult<Decl>(new MethodOverloadDecl(overloadDecl.result, overloadBody.result), overloadBody.nextPos);
-        }
-    }
-
-    /**
-     * attempts to parse a overload declarator
-     * @param startPos position in the list
-     * @return ParseResult<Decl> containing the identifier, operator, and formal parameter list
-     * @throws ParseException
-     */
-    private ParseResult<Decl> parseOverloadDeclarator(final int startPos) throws ParseException{
-        if (readToken(startPos) instanceof IdentifierToken){
-            final ParseResult<Exp> identifierExp = parsePrimary(startPos);
-            checkTokenIs(identifierExp.nextPos, new IdentifierToken("operator")); //We don't have the token for the keyward operator
-            if (readToken(identifierExp.nextPos + 1) instanceof OperatorToken){
-                final OperatorToken op = (OperatorToken)readToken(identifierExp.nextPos + 1);
-                checkTokenIs(identifierExp.nextPos + 2, new LeftParenToken());
-                ParseResult<FormalParamList> list = parseFormalParamList(identifierExp.nextPos + 3);
-                checkTokenIs(list.nextPos, new RightParenToken());
-                return new ParseResult<Decl>(new OverloadDecl(identifierExp.result, op.name, list.result), list.nextPos + 1);
-            } else throw new ParseException("Not an operator token.");
-        }
-        else throw new ParseException("Not an identifier token.");
-    }
-
 
     /**
      * attempts to parse a block

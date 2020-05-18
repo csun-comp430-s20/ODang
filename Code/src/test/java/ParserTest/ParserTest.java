@@ -614,23 +614,7 @@ public class ParserTest {
                 )));
         assertParsesClassFromString(expected, "class Foo{int x = 2;}");
     }
-    //Always succeed no matter what, have to debug
-   /* @Test
-    public void checkParsesClassWithMethodDecWithNoBody() {
-        final Decl expected = new ClassDecl(
-                new IdentifierLiteral("Foo"),
-                new MethodDecl(new MethodHeader(
-                        new PrimitiveType(new IntType()),
-                        new MethodDeclarator(
-                                new IdentifierLiteral("func"),
-                                new FormalParamList(
-                                        new FormalParam(
-                                                new PrimitiveType(new StringType()),
-                                                new IdentifierLiteral("c"))))
 
-                        ), null));
-        assertParsesClassFromString(expected, "class Foo{int func(String c);}");
-    }*/
     @Test
     public void checkParsesClassWithTwoVarDecs() {
         final Decl expected = new ClassDecl(
@@ -651,47 +635,5 @@ public class ParserTest {
                 )
         );
         assertParsesClassFromString(expected, "class Foo{int x = 2; int y = 0;}");
-    }
-    @Test
-    public void checkParsesClassWithMethodOverloadWithNoBody() {
-        final Decl expected = new ClassDecl(
-                new IdentifierLiteral("Foo"),
-                new ClassBodyDecs(
-                        new MethodOverloadDecl(
-                        new OverloadDecl(
-                                new IdentifierLiteral("Foo"), "+",
-                                new FormalParamList(
-                                        new FormalParam(
-                                                new PrimitiveParserType(new IntParserType()),
-                                                new IdentifierLiteral("x")))),
-                        null
-                )));
-        assertParsesClassFromString(expected, "class Foo{Foo operator + (int x);}");
-    }
-    @Test
-    public void checkParsesClassWithMethodOverloadWithVarDecl() {
-        List<Stmt> overloadBodyBlock = new ArrayList<>();
-        overloadBodyBlock.add(new LocalVardec (
-                new PrimitiveParserType(
-                        new IntParserType()),
-                new VarDeclaratorList (
-                        new VarDeclarator (
-                                new IdentifierLiteral("y"),
-                                new IntegerLiteral(5)))));
-
-        final Decl expected = new ClassDecl(
-                new IdentifierLiteral("Foo"),
-                new ClassBodyDecs(
-                new MethodOverloadDecl(
-                        new OverloadDecl(
-                                new IdentifierLiteral("Foo"), "+",
-                                new FormalParamList(
-                                        new FormalParam(
-                                                new PrimitiveParserType(
-                                                        new IntParserType()),
-                                                new IdentifierLiteral("x")))),
-                        new Block(overloadBodyBlock))));
-        assertParsesClassFromString(expected, "class Foo{Foo operator + (int x){int y = 5;}}");
-
     }
 }
