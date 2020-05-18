@@ -8,10 +8,6 @@ import Parser.Types.ClassParserType;
 import Parser.Types.PrimitiveParserType;
 import Parser.Types.StringParserType;
 
-import Parser.*;
-import Tokenizer.*;
-import Tokenizer.Tokens.*;
-
 import java.util.List;
 
 public class CodeGenerator

@@ -1254,7 +1254,7 @@ public class Parser {
             final ParseResult<Exp> inner = parseExp(startPos + 1);
             checkTokenIs(inner.nextPos, new RightParenToken());
             return new ParseResult<Exp>(inner.result, inner.nextPos + 1);
-        } //super, TODO might move?
+        } //super
         else if (currentToken instanceof SuperToken) {
             return new ParseResult<Exp>(new SuperExp(), startPos + 1);
         }

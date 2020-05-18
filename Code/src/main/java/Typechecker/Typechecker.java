@@ -3,18 +3,12 @@ package Typechecker;
 import Parser.Declarations.*;
 import Parser.Expressions.*;
 import Parser.Declarations.Decl;
-import Parser.Parser;
 import Parser.Statements.*;
 import Parser.Literals.*;
 import Parser.Types.*;
 
 import Parser.Types.ParserVoid;
-import Tokenizer.Tokenizer;
 import Typechecker.Types.*;
-
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
 import java.util.*;
 
 import Typechecker.Types.IntType;
@@ -668,25 +662,39 @@ public class Typechecker {
         }
         else if (e instanceof FieldAccessExp) {
             final FieldAccessExp asField = (FieldAccessExp)e;
-            final IdentifierLiteral id = (IdentifierLiteral)asField.right;
-            final Type idType = typeof(env, id);
+            final IdentifierLiteral rightID = (IdentifierLiteral)asField.right;
 
             if (asField.left instanceof ClassInstanceExp) {
                 final ClassInstanceExp asClass = (ClassInstanceExp) asField.left;
                 final TypeEnvironment tau = typecheckClass(env, getClass(((IdentifierLiteral)asClass.className).name));
-                return tau.lookupVariable(id.name);
+                return tau.lookupVariable(rightID.name);
             }
             else if (asField.left instanceof MethodInvocation) {
                 final MethodInvocation methodInvocation = (MethodInvocation)asField.left;
                 final Type leftType = typeof(env, methodInvocation);
+                final Type idType = typeof(env, rightID);
                 if (leftType.equals(idType))
                     return leftType;
                 else
                     throw new IllTypedException("Not a valid field access, " +
                             asField.left + " is of type: "+ leftType +
-                            ", " + id + " is of type: " + idType);
+                            ", " + rightID + " is of type: " + idType);
 
             }
+            else if (asField.left instanceof IdentifierLiteral) {
+                final IdentifierLiteral asID = (IdentifierLiteral)asField.left;
+                if (env.containsVariable(asID.name)) {
+                    final Type leftType = env.lookupVariable(asID.name);
+                    if (!(leftType instanceof ClassType))
+                        throw new IllTypedException("No field variables in non-class variable instance");
+
+                    final ClassDecl classDecl = getClass(((ClassType) leftType).className);
+                    final TypeEnvironment newEnv = typecheckClass(env, classDecl);
+                    return newEnv.lookupVariable(rightID.name);
+                } else
+                    throw new IllTypedException("Field not defined: " + asID.name);
+            }
+
             else {
                 throw new IllTypedException("Not a valid field access" + e);
             }
@@ -751,6 +759,7 @@ public class Typechecker {
             } else {
                 throw new IllTypedException("Variable not in scope: " + asID.name);
             }
+
         }
         else {
             assert(false);
