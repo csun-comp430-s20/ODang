@@ -6,7 +6,7 @@
 
     <groupId>org.comp430</groupId>
     <artifactId>ODang</artifactId>
-    <version>1.0_DEV</version>
+    <version>1.0</version>
     <packaging>jar</packaging>
 
     <dependencies>
