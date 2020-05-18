@@ -1,17 +1,15 @@
 package CodeGeneratorTest;
 import Parser.*;
-import Parser.Types.*;
-import Parser.Literals.*;
 import Parser.Expressions.*;
 import Parser.Declarations.*;
 import Parser.Statements.*;
 import Tokenizer.*;
-import Tokenizer.Tokens.*;
 import CodeGenerator.*;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Assertions;
 
+import java.util.List;
 
 public class CodeGeneratorTest {
 
@@ -46,6 +44,15 @@ public class CodeGeneratorTest {
         }
     }
 
+    public static void assertGeneratesProgramFromString(final String expected, final String received) {
+        try {
+            final Parser parser = new Parser(new Tokenizer(received).tokenize());
+            final List<Decl> parsedProgram = (parser.parseProgram());
+            Assertions.assertEquals(expected, new CodeGenerator(parsedProgram).generateProgram());
+        }catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
     //***EXPR TESTS***//
     @Test
     public void checkGeneratesBoolean() {
@@ -265,6 +272,11 @@ public class CodeGeneratorTest {
     @Test
     public void checkGeneratesStringCastWithVariable(){
         assertGenerateExpFromString("String(var)", "(String) var");
+    }
+
+    @Test
+    public void checkGeneratesClassCast(){
+        assertGenerateExpFromString("Object(var)", "(Foo) var");
     }
 
     @Test
@@ -494,5 +506,17 @@ public class CodeGeneratorTest {
         assertGeneratesDeclFromString("function Sub(x,y){Base.call(this,x);this.y=y;}",
                 "class Sub extends Base{ Sub(int x, int y){ super(x); this.y = y;}}");
     }
-    
+
+    //***PROGRAM TESTS***//
+    @Test
+    public void checkGeneratesTwoEmptyClasses() {
+        assertGeneratesProgramFromString("function Base(){}function Sub(){}",
+                "class Base{} class Sub {}");
+    }
+
+    @Test
+    public void checkGeneratesTwoClassesOneWithExtend() {
+        assertGeneratesProgramFromString("function Base(){}function Sub(x,y){Base.call(this,x);this.y=y;}",
+                "class Base{} class Sub extends Base{ Sub(int x, int y){ super(x); this.y = y;}}");
+    }
 }

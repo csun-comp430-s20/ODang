@@ -12,7 +12,6 @@ import Parser.*;
 import Tokenizer.*;
 import Tokenizer.Tokens.*;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class CodeGenerator
@@ -24,7 +23,14 @@ public class CodeGenerator
 	{
 		this.AST = AST;
 	}
-	
+
+	/**
+	 * attempts to code generate an program
+	 *
+	 * @return string that represents the code output of the generated program
+	 *
+	 * @throws CodeGeneratorException unrecognized expression
+	 */
 	public String generateProgram() throws CodeGeneratorException
 	{
 		for(final Decl decl: AST)
@@ -46,10 +52,12 @@ public class CodeGenerator
 	public String generateDecl(final Decl d) throws CodeGeneratorException
 	{
 		if(d instanceof ClassDecl)
-		{//TODO make this look nice if time permits
+		{
 			final ClassDecl asClassDecl = (ClassDecl) d;
 			StringBuilder result = new StringBuilder();
-			result.append("function " + generateExp(asClassDecl.identifier) + "(");
+			result.append("function ");
+			result.append(generateExp(asClassDecl.identifier));
+			result.append("(");
 			
 			StringBuilder params = new StringBuilder();
 			StringBuilder body = new StringBuilder();
@@ -107,16 +115,9 @@ public class CodeGenerator
 				result.append(params);
 				result.append(")");
 			}
-			if(asClassDecl.classBody == null)
-			{
-				return result.append("{}").toString();
-			}
-			else
-			{
-				result.append("{");
-				result.append(body);
-				return result.append("}").toString();
-			}
+			result.append("{");
+			result.append(body);
+			return result.append("}").toString();
 		}
 		else if(d instanceof ConstructorDeclarator)
 		{
@@ -453,7 +454,7 @@ public class CodeGenerator
 		{
 			final CastExp asCast = (CastExp) e;
 			if(asCast.parserType instanceof PrimitiveParserType)
-			{//TODO cast to subclass
+			{
 				final PrimitiveParserType asPrimitive = (PrimitiveParserType) asCast.parserType;
                 if(asPrimitive.parserType instanceof StringParserType)
                 {
@@ -463,6 +464,11 @@ public class CodeGenerator
                 {
                     throw new CodeGeneratorException("Unrecognizable cast: " + asCast.parserType.toString());
                 }
+			}
+			else if (asCast.parserType instanceof ClassParserType)
+			{
+				final ClassParserType asClass = (ClassParserType) asCast.parserType;
+				return "Object(" + generateExp(asCast.exp) + ")";
 			}
 			else
 			{
@@ -474,7 +480,7 @@ public class CodeGenerator
 			return "this";
 		}
 		else if(e instanceof SuperExp)
-		{//TODO Doublecheck if it works in classes
+		{
 			return "super";
 		}
 		else if(e instanceof BooleanLiteral)
@@ -506,28 +512,6 @@ public class CodeGenerator
 		{
 			assert (false);
 			throw new CodeGeneratorException("Unrecognizable expression.");
-		}
-	}
-	
-	//TODO remove before due date
-	public static void main(String[] args)
-	{
-		System.out.println("Test.");
-		
-		final String input = "class Sub extends Base{ Sub(int x, int y){ super(x); this.y = y;}}";
-		final Tokenizer tokenizer = new Tokenizer(input);
-		
-		try
-		{
-			final List<Token> tokens = tokenizer.tokenize();
-			final Parser parser = new Parser(tokens);
-			final List<Decl> parsed = parser.parseProgram();
-			final String output = new CodeGenerator(parsed).generateProgram();
-			System.out.println(output);
-		}
-		catch(Exception e)
-		{
-			e.printStackTrace();
 		}
 	}
 }
